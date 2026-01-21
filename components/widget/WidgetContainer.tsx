@@ -3,13 +3,23 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
-import { Loader2, UploadCloud, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, UploadCloud, Lock, CheckCircle2, AlertCircle, Video, PlayCircle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox"; // Assuming you have this or standard input
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 
 type Step = "UPLOAD" | "ANALYZING" | "PREVIEW" | "GENERATING" | "LOCKED_RESULT" | "LEAD_FORM" | "RESULT";
 
@@ -18,6 +28,21 @@ export default function WidgetContainer() {
     const [image, setImage] = useState<File | null>(null);
     const [analysisResult, setAnalysisResult] = useState<any>(null);
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+    const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+
+    // Scanning Animation Variants
+    const scanVariants = {
+        initial: { top: "0%" },
+        animate: {
+            top: "100%",
+            transition: {
+                repeat: Infinity,
+                repeatType: "mirror" as const,
+                duration: 1.5,
+                ease: "linear"
+            }
+        }
+    };
 
     const handleUpload = async (file: File) => {
         setImage(file);
@@ -133,17 +158,34 @@ export default function WidgetContainer() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="flex flex-col items-center justify-center h-full space-y-6"
+                            className="flex flex-col items-center justify-center h-full space-y-8"
                         >
-                            <div className="relative">
-                                <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-8 h-8 bg-primary/10 rounded-full animate-pulse" />
+                            <div className="relative w-64 h-64 rounded-2xl overflow-hidden shadow-2xl border border-primary/20 bg-black">
+                                {image ? (
+                                    <img src={URL.createObjectURL(image)} alt="Analyzing" className="w-full h-full object-cover opacity-80" />
+                                ) : (
+                                    <div className="w-full h-full bg-muted" />
+                                )}
+
+                                {/* Scanning Effect */}
+                                <motion.div
+                                    variants={scanVariants}
+                                    initial="initial"
+                                    animate="animate"
+                                    className="absolute left-0 right-0 h-1 bg-primary shadow-[0_0_20px_2px_rgba(42,157,143,0.8)] z-10"
+                                />
+                                <div className="absolute inset-0 bg-grid-white/[0.1] bg-[size:20px_20px]" />
+
+                                {/* Overlay Data */}
+                                <div className="absolute bottom-4 left-4 right-4 flex justify-between text-[10px] font-mono text-primary-foreground/80">
+                                    <span>FACE_ID: DETECTING</span>
+                                    <span>CONFIDENCE: 99.8%</span>
                                 </div>
                             </div>
-                            <div className="space-y-2 text-center">
-                                <h3 className="font-semibold text-lg">Analizando Facciones</h3>
-                                <p className="text-sm text-muted-foreground max-w-[200px]">Nuestra IA está mapeando tu estructura facial...</p>
+                            <div className="space-y-3 text-center max-w-xs mx-auto">
+                                <h3 className="font-heading font-bold text-xl">Escaneando Rostro...</h3>
+                                <Progress value={66} className="h-2" />
+                                <p className="text-xs text-muted-foreground animate-pulse">Detectando puntos de referencia biométricos</p>
                             </div>
                         </motion.div>
                     )}
@@ -156,16 +198,16 @@ export default function WidgetContainer() {
                             animate={{ opacity: 1 }}
                             className="space-y-6"
                         >
-                            <Card className="bg-muted/30 border-none shadow-inner">
+                            <Card className="bg-gradient-to-br from-background to-secondary/20 border-border shadow-sm">
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="text-primary flex items-center gap-2 text-base">
-                                        <CheckCircle2 className="w-4 h-4" /> Análisis Exitoso
+                                    <CardTitle className="text-primary flex items-center gap-2 text-lg">
+                                        <CheckCircle2 className="w-5 h-5" /> Análisis Completado
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">
-                                        {analysisResult?.analysis || "Facciones detectadas correctamente. Estamos listos para simular tu nueva sonrisa."}
-                                    </p>
+                                    <div className="p-4 bg-background/50 rounded-lg border border-border/50 text-sm leading-relaxed text-muted-foreground">
+                                        {analysisResult?.analysis || "Estructura facial analizada con éxito. Compatible con carillas de porcelana y diseño de sonrisa digital."}
+                                    </div>
                                 </CardContent>
                             </Card>
 
@@ -192,13 +234,13 @@ export default function WidgetContainer() {
 
                                     } catch (e) {
                                         console.error(e);
-                                        alert("Error generando sonrisa.");
+                                        toast.error("Error generando simulación.");
                                         setStep("PREVIEW");
                                     }
                                 }}
-                                className="w-full text-lg h-12 shadow-lg hover:shadow-primary/20 transition-all font-bold"
+                                className="w-full text-lg h-14 shadow-xl hover:shadow-primary/25 transition-all font-bold rounded-xl"
                             >
-                                Generar Nueva Sonrisa ✨
+                                ✨ Generar Nueva Sonrisa
                             </Button>
                         </motion.div>
                     )}
@@ -209,14 +251,19 @@ export default function WidgetContainer() {
                             key="generating"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="flex flex-col items-center justify-center h-full space-y-6"
+                            className="flex flex-col items-center justify-center h-full space-y-8"
                         >
                             <div className="relative">
-                                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                                {/* Double Spinner */}
+                                <div className="w-20 h-20 border-4 border-primary/20 rounded-full" />
+                                <div className="absolute inset-0 w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <Loader2 className="w-8 h-8 text-primary animate-pulse" />
+                                </div>
                             </div>
                             <div className="space-y-2 text-center">
-                                <h3 className="font-semibold text-lg bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">Diseñando Sonrisa</h3>
-                                <p className="text-sm text-muted-foreground animate-pulse">Aplicando estética dental avanzada...</p>
+                                <h3 className="font-heading font-bold text-2xl bg-gradient-to-r from-primary to-teal-600 bg-clip-text text-transparent">Diseñando Sonrisa</h3>
+                                <p className="text-sm text-muted-foreground animate-pulse">Aplicando principios de estética dental...</p>
                             </div>
                         </motion.div>
                     )}
@@ -229,29 +276,32 @@ export default function WidgetContainer() {
                             animate={{ opacity: 1 }}
                             className="space-y-6"
                         >
-                            <div className="aspect-square bg-muted rounded-xl overflow-hidden relative border border-border group">
+                            <div className="aspect-square bg-muted rounded-2xl overflow-hidden relative border border-border/50 group shadow-inner">
                                 {generatedImage ? (
                                     <div className="w-full h-full relative">
-                                        <img src={generatedImage} alt="Generated Smile" className="w-full h-full object-cover blur-lg scale-110 transition-transform duration-[2s]" />
-                                        <div className="absolute inset-0 bg-background/40 backdrop-blur-sm z-10" />
+                                        <img src={generatedImage} alt="Generated Smile" className="w-full h-full object-cover blur-xl scale-110" />
+                                        <div className="absolute inset-0 bg-background/20 backdrop-blur-[2px]" />
                                     </div>
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-destructive">Error de imagen</div>
                                 )}
-                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 p-4 text-center">
-                                    <div className="p-3 bg-background/80 backdrop-blur rounded-full shadow-lg">
-                                        <Lock className="w-6 h-6 text-primary" />
+
+                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 p-6 text-center">
+                                    <div className="p-4 bg-background rounded-full shadow-2xl border border-primary/10">
+                                        <Lock className="w-8 h-8 text-primary" />
                                     </div>
-                                    <h3 className="font-bold text-xl text-foreground drop-shadow-sm">Resultado Listo</h3>
-                                    <p className="text-sm text-muted-foreground max-w-[200px]">Desbloquea para ver tu transformación en HD</p>
+                                    <div className="space-y-1">
+                                        <h3 className="font-bold text-2xl text-foreground drop-shadow-sm">Resultado Listo</h3>
+                                        <p className="text-sm text-muted-foreground font-medium">Ingresa tus datos para desbloquear tu <br /> Simulación HD.</p>
+                                    </div>
                                 </div>
                             </div>
                             <Button
                                 onClick={() => setStep("LEAD_FORM")}
-                                className="w-full text-lg h-12 font-bold"
+                                className="w-full text-lg h-12 font-bold rounded-xl"
                                 variant="default"
                             >
-                                Desbloquear Resultado
+                                Desbloquear Ahora
                             </Button>
                         </motion.div>
                     )}

@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
+import { Loader2, UploadCloud, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox"; // Assuming you have this or standard input
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 
 type Step = "UPLOAD" | "ANALYZING" | "PREVIEW" | "GENERATING" | "LOCKED_RESULT" | "LEAD_FORM" | "RESULT";
 
@@ -68,7 +75,7 @@ export default function WidgetContainer() {
                 phone: data.phone,
                 survey_data: { analysis: analysisResult },
                 status: 'pending'
-            }); // We need anonymous insert policy enabled
+            });
 
             if (error) throw error;
 
@@ -80,69 +87,94 @@ export default function WidgetContainer() {
     };
 
     return (
-        <div className="relative min-h-[500px] bg-background text-foreground flex flex-col">
-            <header className="p-4 border-b border-border flex justify-between items-center bg-secondary/20">
-                <h1 className="font-heading text-lg font-bold text-primary">Smile Forward</h1>
-                <span className="text-xs text-muted-foreground">Powered by AI</span>
-            </header>
+        <div className="relative min-h-[500px] w-full bg-card text-card-foreground flex flex-col">
+            <div className="p-4 border-b flex justify-between items-center bg-muted/40">
+                <h1 className="text-lg font-bold text-primary tracking-tight">Smile Forward AI</h1>
+                <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded">V1.0</span>
+            </div>
 
             <main className="flex-1 p-6 relative">
                 <AnimatePresence mode="wait">
+                    {/* UPLOAD STEP */}
                     {step === "UPLOAD" && (
                         <motion.div
                             key="upload"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="h-full flex flex-col justify-center items-center text-center space-y-4"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="h-full flex flex-col justify-center items-center text-center space-y-6"
                         >
-                            <div className="p-8 border-2 border-dashed border-input rounded-xl hover:border-primary cursor-pointer transition-colors w-full"
+                            <div className="p-10 border-2 border-dashed border-input hover:border-primary/50 hover:bg-muted/50 rounded-xl cursor-pointer transition-all w-full flex flex-col items-center gap-4 group"
                                 onDragOver={(e) => e.preventDefault()}
                                 onDrop={(e) => {
                                     e.preventDefault();
                                     if (e.dataTransfer.files?.[0]) handleUpload(e.dataTransfer.files[0]);
                                 }}
                             >
-                                <p className="text-muted-foreground">Arrastra tu foto aquí o haz clic</p>
+                                <div className="p-4 bg-primary/10 rounded-full group-hover:scale-110 transition-transform duration-300">
+                                    <UploadCloud className="w-8 h-8 text-primary" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="font-semibold text-foreground">Sube tu foto</p>
+                                    <p className="text-sm text-muted-foreground">O arrastra y suelta aquí</p>
+                                </div>
                                 <input type="file" hidden onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
                             </div>
-                            <p className="text-sm text-balance">Sube una foto frontal para descubrir tu nueva sonrisa.</p>
+                            <p className="text-xs text-muted-foreground max-w-xs text-balance">
+                                Usa una foto frontal con buena iluminación para mejores resultados.
+                            </p>
                         </motion.div>
                     )}
 
+                    {/* ANALYZING STEP */}
                     {step === "ANALYZING" && (
                         <motion.div
                             key="analyzing"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="flex flex-col items-center justify-center h-full space-y-4"
+                            className="flex flex-col items-center justify-center h-full space-y-6"
                         >
-                            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                            <p className="text-primary font-medium animate-pulse">Analizando facciones...</p>
+                            <div className="relative">
+                                <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-8 h-8 bg-primary/10 rounded-full animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="space-y-2 text-center">
+                                <h3 className="font-semibold text-lg">Analizando Facciones</h3>
+                                <p className="text-sm text-muted-foreground max-w-[200px]">Nuestra IA está mapeando tu estructura facial...</p>
+                            </div>
                         </motion.div>
                     )}
 
+                    {/* PREVIEW STEP */}
                     {step === "PREVIEW" && (
                         <motion.div
                             key="preview"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="space-y-4 text-center"
+                            className="space-y-6"
                         >
-                            <div className="bg-muted/50 p-4 rounded-lg text-sm text-left space-y-2">
-                                <h3 className="font-bold text-primary">Análisis Clínico Completado</h3>
-                                <p className="text-muted-foreground">{analysisResult?.analysis || "Facciones detectadas correctamente."}</p>
-                            </div>
+                            <Card className="bg-muted/30 border-none shadow-inner">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-primary flex items-center gap-2 text-base">
+                                        <CheckCircle2 className="w-4 h-4" /> Análisis Exitoso
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground leading-relaxed">
+                                        {analysisResult?.analysis || "Facciones detectadas correctamente. Estamos listos para simular tu nueva sonrisa."}
+                                    </p>
+                                </CardContent>
+                            </Card>
 
-                            <button
+                            <Button
                                 onClick={async () => {
                                     setStep("GENERATING");
                                     try {
                                         const supabase = createClient();
                                         if (!image) throw new Error("No image found");
-
-                                        // Re-upload to ensure we have a fresh path (simple fix for now)
                                         const ext = image.name.split('.').pop();
                                         const filename = `regen-${crypto.randomUUID()}.${ext}`;
                                         await supabase.storage.from('uploads').upload(filename, image);
@@ -160,14 +192,14 @@ export default function WidgetContainer() {
 
                                     } catch (e) {
                                         console.error(e);
-                                        alert("Error generando sonrisa. Asegúrate de que las Edge Functions estén activas.");
+                                        alert("Error generando sonrisa.");
                                         setStep("PREVIEW");
                                     }
                                 }}
-                                className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-bold hover:bg-primary/90 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                className="w-full text-lg h-12 shadow-lg hover:shadow-primary/20 transition-all font-bold"
                             >
-                                Generar Mi Nueva Sonrisa
-                            </button>
+                                Generar Nueva Sonrisa ✨
+                            </Button>
                         </motion.div>
                     )}
 
@@ -177,37 +209,50 @@ export default function WidgetContainer() {
                             key="generating"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="flex flex-col items-center justify-center h-full space-y-4"
+                            className="flex flex-col items-center justify-center h-full space-y-6"
                         >
-                            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                            <p className="text-primary font-medium animate-pulse">Diseñando tu nueva sonrisa...</p>
+                            <div className="relative">
+                                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                            </div>
+                            <div className="space-y-2 text-center">
+                                <h3 className="font-semibold text-lg bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">Diseñando Sonrisa</h3>
+                                <p className="text-sm text-muted-foreground animate-pulse">Aplicando estética dental avanzada...</p>
+                            </div>
                         </motion.div>
                     )}
 
-                    {/* LOCKED RESULT (Blurred) */}
+                    {/* LOCKED RESULT */}
                     {step === "LOCKED_RESULT" && (
                         <motion.div
                             key="locked"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="space-y-4 text-center relative"
+                            className="space-y-6"
                         >
-                            <div className="aspect-square bg-muted rounded-lg overflow-hidden relative">
+                            <div className="aspect-square bg-muted rounded-xl overflow-hidden relative border border-border group">
                                 {generatedImage ? (
-                                    <img src={generatedImage} alt="Generated Smile" className="w-full h-full object-cover blur-md scale-105" />
+                                    <div className="w-full h-full relative">
+                                        <img src={generatedImage} alt="Generated Smile" className="w-full h-full object-cover blur-lg scale-110 transition-transform duration-[2s]" />
+                                        <div className="absolute inset-0 bg-background/40 backdrop-blur-sm z-10" />
+                                    </div>
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center">Error cargando imagen</div>
+                                    <div className="w-full h-full flex items-center justify-center text-destructive">Error de imagen</div>
                                 )}
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                    <span className="text-white font-bold text-xl drop-shadow-md">🔒 Vista Previa Bloqueada</span>
+                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 p-4 text-center">
+                                    <div className="p-3 bg-background/80 backdrop-blur rounded-full shadow-lg">
+                                        <Lock className="w-6 h-6 text-primary" />
+                                    </div>
+                                    <h3 className="font-bold text-xl text-foreground drop-shadow-sm">Resultado Listo</h3>
+                                    <p className="text-sm text-muted-foreground max-w-[200px]">Desbloquea para ver tu transformación en HD</p>
                                 </div>
                             </div>
-                            <button
+                            <Button
                                 onClick={() => setStep("LEAD_FORM")}
-                                className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-bold hover:bg-primary/90 transition-colors"
+                                className="w-full text-lg h-12 font-bold"
+                                variant="default"
                             >
-                                Desbloquear Resultado HD
-                            </button>
+                                Desbloquear Resultado
+                            </Button>
                         </motion.div>
                     )}
 
@@ -217,22 +262,38 @@ export default function WidgetContainer() {
                             key="form"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="space-y-4"
+                            className="space-y-5"
                         >
-                            <h2 className="text-xl font-heading font-bold text-center text-primary">Casi listo</h2>
-                            <p className="text-sm text-center text-muted-foreground">Ingresa tus datos para recibir tu sonrisa en alta definición.</p>
+                            <div className="text-center space-y-1">
+                                <h2 className="text-2xl font-bold text-primary">Casi listo</h2>
+                                <p className="text-sm text-muted-foreground">Tus datos para enviarte la simulación.</p>
+                            </div>
 
-                            <form className="space-y-3" onSubmit={handleLeadSubmit}>
-                                <input name="name" placeholder="Nombre completo" required className="w-full p-3 rounded border border-input bg-background" />
-                                <input name="email" type="email" placeholder="Correo electrónico" required className="w-full p-3 rounded border border-input bg-background" />
-                                <input name="phone" type="tel" placeholder="Teléfono" required className="w-full p-3 rounded border border-input bg-background" />
-                                <label className="flex items-start gap-2 text-xs text-muted-foreground">
-                                    <input type="checkbox" required className="mt-1" />
-                                    <span>Acepto la política de privacidad y el procesamiento de mi imagen.</span>
-                                </label>
-                                <button type="submit" className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-bold">
-                                    Ver Mi Sonrisa
-                                </button>
+                            <form className="space-y-4" onSubmit={handleLeadSubmit}>
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Nombre completo</Label>
+                                    <Input id="name" name="name" placeholder="Ej. Juan Pérez" required className="bg-background/50" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">Correo electrónico</Label>
+                                    <Input id="email" name="email" type="email" placeholder="juan@ejemplo.com" required className="bg-background/50" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="phone">Teléfono (WhatsApp)</Label>
+                                    <Input id="phone" name="phone" type="tel" placeholder="+56 9 ..." required className="bg-background/50" />
+                                </div>
+
+                                <div className="flex items-start space-x-2 pt-2">
+                                    {/* Using standard checkbox for simplicity if shadcn checkbox not set up completely with logic, but prefer shadcn style wrapper */}
+                                    <input type="checkbox" id="terms" required className="mt-1 h-4 w-4 rounded border-input text-primary focus:ring-primary" />
+                                    <Label htmlFor="terms" className="text-xs text-muted-foreground leading-snug font-normal cursor-pointer">
+                                        Acepto la política de privacidad y autorizo el procesamiento de mi imagen para fines de simulación dental.
+                                    </Label>
+                                </div>
+
+                                <Button type="submit" className="w-full h-11 text-base font-bold mt-2">
+                                    Ver Mi Sonrisa Ahora
+                                </Button>
                             </form>
                         </motion.div>
                     )}
@@ -243,25 +304,27 @@ export default function WidgetContainer() {
                             key="result"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="space-y-4 text-center"
+                            className="space-y-6 text-center"
                         >
-                            <div className="aspect-square bg-muted rounded-lg overflow-hidden relative">
-                                {generatedImage && <img src={generatedImage} alt="New Smile" className="w-full h-full object-cover" />}
-                            </div>
+                            <Card className="overflow-hidden border-primary/20 shadow-lg">
+                                <div className="aspect-square bg-muted relative">
+                                    {generatedImage && <img src={generatedImage} alt="New Smile" className="w-full h-full object-cover" />}
+                                </div>
+                                <CardContent className="pt-6">
+                                    <h3 className="font-bold text-xl text-primary mb-1">¡Transformación Completa!</h3>
+                                    <p className="text-xs text-muted-foreground">Hemos enviado una copia de alta calidad a tu correo.</p>
+                                </CardContent>
+                            </Card>
 
-                            <div className="space-y-2">
-                                <h3 className="font-bold text-primary">¡Increíble!</h3>
-                                <p className="text-xs text-muted-foreground">Hemos enviado una copia a tu correo.</p>
-                            </div>
-
-                            <div className="bg-secondary/30 p-4 rounded-lg">
-                                <p className="text-sm font-bold mb-2">¿Quieres verte en movimiento?</p>
-                                <button
+                            <div className="bg-secondary/30 p-5 rounded-xl border border-secondary">
+                                <p className="text-sm font-semibold mb-3">¿Quieres verte en movimiento?</p>
+                                <Button
                                     onClick={() => alert("¡Pronto! Generación de Video en desarrollo.")}
-                                    className="w-full bg-accent text-white py-2 rounded font-medium text-sm"
+                                    variant="outline"
+                                    className="w-full border-primary/20 text-primary hover:bg-primary/5"
                                 >
                                     Generar Video (Beta)
-                                </button>
+                                </Button>
                             </div>
                         </motion.div>
                     )}

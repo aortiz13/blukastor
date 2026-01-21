@@ -3,6 +3,7 @@ import WidgetContainer from "@/components/widget/WidgetContainer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
             <Link href="/widget">
               <Button variant="outline" size="sm">Standalone Widget</Button>
             </Link>
+            <ModeToggle />
           </div>
         </div>
       </header>

@@ -39,7 +39,7 @@ export default function WidgetContainer() {
                 repeat: Infinity,
                 repeatType: "mirror" as const,
                 duration: 1.5,
-                ease: "linear"
+                ease: "linear" as const
             }
         }
     };
@@ -72,16 +72,17 @@ export default function WidgetContainer() {
 
             // Transition based on validity
             if (analysisData.valid) {
+                toast.success("Foto analizada correctamente");
                 setStep("PREVIEW");
             } else {
-                alert(`Error: ${analysisData.reason || "Imagen no válida"}`);
+                toast.error(`Error: ${analysisData.reason || "Imagen no válida"}`);
                 setStep("UPLOAD");
                 setImage(null);
             }
 
         } catch (err) {
             console.error(err);
-            alert("Ocurrió un error procesando la imagen. Revisa la consola.");
+            toast.error("Ocurrió un error procesando la imagen.");
             setStep("UPLOAD");
             setImage(null);
         }
@@ -104,21 +105,35 @@ export default function WidgetContainer() {
 
             if (error) throw error;
 
+            toast.success("¡Información enviada con éxito!");
             setStep("RESULT");
         } catch (err) {
             console.error(err);
-            alert("Error guardando datos. Intenta de nuevo.");
+            toast.error("Error guardando datos. Intenta de nuevo.");
         }
     };
 
+    const handleVideoRequest = () => {
+        setIsVideoDialogOpen(false);
+        toast.info("Solicitud de video enviada. Te contactaremos pronto.", {
+            description: "Esta función está en Beta privada."
+        });
+    };
+
     return (
-        <div className="relative min-h-[500px] w-full bg-card text-card-foreground flex flex-col">
-            <div className="p-4 border-b flex justify-between items-center bg-muted/40">
-                <h1 className="text-lg font-bold text-primary tracking-tight">Smile Forward AI</h1>
-                <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded">V1.0</span>
+        <div className="relative min-h-[600px] w-full bg-card text-card-foreground flex flex-col font-sans">
+            <div className="p-4 border-b flex justify-between items-center bg-muted/20">
+                <h1 className="text-xl font-heading font-bold text-primary tracking-tight">Smile Forward AI</h1>
+                <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    <span className="text-xs text-muted-foreground font-mono">ONLINE</span>
+                </div>
             </div>
 
-            <main className="flex-1 p-6 relative">
+            <main className="flex-1 p-6 relative overflow-hidden">
                 <AnimatePresence mode="wait">
                     {/* UPLOAD STEP */}
                     {step === "UPLOAD" && (
@@ -127,26 +142,27 @@ export default function WidgetContainer() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="h-full flex flex-col justify-center items-center text-center space-y-6"
+                            className="h-full flex flex-col justify-center items-center text-center space-y-8 py-8"
                         >
-                            <div className="p-10 border-2 border-dashed border-input hover:border-primary/50 hover:bg-muted/50 rounded-xl cursor-pointer transition-all w-full flex flex-col items-center gap-4 group"
+                            <div
+                                className="group relative w-full aspect-[4/3] max-w-sm border-2 border-dashed border-input rounded-2xl hover:border-primary/50 hover:bg-secondary/30 transition-all flex flex-col items-center justify-center cursor-pointer overflow-hidden"
                                 onDragOver={(e) => e.preventDefault()}
                                 onDrop={(e) => {
                                     e.preventDefault();
                                     if (e.dataTransfer.files?.[0]) handleUpload(e.dataTransfer.files[0]);
                                 }}
                             >
-                                <div className="p-4 bg-primary/10 rounded-full group-hover:scale-110 transition-transform duration-300">
-                                    <UploadCloud className="w-8 h-8 text-primary" />
+                                <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                                <div className="p-5 bg-background shadow-sm rounded-full mb-4 group-hover:scale-110 transition-transform duration-500">
+                                    <UploadCloud className="w-10 h-10 text-primary" />
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="font-semibold text-foreground">Sube tu foto</p>
-                                    <p className="text-sm text-muted-foreground">O arrastra y suelta aquí</p>
-                                </div>
-                                <input type="file" hidden onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+                                <h3 className="text-lg font-bold text-foreground">Sube tu Selfie</h3>
+                                <p className="text-sm text-muted-foreground px-8 mt-2">Arrastra tu imagen aquí o haz clic para explorar</p>
+                                <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
                             </div>
-                            <p className="text-xs text-muted-foreground max-w-xs text-balance">
-                                Usa una foto frontal con buena iluminación para mejores resultados.
+                            <p className="text-xs text-muted-foreground/80 max-w-xs text-balance">
+                                Privacidad garantizada. Tu foto se elimina automáticamente después del análisis.
                             </p>
                         </motion.div>
                     )}
@@ -263,7 +279,7 @@ export default function WidgetContainer() {
                             </div>
                             <div className="space-y-2 text-center">
                                 <h3 className="font-heading font-bold text-2xl bg-gradient-to-r from-primary to-teal-600 bg-clip-text text-transparent">Diseñando Sonrisa</h3>
-                                <p className="text-sm text-muted-foreground animate-pulse">Aplicando principios de estética dental...</p>
+                                <p className="text-sm text-muted-foreground animate-pulse">Aplicando principios de estética dental avanzada...</p>
                             </div>
                         </motion.div>
                     )}
@@ -312,37 +328,45 @@ export default function WidgetContainer() {
                             key="form"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="space-y-5"
+                            className="space-y-6"
                         >
-                            <div className="text-center space-y-1">
-                                <h2 className="text-2xl font-bold text-primary">Casi listo</h2>
-                                <p className="text-sm text-muted-foreground">Tus datos para enviarte la simulación.</p>
+                            <div className="text-center space-y-2">
+                                <h2 className="text-2xl font-heading font-bold text-foreground">Último Paso</h2>
+                                <p className="text-sm text-muted-foreground">Te enviaremos tu simulación y un plan de tratamiento preliminar.</p>
                             </div>
 
-                            <form className="space-y-4" onSubmit={handleLeadSubmit}>
+                            <form className="space-y-4 pt-2" onSubmit={handleLeadSubmit}>
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Nombre completo</Label>
-                                    <Input id="name" name="name" placeholder="Ej. Juan Pérez" required className="bg-background/50" />
+                                    <Label htmlFor="name" className="text-foreground/80">Nombre completo</Label>
+                                    <Input
+                                        id="name" name="name" placeholder="Ej. Juan Pérez" required
+                                        className="h-11 bg-background focus-visible:ring-primary focus-visible:border-primary"
+                                    />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">Correo electrónico</Label>
-                                    <Input id="email" name="email" type="email" placeholder="juan@ejemplo.com" required className="bg-background/50" />
+                                    <Label htmlFor="email" className="text-foreground/80">Correo electrónico</Label>
+                                    <Input
+                                        id="email" name="email" type="email" placeholder="juan@ejemplo.com" required
+                                        className="h-11 bg-background focus-visible:ring-primary focus-visible:border-primary"
+                                    />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="phone">Teléfono (WhatsApp)</Label>
-                                    <Input id="phone" name="phone" type="tel" placeholder="+56 9 ..." required className="bg-background/50" />
+                                    <Label htmlFor="phone" className="text-foreground/80">Teléfono (WhatsApp)</Label>
+                                    <Input
+                                        id="phone" name="phone" type="tel" placeholder="+56 9 ..." required
+                                        className="h-11 bg-background focus-visible:ring-primary focus-visible:border-primary"
+                                    />
                                 </div>
 
-                                <div className="flex items-start space-x-2 pt-2">
-                                    {/* Using standard checkbox for simplicity if shadcn checkbox not set up completely with logic, but prefer shadcn style wrapper */}
-                                    <input type="checkbox" id="terms" required className="mt-1 h-4 w-4 rounded border-input text-primary focus:ring-primary" />
+                                <div className="flex items-start space-x-3 pt-2">
+                                    <Checkbox id="terms" required className="mt-1 data-[state=checked]:bg-primary data-[state=checked]:border-primary" />
                                     <Label htmlFor="terms" className="text-xs text-muted-foreground leading-snug font-normal cursor-pointer">
-                                        Acepto la política de privacidad y autorizo el procesamiento de mi imagen para fines de simulación dental.
+                                        He leído y acepto la política de privacidad. Autorizo el uso de mi imagen para la simulación.
                                     </Label>
                                 </div>
 
-                                <Button type="submit" className="w-full h-11 text-base font-bold mt-2">
-                                    Ver Mi Sonrisa Ahora
+                                <Button type="submit" className="w-full h-12 text-base font-bold rounded-xl shadow-lg mt-4">
+                                    Ver Mi Nueva Sonrisa
                                 </Button>
                             </form>
                         </motion.div>
@@ -356,30 +380,69 @@ export default function WidgetContainer() {
                             animate={{ opacity: 1 }}
                             className="space-y-6 text-center"
                         >
-                            <Card className="overflow-hidden border-primary/20 shadow-lg">
+                            <Card className="overflow-hidden border-primary/20 shadow-2xl relative group">
                                 <div className="aspect-square bg-muted relative">
                                     {generatedImage && <img src={generatedImage} alt="New Smile" className="w-full h-full object-cover" />}
+                                    <div className="absolute bottom-4 right-4">
+                                        <Badge className="bg-white/90 text-primary hover:bg-white backdrop-blur shadow-sm">
+                                            AI GENERATED
+                                        </Badge>
+                                    </div>
                                 </div>
-                                <CardContent className="pt-6">
-                                    <h3 className="font-bold text-xl text-primary mb-1">¡Transformación Completa!</h3>
-                                    <p className="text-xs text-muted-foreground">Hemos enviado una copia de alta calidad a tu correo.</p>
-                                </CardContent>
                             </Card>
 
-                            <div className="bg-secondary/30 p-5 rounded-xl border border-secondary">
-                                <p className="text-sm font-semibold mb-3">¿Quieres verte en movimiento?</p>
-                                <Button
-                                    onClick={() => alert("¡Pronto! Generación de Video en desarrollo.")}
-                                    variant="outline"
-                                    className="w-full border-primary/20 text-primary hover:bg-primary/5"
-                                >
-                                    Generar Video (Beta)
-                                </Button>
+                            <div className="space-y-2">
+                                <h3 className="font-heading font-bold text-2xl text-foreground">¡Transformación Completa!</h3>
+                                <p className="text-sm text-muted-foreground">Hemos enviado el resultado de alta calidad a tu correo.</p>
                             </div>
+
+                            <Dialog open={isVideoDialogOpen} onOpenChange={setIsVideoDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <div className="cursor-pointer group relative overflow-hidden bg-gradient-to-r from-secondary to-muted p-1 rounded-xl">
+                                        <div className="bg-background rounded-lg p-4 flex items-center justify-between group-hover:bg-secondary/10 transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-primary/10 rounded-full">
+                                                    <Video className="w-5 h-5 text-primary" />
+                                                </div>
+                                                <div className="text-left">
+                                                    <p className="font-bold text-sm">Versión en Video</p>
+                                                    <p className="text-xs text-muted-foreground">Verte hablando con tu nueva sonrisa</p>
+                                                </div>
+                                            </div>
+                                            <PlayCircle className="w-6 h-6 text-primary/50 group-hover:text-primary transition-colors" />
+                                        </div>
+                                    </div>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-md backdrop-blur-md bg-background/80">
+                                    <DialogHeader>
+                                        <DialogTitle>Solicitar Video Generativo</DialogTitle>
+                                        <DialogDescription>
+                                            Generaremos un video de 5 segundos donde te verás hablando naturalmente con tu nueva sonrisa.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="flex flex-col gap-4 py-4">
+                                        <div className="aspect-video bg-muted rounded-lg flex items-center justify-center border border-dashed">
+                                            <p className="text-xs text-muted-foreground">Preview (Estatico)</p>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">
+                                            Esta función consume créditos de generación avanzados. Te notificaremos por WhatsApp cuando esté listo.
+                                        </p>
+                                    </div>
+                                    <DialogFooter className="sm:justify-start">
+                                        <Button type="button" onClick={handleVideoRequest} className="w-full">
+                                            Confirmar Solicitud
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </main>
         </div>
     );
+}
+
+function Badge({ children, className }: { children: React.ReactNode, className?: string }) {
+    return <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${className}`}>{children}</span>
 }

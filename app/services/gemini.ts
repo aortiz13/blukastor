@@ -71,6 +71,10 @@ const safeParseJSON = (text: string) => {
 // Gatekeeper
 export const validateImageStrict = async (base64Image: string): Promise<{ isValid: boolean; reason: string }> => {
     console.log("[Gemini] validateImageStrict called. Image length:", base64Image?.length);
+    if (!base64Image) {
+        return { isValid: false, reason: "Error: Imagen vacía o corrupta." };
+    }
+
     try {
         const apiKey = process.env.API_KEY;
         if (!apiKey) {
@@ -141,8 +145,8 @@ export const validateImageStrict = async (base64Image: string): Promise<{ isVali
 
     } catch (error: any) {
         console.error("[Gatekeeper] Critical Error:", error);
-        // Ensure we return a serializable object, not throw, to avoid 500s
-        return { isValid: false, reason: `Error Crítico: ${error.message || "Unknown error"}` };
+        // Important: Return a serializable object to prevent Next.js from throwing "Server Components render" error
+        return { isValid: false, reason: `Error de Validación: ${error.message?.slice(0, 100) || "Error desconocido"}` };
     }
 };
 
@@ -290,7 +294,8 @@ export const analyzeImageAndGeneratePrompts = async (base64Image: string): Promi
         throw new Error("Analysis failed after retries.");
     } catch (criticalError: any) {
         console.error("[Gemini Analysis] Fatal Error:", criticalError);
-        throw new Error(`Analysis System Failure: ${criticalError.message || "Unknown error"}`);
+        // Wrap in a plain error message to be safe
+        throw new Error(`Error en Análisis: ${criticalError.message?.slice(0, 100) || "Fallo del sistema AI"}`);
     }
 };
 
@@ -408,7 +413,7 @@ export const generateSmileVariation = async (
         throw new Error("Image generation failed after multiple retries.");
     } catch (criticalGenError: any) {
         console.error("[Gemini Generation] Fatal Error:", criticalGenError);
-        throw new Error(`Image Generation System Failure: ${criticalGenError.message || "Unknown error"}`);
+        throw new Error(`Error generando imagen: ${criticalGenError.message?.slice(0, 100) || "Intenta de nuevo."}`);
     }
 };
 

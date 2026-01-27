@@ -139,6 +139,47 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
                             </div>
                         </div>
 
+                        {/* Preferencias del Paciente */}
+                        {lead.survey_data && Object.keys(lead.survey_data).length > 0 && (
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground border-b pb-2">
+                                    Preferencias (Cuestionario)
+                                </h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="bg-card rounded-lg border p-3 shadow-sm">
+                                        <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Rango de Edad</p>
+                                        <p className="text-sm font-semibold">
+                                            {lead.survey_data.ageRange === '18-30' ? '18 - 30 (Joven)' :
+                                                lead.survey_data.ageRange === '30-55' ? '30 - 55 (Media)' :
+                                                    lead.survey_data.ageRange === '55+' ? '55+ (Senior)' : lead.survey_data.ageRange}
+                                        </p>
+                                    </div>
+                                    <div className="bg-card rounded-lg border p-3 shadow-sm">
+                                        <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Objetivo</p>
+                                        <p className="text-sm font-semibold">
+                                            {lead.survey_data.improvementGoal === 'alignment' ? 'Alineación' :
+                                                lead.survey_data.improvementGoal === 'veneers' ? 'Carillas' :
+                                                    lead.survey_data.improvementGoal === 'implants' ? 'Implantes' :
+                                                        lead.survey_data.improvementGoal === 'full_smile' ? 'Sonrisa Completa' :
+                                                            lead.survey_data.improvementGoal === 'whitening' ? 'Blanqueamiento' : lead.survey_data.improvementGoal}
+                                        </p>
+                                    </div>
+                                    <div className="bg-card rounded-lg border p-3 shadow-sm">
+                                        <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Plazo</p>
+                                        <p className="text-sm font-semibold">
+                                            {lead.survey_data.timeframe === 'now' ? 'Ahora mismo' :
+                                                lead.survey_data.timeframe === '1-3_months' ? '1 - 3 meses' :
+                                                    lead.survey_data.timeframe === 'later' ? 'Más adelante' : lead.survey_data.timeframe}
+                                        </p>
+                                    </div>
+                                    <div className="bg-card rounded-lg border p-3 shadow-sm">
+                                        <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Clínica</p>
+                                        <p className="text-sm font-semibold">{lead.survey_data.clinicPreference}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Actions */}
                         <div className="space-y-4">
                             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground border-b pb-2">

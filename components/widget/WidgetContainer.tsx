@@ -534,8 +534,77 @@ export default function WidgetContainer() {
                             </div>
                         </motion.div>
                     )}
+
+                    {/* SURVEY STEP */}
+                    {step === "SURVEY" && (
+                        <motion.div
+                            key="survey"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="h-full flex flex-col items-center justify-center p-4 overflow-y-auto"
+                        >
+                            <div className="w-full max-w-sm space-y-6">
+                                <div className="text-center space-y-1">
+                                    <h2 className="text-2xl font-heading font-bold">Personaliza tu Video</h2>
+                                    <p className="text-sm text-muted-foreground">3 preguntas rápidas para adaptar el resultado.</p>
+                                </div>
+                                <form className="space-y-4" onSubmit={handleSurveySubmit}>
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>Rango de Edad</Label>
+                                            <select name="ageRange" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
+                                                <option value="">Selecciona una opción</option>
+                                                <option value="18-30">Joven (18 - 30 años)</option>
+                                                <option value="30-55">Mediana Edad (30 - 55 años)</option>
+                                                <option value="55+">Senior (55 años en adelante)</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label>¿Qué te gustaría mejorar?</Label>
+                                            <select name="improvementGoal" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
+                                                <option value="">Selecciona una opción</option>
+                                                <option value="alignment">Alineación</option>
+                                                <option value="veneers">Carillas</option>
+                                                <option value="implants">Implantes</option>
+                                                <option value="full_smile">Sonrisa Completa</option>
+                                                <option value="whitening">Blanqueamiento</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label>Plazo deseado</Label>
+                                            <select name="timeframe" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
+                                                <option value="">Selecciona una opción</option>
+                                                <option value="now">Ahora mismo</option>
+                                                <option value="1-3_months">1 - 3 meses</option>
+                                                <option value="later">Más adelante</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label>Clínica de preferencia</Label>
+                                            <select name="clinicPreference" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
+                                                <option value="">Selecciona una opción</option>
+                                                <option value="Goya">Goya</option>
+                                                <option value="Majadahonda">Majadahonda</option>
+                                                <option value="Las Rozas">Las Rozas</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <Button type="submit" className="w-full h-12 text-base font-bold rounded-xl shadow-md mt-6">
+                                        Continuar
+                                    </Button>
+                                    <Button type="button" variant="ghost" size="sm" onClick={() => setStep("RESULT")} className="w-full">
+                                        Cancelar
+                                    </Button>
+                                </form>
+                            </div>
+                        </motion.div>
+                    )}
                 </AnimatePresence>
             </main>
-        </div>
+        </div >
     );
 }

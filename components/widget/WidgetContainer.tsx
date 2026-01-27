@@ -243,10 +243,7 @@ export default function WidgetContainer() {
             if (error) throw error;
 
             toast.success("Gracias por tus respuestas");
-            setIsVideoDialogOpen(true); // Open video dialog after survey
-            setStep("RESULT"); // Go back to result or stay? Let's stay on result but open dialog.
-            // Actually user said "before asking for video... ask questions". 
-            // So flow: Result -> Click Video -> Survey -> Submit Survey -> Show Video Dialog.
+            setStep("VERIFICATION");
         } catch (err) {
             console.error(err);
             toast.error("Error al guardar respuestas.");

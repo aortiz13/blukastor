@@ -37,8 +37,8 @@ const isModelOverloaded = (error: any): boolean => {
 
 // Gatekeeper
 export const validateImageStrict = async (base64Image: string): Promise<{ isValid: boolean; reason: string }> => {
+    console.log("[Gemini] validateImageStrict called. Image length:", base64Image?.length);
     try {
-        // console.log("[Gatekeeper] Verificando calidad biométrica...");
         const apiKey = process.env.API_KEY;
         if (!apiKey) {
             console.error("[Gemini Gatekeeper] Missing API_KEY");
@@ -113,6 +113,7 @@ export const validateImageStrict = async (base64Image: string): Promise<{ isVali
 
 // Analysis
 export const analyzeImageAndGeneratePrompts = async (base64Image: string): Promise<AnalysisResponse> => {
+    console.log("[Gemini] analyzeImageAndGeneratePrompts called.");
     try {
         const apiKey = process.env.API_KEY;
         if (!apiKey) {
@@ -256,6 +257,7 @@ export const analyzeImageAndGeneratePrompts = async (base64Image: string): Promi
 
 // Validate Generated Image
 export const validateGeneratedImage = async (base64Image: string): Promise<boolean> => {
+    console.log("[Gemini] validateGeneratedImage called.");
     const apiKey = process.env.API_KEY;
     if (!apiKey) throw new Error("API_KEY not found");
 
@@ -299,6 +301,7 @@ export const generateSmileVariation = async (
     variationPrompt: string,
     aspectRatio: "1:1" | "3:4" | "4:3" | "9:16" | "16:9" = "1:1"
 ): Promise<string> => {
+    console.log("[Gemini] generateSmileVariation called for prompt:", variationPrompt.slice(0, 50));
     try {
         const apiKey = process.env.API_KEY;
         if (!apiKey) {

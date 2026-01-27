@@ -105,23 +105,26 @@ export default function WidgetContainer() {
         setStep("ANALYZING");
 
         try {
-            // Optimize image on client before sending to server
-            // This prevents hitting the Server Action body size limit (usually 1MB or 4MB default, though we set 50MB)
-            // and saves bandwidth/latency.
             const base64 = await compressImage(file);
 
-            // 1. Strict Validation (Server Action)
-            const validation = await validateImageStrict(base64);
+            // 1. Strict Validation
+            const validationResponse = await validateImageStrict(base64);
 
-            if (!validation.isValid) {
-                toast.error(validation.reason || "Imagen no válida");
+            if (!validationResponse.success) {
+                toast.error(validationResponse.error || "Error de validación");
                 setStep("UPLOAD");
                 setImage(null);
                 return;
             }
 
-            // 2. Upload to Storage (Server Action wrapper)
-            // Fix: Use the COMPRESSED image for storage to avoid payload limits.
+            if (!validationResponse.data?.isValid) {
+                toast.error(validationResponse.data?.reason || "Imagen no válida");
+                setStep("UPLOAD");
+                setImage(null);
+                return;
+            }
+
+            // 2. Upload to Storage
             const compressedBlob = await (await fetch(base64)).blob();
             const compressedFile = new File([compressedBlob], file.name, { type: 'image/jpeg' });
 
@@ -133,19 +136,30 @@ export default function WidgetContainer() {
             const userId = user?.id || 'anon_' + crypto.randomUUID();
             formData.append('userId', userId);
 
-            // Background upload (non-blocking for UI but good to await)
-            await uploadScan(formData);
+            const uploadResponse = await uploadScan(formData);
+            if (!uploadResponse.success) {
+                console.error("Storage upload failed:", uploadResponse.error);
+                // We keep going even if storage fails for this MVP if needed, 
+                // but let's be strict for now to debug.
+            }
 
-            // 3. Analyze Image (Server Action)
-            const analysisData = await analyzeImageAndGeneratePrompts(base64);
-            setAnalysisResult(analysisData);
+            // 3. Analyze Image
+            const analysisResponse = await analyzeImageAndGeneratePrompts(base64);
 
+            if (!analysisResponse.success) {
+                toast.error(analysisResponse.error || "Error analizando imagen");
+                setStep("UPLOAD");
+                setImage(null);
+                return;
+            }
+
+            setAnalysisResult(analysisResponse.data);
             toast.success("Foto analizada correctamente");
             setStep("PREVIEW");
 
         } catch (err: any) {
-            console.error(err);
-            toast.error(`Error: ${err.message || "Ocurrió un error procesando la imagen."}`);
+            console.error("WidgetContainer Error:", err);
+            toast.error(`Error Crítico: ${err.message || "Ocurrió un error."}`);
             setStep("UPLOAD");
             setImage(null);
         }

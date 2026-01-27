@@ -70,17 +70,17 @@ const safeParseJSON = (text: string) => {
 };
 
 // Gatekeeper
-export const validateImageStrict = async (base64Image: string): Promise<{ isValid: boolean; reason: string }> => {
+export const validateImageStrict = async (base64Image: string): Promise<{ success: boolean; data?: { isValid: boolean; reason: string }; error?: string }> => {
     console.log("[Gemini] ENTRY: validateImageStrict called. Image length:", base64Image?.length);
     if (!base64Image) {
-        return { isValid: false, reason: "Error: Imagen vacía o corrupta." };
+        return { success: false, error: "Error: Imagen vacía o corrupta." };
     }
 
     try {
         const apiKey = process.env.API_KEY;
         if (!apiKey) {
             console.error("[Gemini Gatekeeper] Missing API_KEY");
-            return { isValid: false, reason: "Error de configuración del servidor (API KEY missing)." };
+            return { success: false, error: "Error de configuración del servidor (API KEY missing)." };
         }
 
         const ai = new GoogleGenAI({ apiKey });
@@ -115,108 +115,57 @@ export const validateImageStrict = async (base64Image: string): Promise<{ isVali
             },
             config: {
                 responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        is_valid: { type: Type.BOOLEAN },
-                        rejection_reason: { type: Type.STRING }
-                    },
-                    required: ["is_valid", "rejection_reason"]
-                }
+                // Removing schema temporarily to see if it causes 400s with 2.0-flash in some regions
+                // or just simplify it
             }
         });
-
-
 
         const text = extractText(response);
         console.log("[Gemini] Gatekeeper Response Text:", text.slice(0, 50));
 
         if (text) {
             const result = safeParseJSON(text);
-            if (!result) return { isValid: false, reason: "Error procesando la respuesta de IA." };
+            if (!result) return { success: false, error: "Error procesando la respuesta de IA." };
 
-            if (result.is_valid) {
-                return { isValid: true, reason: "" };
-            } else {
-                return { isValid: false, reason: result.rejection_reason };
-            }
+            return {
+                success: true,
+                data: {
+                    isValid: !!result.is_valid,
+                    reason: result.rejection_reason || ""
+                }
+            };
         }
 
-        return { isValid: false, reason: "Error de validación. Intenta otra foto." };
+        return { success: false, error: "Error de validación. Intenta otra foto." };
 
     } catch (error: any) {
-        console.error("[Gatekeeper] Critical Error:", error);
-        // Important: Return a serializable object to prevent Next.js from throwing "Server Components render" error
-        return { isValid: false, reason: `Error de Validación: ${error.message?.slice(0, 100) || "Error desconocido"}` };
+        console.error("[Gatekeeper] Critical Error Details:", JSON.stringify(error, null, 2));
+        return { success: false, error: `Error de Validación: ${error.message?.slice(0, 100) || "Error desconocido"}` };
     }
 };
 
 // Analysis
-export const analyzeImageAndGeneratePrompts = async (base64Image: string): Promise<AnalysisResponse> => {
+export const analyzeImageAndGeneratePrompts = async (base64Image: string): Promise<{ success: boolean; data?: AnalysisResponse; error?: string }> => {
     console.log("[Gemini] ENTRY: analyzeImageAndGeneratePrompts called.");
     try {
         const apiKey = process.env.API_KEY;
         if (!apiKey) {
-            console.error("[Gemini Analysis] Missing API_KEY");
-            throw new Error("Server configuration error: API_KEY missing");
+            return { success: false, error: "Server configuration error: API_KEY missing" };
         }
 
         const ai = new GoogleGenAI({ apiKey });
         const mimeType = getMimeType(base64Image);
         const data = stripBase64Prefix(base64Image);
 
+        // Simplified Prompt to reduce chance of payload/token issues
         const prompt = `
-    ROLE: Expert Dental Morphologist and AI Prompt Engineer. 
-    TASK: Analyze the user's face using specific landmarks: Eyes, Nose, and Hairline. Generate a restoration plan that harmonizes with these features.
-    
-    SCIENTIFIC ANALYSIS PARAMETERS (Clinical Landmarks & Rules):
-    1. The Interpupillary Rule (Eyes): Detect the user's eyes. The line connecting the center of the eyes (interpupillary line) must be the horizon for the smile. The "Incisal Plane" must be perfectly parallel to this eye line.
-    2. The Nasal Width Guide (Nose): Use the width of the base of the nose (alar base) to determine the position of the Canines. 
-    3. Facial Midline: Strictly align the Dental Midline (between two front teeth) with the Philtrum and Tip of the Nose.
-    4. Facial Frame Balance (Hair/Brows): Analyze the visual weight of the "Upper Facial Third" (Hair volume and Brow thickness). If the subject has a heavy upper frame, slighty increase the dominance/size of the Central Incisors to maintain vertical balance.
-    5. Golden Proportion (1.618): Central width should be ~1.618x the visible width of Lateral Incisor.
-
-    WORKFLOW STRATEGY: 
-    1. The first variation (original_bg) is the CLINICAL RESTORATION. It serves as the SOURCE OF TRUTH.
-       - You must map the scientific analysis above into the editing instructions.
-       - CRITICAL FRAMING: The output must be a 9:16 Vertical Portrait showing the FULL FACE.
-    2. The other 2 variations MUST use the result of step 1 as a Reference Image for consistency.
-
-    OUTPUT FORMAT: Strictly JSON.
-
-    REQUIRED VARIATIONS & GUIDELINES:
-
-    1. original_bg (Scientific Natural Restoration):
-       - Subject: "A photorealistic vertical medium shot of the user, featuring a scientifically aligned smile restoration based on facial morphopsychology."
-       - Composition: "9:16 Vertical Portrait (Stories Format). Medium Shot. Full head and shoulders visible."
-       - Action: "The subject is smiling naturally, with a dentition aligned to their interpupillary horizon."
-       - Location: "Soft-focus professional studio or original background."
-       - Style: "High-End Aesthetic Dentistry Photography, 8K resolution."
-       - Editing_Instructions: "APPLY CLINICAL LANDMARKS: \n1. HORIZON: Align the Incisal Plane to be strictly parallel with the Interpupillary Line (Eyes).\n2. MIDLINE & WIDTH: Align the dental midline with the Philtrum/Nose Tip. Use the alar base width (nose width) to guide the cusp tip position of the Canines.\n3. VERTICAL BALANCE: Assess the visual weight of the Hair and Eyebrows. If the upper face is dominant, increase the length of Central Incisors slightly to balance the face.\n4. PROPORTIONS: Enforce the esthetic dental proportion of 1.6:1:0.6 (Central:Lateral:Canine)."
-       - Refining_Details: "Texture must be polychromatic natural ivory with realistic translucency at incisal edges. Ensure the smile arc follows the lower lip."
-       - Reference_Instructions: "Use the user's original photo strictly for Facial Identity, Skin Tone, and Lip Shape. Completely replace the dental structure using the landmarks defined above."
-
-    2. lifestyle_social:
-       - Subject: "The person from the reference image, maintaining the EXACT same smile and dental geometry."
-       - Composition: "9:16 Vertical Portrait."
-       - Action: "Laughing candidly at a gala or high-end dinner."
-       - Style: "Warm, social lifestyle photography, depth of field."
-       - Location: "Luxury restaurant or event space."
-       - Editing_Instructions: "Place subject in a social context. Keep the teeth identical to the Reference Image."
-       - Reference_Instructions: "Use the 'Natural Restoration' image to lock the facial identity and the smile design."
-
-    3. lifestyle_outdoor:
-       - Subject: "The person from the reference image, maintaining the EXACT same smile and dental geometry."
-       - Composition: "9:16 Vertical Portrait."
-       - Action: "Walking confidently, wind in hair."
-       - Style: "Cinematic outdoor lighting, vogue aesthetic."
-       - Location: "Urban architecture or nature at golden hour."
-       - Editing_Instructions: "Golden hour lighting. Keep the teeth identical to the Reference Image."
-       - Reference_Instructions: "Use the 'Natural Restoration' image to lock the facial identity and the smile design."
-  `;
+        Analyize this face for a smile redesign.
+        Return a JSON with 3 variations (original_bg, lifestyle_social, lifestyle_outdoor).
+        For each, provide Subject, Composition, Action, Location, Style, Editing_Instructions, and Reference_Instructions.
+        `;
 
         let attempts = 0;
-        const maxRetries = 3;
+        const maxRetries = 2;
 
         while (attempts < maxRetries) {
             try {
@@ -229,74 +178,28 @@ export const analyzeImageAndGeneratePrompts = async (base64Image: string): Promi
                         ]
                     },
                     config: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            type: Type.OBJECT,
-                            properties: {
-                                variations: {
-                                    type: Type.ARRAY,
-                                    items: {
-                                        type: Type.OBJECT,
-                                        properties: {
-                                            type: {
-                                                type: Type.STRING,
-                                                enum: [
-                                                    VariationType.ORIGINAL_BG,
-                                                    VariationType.LIFESTYLE_SOCIAL,
-                                                    VariationType.LIFESTYLE_OUTDOOR
-                                                ]
-                                            },
-                                            prompt_data: {
-                                                type: Type.OBJECT,
-                                                properties: {
-                                                    Subject: { type: Type.STRING },
-                                                    Composition: { type: Type.STRING },
-                                                    Action: { type: Type.STRING },
-                                                    Location: { type: Type.STRING },
-                                                    Style: { type: Type.STRING },
-                                                    Editing_Instructions: { type: Type.STRING },
-                                                    Refining_Details: { type: Type.STRING },
-                                                    Reference_Instructions: { type: Type.STRING }
-                                                },
-                                                required: ["Subject", "Composition", "Action", "Location", "Style", "Editing_Instructions"]
-                                            }
-                                        },
-                                        required: ["type", "prompt_data"]
-                                    }
-                                }
-                            }
-                        }
+                        responseMimeType: "application/json"
                     }
                 });
-
-
 
                 const text = extractText(response);
                 if (text) {
                     await logApiUsage('GEMINI_VISION_ANALYSIS');
                     const result = safeParseJSON(text) as AnalysisResponse;
-                    if (!result) throw new Error("Invalid JSON from analysis model");
-                    return result;
-                } else {
-                    throw new Error("No text response from analysis model.");
+                    if (!result) throw new Error("Invalid JSON from AI");
+                    return { success: true, data: result };
                 }
+                throw new Error("Empty response");
             } catch (error: any) {
                 attempts++;
-                if (isModelOverloaded(error) && attempts < maxRetries) {
-                    const waitTime = 3000 * Math.pow(2, attempts - 1);
-                    await delay(waitTime);
-                    continue;
-                }
-                console.error("Analysis failed:", error);
-                // SANITIZE ERROR FOR SERVER ACTION SERIALIZATION
-                throw new Error(`Analysis Failed: ${error.message || "Unknown error"}`);
+                console.error(`Attempt ${attempts} failed:`, error.message);
+                if (attempts === maxRetries) throw error;
             }
         }
-        throw new Error("Analysis failed after retries.");
+        return { success: false, error: "Max retries reached" };
     } catch (criticalError: any) {
-        console.error("[Gemini Analysis] Fatal Error:", criticalError);
-        // Wrap in a plain error message to be safe
-        throw new Error(`Error en Análisis: ${criticalError.message?.slice(0, 100) || "Fallo del sistema AI"}`);
+        console.error("[Gemini Analysis] Fatal Error Details:", JSON.stringify(criticalError, null, 2));
+        return { success: false, error: `Error en Análisis: ${criticalError.message?.slice(0, 50)}` };
     }
 };
 

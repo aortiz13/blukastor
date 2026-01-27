@@ -102,9 +102,15 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
                 <div className="absolute inset-y-0 -ml-0.5 w-0.5 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)]" />
 
                 {/* Round Handle */}
-                <div className="absolute top-1/2 -mt-6 -ml-6 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-transform transform hover:scale-110 active:scale-95">
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-                        <MoveHorizontal className="w-5 h-5 text-emerald-600" />
+                {/* Round Handle */}
+                <div className="absolute top-1/2 -mt-6 -ml-6 w-12 h-12 rounded-full bg-[#7f8b81] border-2 border-white flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-transform transform hover:scale-110 active:scale-95">
+                    <div className="flex items-center gap-1">
+                        <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 9L1 5L5 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 9L5 5L1 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
                     </div>
                 </div>
             </div>

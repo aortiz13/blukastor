@@ -5,15 +5,11 @@ import { AnalysisResponse, VariationType } from "@/types/gemini";
 import { logApiUsage, checkVideoQuota, markVideoQuotaUsed } from "./backendService";
 
 // Models
-const ANALYSIS_MODEL = "gemini-2.0-flash"; // Using 2.0 Flash as in prototype reference or similar latest
-// const IMAGE_MODEL = "gemini-3-pro-image-preview"; // Prototype used this, assume available or use best equiv
-const IMAGE_MODEL = "imagen-3.0-generate-001"; // Fallback or standard latest if 3-pro-preview isn't public yet, but sticking to user request:
-// User code had: const IMAGE_MODEL = "gemini-3-pro-image-preview";
-// I will use what they had, assuming they have access, or fall back if it fails.
-const TARGET_IMAGE_MODEL = "gemini-2.0-flash"; // Fallback for image gen if specific model not found in SDK, but for GenAI SDK it's usually imagen for images or specific gemini models.
-// actually the user code *specifically* imported GoogleGenAI from @google/genai and used IMAGE_MODEL = "gemini-3-pro-image-preview"
+const ANALYSIS_MODEL = "gemini-1.5-flash";
+const IMAGE_MODEL = "imagen-3.0-generate-001";
+const TARGET_IMAGE_MODEL = "gemini-1.5-flash";
 
-const VALIDATION_MODEL = "gemini-2.0-flash";
+const VALIDATION_MODEL = "gemini-1.5-flash";
 const VIDEO_MODEL = "veo-2.0-generate-001"; // or latest veo model available via API
 
 // Helper to strip base64 prefix
@@ -308,7 +304,7 @@ export const generateSmileVariation = async (
             // Prototype used: gemini-3-pro-image-preview. 
             // We will try to use the same if possible, or 'imagen-3.0-generate-001'
             const response = await ai.models.generateContent({
-                model: "gemini-2.0-flash", // Reverting to flash for now as 3-pro-image-preview might be private preview
+                model: "gemini-1.5-flash", // Reverting to flash for now as 3-pro-image-preview might be private preview
                 // If the user specifically needs the image model, we might need to change this.
                 // For now, using flash for broader compatibility unless specified otherwise.
                 // ACTUALLY, strict 'text-to-image' or 'image-to-image' via `generateContent` in new SDK depends on model capabilities.

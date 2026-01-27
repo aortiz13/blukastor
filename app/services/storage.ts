@@ -8,26 +8,32 @@ import { SmileSession } from '@/types/gemini';
  * Note: Accepting FormData is necessary for Server Actions handling file uploads.
  */
 export const uploadScan = async (formData: FormData): Promise<string> => {
-    const file = formData.get('file') as File;
-    const userId = formData.get('userId') as string;
+    try {
+        const file = formData.get('file') as File;
+        const userId = formData.get('userId') as string;
 
-    if (!file || !userId) throw new Error("Missing file or userId");
+        if (!file || !userId) throw new Error("Missing file or userId");
 
-    const supabase = await createClient();
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}/${Date.now()}.${fileExt}`;
-    const filePath = `${fileName}`;
+        const supabase = await createClient();
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}/${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
-        .from('scans')
-        .upload(filePath, file);
+        const { error: uploadError } = await supabase.storage
+            .from('scans')
+            .upload(filePath, file);
 
-    if (uploadError) {
-        throw uploadError;
+        if (uploadError) {
+            console.error("Supabase Upload Error:", uploadError);
+            throw new Error(`Upload Failed: ${uploadError.message}`);
+        }
+
+        const { data } = supabase.storage.from('scans').getPublicUrl(filePath);
+        return data.publicUrl;
+    } catch (error: any) {
+        console.error("uploadScan critical error:", error);
+        throw new Error(`Upload Failed: ${error.message || "Unknown error"}`);
     }
-
-    const { data } = supabase.storage.from('scans').getPublicUrl(filePath);
-    return data.publicUrl;
 };
 
 /**

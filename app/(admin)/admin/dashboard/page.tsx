@@ -34,17 +34,14 @@ export default async function DashboardPage() {
                 <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
                     <h3 className="text-sm font-medium text-muted-foreground">Total Leads</h3>
                     <p className="text-4xl font-bold text-primary mt-2">{totalLeads || 0}</p>
-                    <p className="text-xs text-emerald-500 mt-1">↑ 12% vs mes anterior</p>
                 </div>
                 <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
                     <h3 className="text-sm font-medium text-muted-foreground">Generaciones de Smile</h3>
                     <p className="text-4xl font-bold text-primary mt-2">{smileGenerations || 0}</p>
-                    <p className="text-xs text-muted-foreground mt-1">69% de conversión</p>
                 </div>
                 <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
                     <h3 className="text-sm font-medium text-muted-foreground">Solicitudes de Video</h3>
                     <p className="text-4xl font-bold text-primary mt-2">{videoRequests || 0}</p>
-                    <p className="text-xs text-amber-500 mt-1">Requiere aprobación</p>
                 </div>
             </div>
 

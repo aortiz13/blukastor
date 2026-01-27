@@ -1,8 +1,7 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function LeadsPage() {
     const [leads, setLeads] = useState<any[]>([]);
@@ -12,15 +11,24 @@ export default function LeadsPage() {
         const fetchLeads = async () => {
             try {
                 const supabase = createClient();
+
+                // Debug Auth
+                const { data: { session }, error: authError } = await supabase.auth.getSession();
+                console.log("[LeadsPage] Session:", session ? "Active" : "None", authError || "");
+
                 const { data, error } = await supabase
                     .from('leads')
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                if (error) throw error;
+                if (error) {
+                    toast.error(`Error cargando leads: ${error.message}`);
+                    throw error;
+                }
                 setLeads(data || []);
-            } catch (err) {
-                console.error(err);
+            } catch (err: any) {
+                console.error("Leads Fetch Error:", err);
+                toast.error("No se pudieron cargar los leads. Revisa la consola.");
             } finally {
                 setLoading(false);
             }
@@ -69,8 +77,8 @@ export default function LeadsPage() {
                                             <td className="px-6 py-4">{lead.phone}</td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${lead.status === 'converted' ? 'bg-green-100 text-green-700' :
-                                                        lead.status === 'contacted' ? 'bg-blue-100 text-blue-700' :
-                                                            'bg-yellow-100 text-yellow-700'
+                                                    lead.status === 'contacted' ? 'bg-blue-100 text-blue-700' :
+                                                        'bg-yellow-100 text-yellow-700'
                                                     }`}>
                                                     {lead.status}
                                                 </span>

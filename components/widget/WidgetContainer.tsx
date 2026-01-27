@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { Loader2, UploadCloud, Lock, CheckCircle2, AlertCircle, Video, PlayCircle } from "lucide-react";
@@ -29,6 +29,7 @@ export default function WidgetContainer() {
     const [analysisResult, setAnalysisResult] = useState<any>(null);
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
     const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Scanning Animation Variants
     const scanVariants = {
@@ -151,6 +152,7 @@ export default function WidgetContainer() {
                                     e.preventDefault();
                                     if (e.dataTransfer.files?.[0]) handleUpload(e.dataTransfer.files[0]);
                                 }}
+                                onClick={() => fileInputRef.current?.click()}
                             >
                                 <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
@@ -159,7 +161,13 @@ export default function WidgetContainer() {
                                 </div>
                                 <h3 className="text-lg font-bold text-foreground">Sube tu Selfie</h3>
                                 <p className="text-sm text-muted-foreground px-8 mt-2">Arrastra tu imagen aquí o haz clic para explorar</p>
-                                <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    hidden
+                                    onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
+                                />
                             </div>
                             <p className="text-xs text-muted-foreground/80 max-w-xs text-balance">
                                 Privacidad garantizada. Tu foto se elimina automáticamente después del análisis.

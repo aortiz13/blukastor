@@ -35,6 +35,39 @@ const isModelOverloaded = (error: any): boolean => {
     );
 };
 
+// Robust Text Extractor for @google/genai SDK
+const extractText = (response: any): string => {
+    try {
+        console.log("[Gemini] Raw Response Keys:", Object.keys(response));
+        if (response.text) {
+            if (typeof response.text === 'function') {
+                return response.text();
+            }
+            if (typeof response.text === 'string') {
+                return response.text;
+            }
+        }
+        return response.candidates?.[0]?.content?.parts?.[0]?.text ||
+            response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || // In case of weird structure
+            "";
+    } catch (e) {
+        console.error("[Gemini] Failed to extract text:", e);
+        return "";
+    }
+};
+
+// Safe JSON Parse
+const safeParseJSON = (text: string) => {
+    try {
+        // Remove markdown code blocks if present
+        const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(cleanText);
+    } catch (e) {
+        console.error("[Gemini] JSON Parse Failed. Text:", text.slice(0, 100));
+        return null;
+    }
+};
+
 // Gatekeeper
 export const validateImageStrict = async (base64Image: string): Promise<{ isValid: boolean; reason: string }> => {
     console.log("[Gemini] validateImageStrict called. Image length:", base64Image?.length);
@@ -88,17 +121,19 @@ export const validateImageStrict = async (base64Image: string): Promise<{ isVali
             }
         });
 
-        if (response.text) {
-            try {
-                const result = JSON.parse(response.text);
-                if (result.is_valid) {
-                    return { isValid: true, reason: "" };
-                } else {
-                    return { isValid: false, reason: result.rejection_reason };
-                }
-            } catch (jsonError) {
-                console.error("JSON Parse Error:", jsonError);
-                return { isValid: false, reason: "Error procesando la respuesta de la IA (JSON)." };
+
+
+        const text = extractText(response);
+        console.log("[Gemini] Gatekeeper Response Text:", text.slice(0, 50));
+
+        if (text) {
+            const result = safeParseJSON(text);
+            if (!result) return { isValid: false, reason: "Error procesando la respuesta de IA." };
+
+            if (result.is_valid) {
+                return { isValid: true, reason: "" };
+            } else {
+                return { isValid: false, reason: result.rejection_reason };
             }
         }
 
@@ -229,12 +264,16 @@ export const analyzeImageAndGeneratePrompts = async (base64Image: string): Promi
                     }
                 });
 
-                if (response.text) {
+
+
+                const text = extractText(response);
+                if (text) {
                     await logApiUsage('GEMINI_VISION_ANALYSIS');
-                    const result = JSON.parse(response.text) as AnalysisResponse;
+                    const result = safeParseJSON(text) as AnalysisResponse;
+                    if (!result) throw new Error("Invalid JSON from analysis model");
                     return result;
                 } else {
-                    throw new Error("No JSON response from analysis model.");
+                    throw new Error("No text response from analysis model.");
                 }
             } catch (error: any) {
                 attempts++;

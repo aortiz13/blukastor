@@ -10,18 +10,8 @@ export function DebugBanner() {
     const [isLoading, setIsLoading] = useState(false);
     const [healthStatus, setHealthStatus] = useState<null | { status: string, timestamp: string, envCheck: any }>(null);
 
-    const checks = [
-        {
-            name: "API_KEY (Gemini/Google)",
-            value: process.env.API_KEY || "AIza...", // Masked in client usually, but checks simple presence if leaked to client bundle (bad) or checks via server action
-            isSecret: true,
-        },
-        {
-            name: "NEXT_PUBLIC_SUPABASE_URL",
-            value: process.env.NEXT_PUBLIC_SUPABASE_URL,
-            isSecret: false,
-        },
-    ];
+    // Environment variables are checked via Server Action to avoid leaking secrets
+    // or causing hydration mismatches in Client Components.
 
     const runDiagnostics = async () => {
         setIsLoading(true);

@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dialog";
 
 // Combined step for auto-flow
-type Step = "UPLOAD" | "PROCESSING" | "LOCKED_RESULT" | "LEAD_FORM" | "RESULT" | "SURVEY";
+type Step = "UPLOAD" | "PROCESSING" | "LOCKED_RESULT" | "LEAD_FORM" | "RESULT" | "SURVEY" | "VERIFICATION";
 
 // Status steps for the progress UI
 type ProcessStatus = 'validating' | 'scanning' | 'analyzing' | 'designing' | 'complete';

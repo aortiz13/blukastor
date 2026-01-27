@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
             const fileName = `video_${generation_id}.mp4`
             const filePath = `videos/${fileName}`
             const { error: uploadError } = await supabase.storage
-                .from('generations')
+                .from('generated')
                 .upload(filePath, videoBlob, { contentType: 'video/mp4', upsert: true })
 
             if (uploadError) throw uploadError

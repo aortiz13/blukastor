@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning?key=${apiKey}`;
 
         // Get absolute URL for the image
-        const { data: { publicUrl: imageUrl } } = supabase.storage.from('generations').getPublicUrl(generation.output_path)
+        const { data: { publicUrl: imageUrl } } = supabase.storage.from('generated').getPublicUrl(generation.output_path)
 
         // Download image to send as bytes or just use URL if supported?
         // Most Google APIs prefer bytes or GCS. For generativelanguage, we'll try inlineData.

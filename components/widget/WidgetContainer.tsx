@@ -359,7 +359,7 @@ export default function WidgetContainer() {
                             animate={{ opacity: 1, scale: 1 }}
                             className="h-full flex flex-col items-center justify-center space-y-6"
                         >
-                            <div className="relative w-full max-w-[280px] aspect-[9/16] bg-muted rounded-2xl overflow-hidden border border-border/50 shadow-2xl group">
+                            <div className="relative w-full max-w-[420px] aspect-[9/16] bg-muted rounded-2xl overflow-hidden border border-border/50 shadow-2xl group">
                                 {generatedImage ? (
                                     <>
                                         {/* Blurred/Darkened Image - Actually we show it clear but with watermark per user request "preview... with watermark" */}
@@ -457,7 +457,7 @@ export default function WidgetContainer() {
                             animate={{ opacity: 1 }}
                             className="h-full flex flex-col items-center gap-4"
                         >
-                            <div className="relative w-full max-w-[280px] aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-primary/20 bg-black">
+                            <div className="relative w-full max-w-[420px] aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-primary/20 bg-black">
                                 {generatedImage && image ? (
                                     <BeforeAfterSlider
                                         beforeImage={URL.createObjectURL(image)}
@@ -474,11 +474,11 @@ export default function WidgetContainer() {
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-md flex gap-2">
+                            <div className="w-full max-w-[420px] flex gap-2">
                                 <Dialog open={isVideoDialogOpen} onOpenChange={setIsVideoDialogOpen}>
                                     <DialogTrigger asChild>
-                                        <Button variant="outline" className="flex-1 gap-2 border-primary/20 hover:bg-primary/5">
-                                            <Video className="w-4 h-4 text-primary" /> Generar Video
+                                        <Button variant="outline" className="flex-1 gap-2 border-primary/20 hover:bg-primary/5 h-12 text-base font-bold">
+                                            <Video className="w-5 h-5 text-primary" /> Generar Video (Beta)
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent>
@@ -490,9 +490,6 @@ export default function WidgetContainer() {
                                         <DialogFooter><Button onClick={handleVideoRequest}>Notificarme</Button></DialogFooter>
                                     </DialogContent>
                                 </Dialog>
-                                <Button className="flex-1 gap-2 font-bold" onClick={() => window.location.reload()}>
-                                    <Sparkles className="w-4 h-4" /> Probar Otra vez
-                                </Button>
                             </div>
                         </motion.div>
                     )}

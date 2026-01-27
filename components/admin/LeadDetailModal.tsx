@@ -86,8 +86,14 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
         if (!lead.id) return;
         setGeneratingVideo(true);
         try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error("No hay sesión activa");
+
             const { data, error } = await supabase.functions.invoke('generate-video', {
-                body: { lead_id: lead.id }
+                body: { lead_id: lead.id },
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`
+                }
             });
 
             if (error) throw error;

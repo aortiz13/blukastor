@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
                     {
                         prompt: scenarioPrompt,
                         image: {
-                            bytesBase64: imgBase64,
+                            bytesBase64Encoded: imgBase64,
                             mimeType: "image/jpeg"
                         }
                     }

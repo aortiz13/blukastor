@@ -48,6 +48,7 @@ export default function WidgetContainer() {
 
     // Process Status State
     const [processStatus, setProcessStatus] = useState<ProcessStatus>('validating');
+    const [uploadedScanUrl, setUploadedScanUrl] = useState<string | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -126,7 +127,13 @@ export default function WidgetContainer() {
             setUserId(currentUserId);
             formData.append('userId', currentUserId);
 
-            await uploadScan(formData); // Non-blocking fail-safe
+            const uploadRes = await uploadScan(formData);
+            if (uploadRes.success && uploadRes.data) {
+                setUploadedScanUrl(uploadRes.data);
+            } else {
+                console.warn("Fallo subida de imagen original:", uploadRes.error);
+            }
+
             setProcessStatus('analyzing');
 
             // 3. Analyze Image
@@ -170,20 +177,39 @@ export default function WidgetContainer() {
         e.preventDefault();
         const formData = new FormData(e.target as HTMLFormElement);
         const data = Object.fromEntries(formData);
+
         try {
             const supabase = createClient();
-            const { error } = await supabase.from('leads').insert({
+            const leadId = crypto.randomUUID(); // Client-side ID generation
+
+            // 1. Insert Lead
+            const { error: leadError } = await supabase.from('leads').insert({
+                id: leadId,
                 name: data.name,
                 email: data.email,
                 phone: data.phone,
-                // survey_data could be enriched here if we kept analysisResult in state, 
-                // but for MVP flow simplicity we might skip or store minimalist data
                 status: 'pending'
             });
-            if (error) throw error;
+
+            if (leadError) throw leadError;
+
+            // 2. Insert Generation Record (Linked to Lead)
+            if (generatedImage) {
+                const { error: genError } = await supabase.from('generations').insert({
+                    lead_id: leadId,
+                    type: 'image',
+                    status: 'completed',
+                    input_path: uploadedScanUrl || 'unknown',
+                    output_path: generatedImage,
+                    metadata: { source: 'widget_v1' }
+                });
+                if (genError) console.error("Error saving generation:", genError);
+            }
+
             toast.success("¡Información enviada con éxito!");
             setStep("RESULT");
         } catch (err) {
+            console.error(err);
             toast.error("Error guardando datos. Intenta de nuevo.");
         }
     };

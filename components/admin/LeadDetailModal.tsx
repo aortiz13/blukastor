@@ -30,8 +30,6 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
     const [videoGen, setVideoGen] = useState<any>(null);
     const [pollingCount, setPollingCount] = useState(0);
 
-    if (!lead) return null;
-
     const supabase = createClient();
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 
@@ -82,6 +80,8 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
         return () => clearInterval(interval);
     }, [generatingVideo, videoGen?.id]);
 
+    if (!lead) return null;
+
     const handleGenerateVideo = async () => {
         if (!lead.id) return;
         setGeneratingVideo(true);
@@ -101,6 +101,7 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
     };
 
     const handleMarkContacted = async () => {
+        if (!lead) return;
         setLoadingAction(true);
         try {
             const { error } = await supabase

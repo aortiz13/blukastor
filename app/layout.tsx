@@ -3,6 +3,7 @@ import { Inter, Outfit, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
+import { DebugBanner } from "@/components/debug/DebugBanner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
@@ -29,7 +30,9 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="light"
           enableSystem
+          disableTransitionOnChange
         >
+          <DebugBanner />
           {children}
           <Toaster />
         </ThemeProvider>

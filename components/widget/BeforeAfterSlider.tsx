@@ -61,7 +61,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
     return (
         <div
             ref={containerRef}
-            className={`relative w-full aspect-[3/4] overflow-hidden select-none cursor-ew-resize group ${className}`}
+            className={`relative w-full aspect-[9/16] overflow-hidden select-none cursor-ew-resize group ${className}`}
             onMouseDown={handleStart}
             onTouchStart={handleStart}
         >

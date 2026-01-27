@@ -470,7 +470,7 @@ export default function WidgetContainer() {
                             className="space-y-6 text-center"
                         >
                             <Card className="overflow-hidden border-primary/20 shadow-2xl relative group bg-black">
-                                <div className="aspect-[3/4] bg-muted relative w-full h-[500px] md:h-auto">
+                                <div className="aspect-[9/16] bg-muted relative w-full h-[500px] md:h-auto">
                                     {generatedImage && image ? (
                                         <BeforeAfterSlider
                                             beforeImage={URL.createObjectURL(image)}

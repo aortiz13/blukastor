@@ -346,47 +346,56 @@ export const generateSmileVariation = async (
         const mimeType = getMimeType(inputImageBase64);
         const data = stripBase64Prefix(inputImageBase64);
 
-        // Use Imagen 3 for editing
-        const model = "imagen-3.0-generate-001";
+        // Validated working model via scripts/test-image-gen.ts
+        const model = "gemini-3-pro-image-preview";
 
-        try {
-            // Using editImage with RawReferenceImage (Base Image)
-            // We pass the input image as the raw reference to be edited.
-            const response = await ai.models.editImage({
-                model: model,
-                prompt: variationPrompt,
-                referenceImages: [
-                    // @ts-ignore - SDK types might be strict, but plain object shape often works or we rely on internal casting
-                    {
-                        referenceImage: {
-                            imageBytes: data,
-                            mimeType: mimeType
-                        }
+        let attempts = 0;
+        const maxRetries = 3;
+
+        while (attempts < maxRetries) {
+            try {
+                // Using generateContent with image input + text prompt for "image-to-image" style generation
+                // The model 'gemini-3-pro-image-preview' supports this via generateContent.
+                const response = await ai.models.generateContent({
+                    model: model,
+                    contents: {
+                        parts: [
+                            { inlineData: { mimeType, data } },
+                            { text: variationPrompt }
+                        ]
                     }
-                ],
-                config: {
-                    numberOfImages: 1,
-                    aspectRatio: aspectRatio,
-                    outputMimeType: "image/png"
+                });
+
+                // Check for inline image data in response
+                for (const part of response.candidates?.[0]?.content?.parts || []) {
+                    if (part.inlineData) {
+                        await logApiUsage('NANO_BANANA_IMAGE');
+                        // Default to png if not specified, usually standard for genai
+                        const outMime = part.inlineData.mimeType || "image/png";
+                        return `data:${outMime};base64,${part.inlineData.data}`;
+                    }
                 }
-            });
 
-            const generatedImage = response.generatedImages?.[0]?.image;
+                // If text response, logging it for debugging
+                if (response.text) {
+                    console.log("Model returned text instead of image:", response.text);
+                }
 
-            if (generatedImage && generatedImage.imageBytes) {
-                await logApiUsage('NANO_BANANA_IMAGE'); // Using existing log type
-                // Ensure mimeType is present, default to png
-                const outMime = generatedImage.mimeType || "image/png";
-                return `data:${outMime};base64,${generatedImage.imageBytes}`;
+                throw new Error("No image data found in generation response.");
+
+            } catch (error: any) {
+                attempts++;
+                if (isModelOverloaded(error) && attempts < maxRetries) {
+                    const waitTime = 3000 * Math.pow(2, attempts - 1);
+                    await delay(waitTime);
+                    continue;
+                }
+                console.error("Image generation failed:", error);
+                // Friendly error if possible
+                throw new Error(`Generation Failed: ${error.message || "Unknown error"}`);
             }
-
-            throw new Error("No image data found in generation response.");
-
-        } catch (error: any) {
-            console.error("Image generation failed:", error);
-            // Verify if error is due to safety, logged in error message usually
-            throw new Error(`Generation Failed: ${error.message || "Unknown error"}`);
         }
+        throw new Error("Image generation failed after multiple retries.");
     } catch (criticalGenError: any) {
         console.error("[Gemini Generation] Fatal Error:", criticalGenError);
         throw new Error(`Error generando imagen: ${criticalGenError.message?.slice(0, 100) || "Intenta de nuevo."}`);

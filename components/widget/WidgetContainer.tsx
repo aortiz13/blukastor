@@ -321,7 +321,7 @@ export default function WidgetContainer() {
                             </div>
 
                             {/* Right: Progress List */}
-                            <div className="w-full max-w-sm md:max-w-xs space-y-2 pt-4 px-2">
+                            <div className="w-full max-w-md md:max-w-lg space-y-2 pt-4 px-4">
                                 <h3 className="text-xl font-heading font-bold mb-4">Procesando...</h3>
                                 <StatusItem
                                     label="Validación Biométrica"

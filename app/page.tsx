@@ -43,7 +43,7 @@ export default function Home() {
         </section>
 
         {/* Demo Widget Section */}
-        <section className="w-full max-w-4xl relative group">
+        <section className="w-full max-w-5xl relative group">
           {/* Background Glow */}
           <div className="absolute -inset-1 bg-gradient-to-r from-primary to-cyan-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 animate-pulse"></div>
 

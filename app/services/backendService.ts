@@ -5,14 +5,18 @@ import { createClient } from '@/utils/supabase/server';
  * Logs API usage to Supabase for tracking and quota management.
  */
 export async function logApiUsage(serviceName: string) {
-    const supabase = await createClient();
-    const { error } = await supabase.from('api_usage_logs').insert({
-        service_name: serviceName,
-        timestamp: new Date().toISOString(),
-    });
+    try {
+        const supabase = await createClient();
+        const { error } = await supabase.from('api_usage_logs').insert({
+            service_name: serviceName,
+            timestamp: new Date().toISOString(),
+        });
 
-    if (error) {
-        console.error('Failed to log API usage:', error);
+        if (error) {
+            console.error('[BackendService] Failed to log API usage:', error);
+        }
+    } catch (e) {
+        console.error('[BackendService] logApiUsage crashed:', e);
     }
 }
 

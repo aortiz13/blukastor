@@ -31,7 +31,8 @@ export const uploadScan = async (formData: FormData): Promise<string> => {
         const { data } = supabase.storage.from('scans').getPublicUrl(filePath);
         return data.publicUrl;
     } catch (error: any) {
-        console.error("uploadScan critical error:", error);
+        console.error("[Storage] uploadScan critical error:", error);
+        // Normalize error for client
         throw new Error(`Upload Failed: ${error.message || "Unknown error"}`);
     }
 };

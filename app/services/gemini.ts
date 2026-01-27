@@ -40,7 +40,10 @@ export const validateImageStrict = async (base64Image: string): Promise<{ isVali
     try {
         // console.log("[Gatekeeper] Verificando calidad biométrica...");
         const apiKey = process.env.API_KEY;
-        if (!apiKey) return { isValid: false, reason: "API_KEY no encontrada en el servidor." };
+        if (!apiKey) {
+            console.error("[Gemini Gatekeeper] Missing API_KEY");
+            return { isValid: false, reason: "Error de configuración del servidor (API KEY missing)." };
+        }
 
         const ai = new GoogleGenAI({ apiKey });
         const mimeType = getMimeType(base64Image);
@@ -102,22 +105,26 @@ export const validateImageStrict = async (base64Image: string): Promise<{ isVali
         return { isValid: false, reason: "Error de validación. Intenta otra foto." };
 
     } catch (error: any) {
-        console.error("Gatekeeper Critical Error:", error);
+        console.error("[Gatekeeper] Critical Error:", error);
         // Ensure we return a serializable object, not throw, to avoid 500s
-        return { isValid: false, reason: `Error Crítico: ${error.message || JSON.stringify(error)}` };
+        return { isValid: false, reason: `Error Crítico: ${error.message || "Unknown error"}` };
     }
 };
 
 // Analysis
 export const analyzeImageAndGeneratePrompts = async (base64Image: string): Promise<AnalysisResponse> => {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) throw new Error("API_KEY not found");
+    try {
+        const apiKey = process.env.API_KEY;
+        if (!apiKey) {
+            console.error("[Gemini Analysis] Missing API_KEY");
+            throw new Error("Server configuration error: API_KEY missing");
+        }
 
-    const ai = new GoogleGenAI({ apiKey });
-    const mimeType = getMimeType(base64Image);
-    const data = stripBase64Prefix(base64Image);
+        const ai = new GoogleGenAI({ apiKey });
+        const mimeType = getMimeType(base64Image);
+        const data = stripBase64Prefix(base64Image);
 
-    const prompt = `
+        const prompt = `
     ROLE: Expert Dental Morphologist and AI Prompt Engineer. 
     TASK: Analyze the user's face using specific landmarks: Eyes, Nose, and Hairline. Generate a restoration plan that harmonizes with these features.
     
@@ -167,80 +174,85 @@ export const analyzeImageAndGeneratePrompts = async (base64Image: string): Promi
        - Reference_Instructions: "Use the 'Natural Restoration' image to lock the facial identity and the smile design."
   `;
 
-    let attempts = 0;
-    const maxRetries = 3;
+        let attempts = 0;
+        const maxRetries = 3;
 
-    while (attempts < maxRetries) {
-        try {
-            const response = await ai.models.generateContent({
-                model: ANALYSIS_MODEL,
-                contents: {
-                    parts: [
-                        { inlineData: { mimeType, data } },
-                        { text: prompt }
-                    ]
-                },
-                config: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: Type.OBJECT,
-                        properties: {
-                            variations: {
-                                type: Type.ARRAY,
-                                items: {
-                                    type: Type.OBJECT,
-                                    properties: {
-                                        type: {
-                                            type: Type.STRING,
-                                            enum: [
-                                                VariationType.ORIGINAL_BG,
-                                                VariationType.LIFESTYLE_SOCIAL,
-                                                VariationType.LIFESTYLE_OUTDOOR
-                                            ]
-                                        },
-                                        prompt_data: {
-                                            type: Type.OBJECT,
-                                            properties: {
-                                                Subject: { type: Type.STRING },
-                                                Composition: { type: Type.STRING },
-                                                Action: { type: Type.STRING },
-                                                Location: { type: Type.STRING },
-                                                Style: { type: Type.STRING },
-                                                Editing_Instructions: { type: Type.STRING },
-                                                Refining_Details: { type: Type.STRING },
-                                                Reference_Instructions: { type: Type.STRING }
+        while (attempts < maxRetries) {
+            try {
+                const response = await ai.models.generateContent({
+                    model: ANALYSIS_MODEL,
+                    contents: {
+                        parts: [
+                            { inlineData: { mimeType, data } },
+                            { text: prompt }
+                        ]
+                    },
+                    config: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: Type.OBJECT,
+                            properties: {
+                                variations: {
+                                    type: Type.ARRAY,
+                                    items: {
+                                        type: Type.OBJECT,
+                                        properties: {
+                                            type: {
+                                                type: Type.STRING,
+                                                enum: [
+                                                    VariationType.ORIGINAL_BG,
+                                                    VariationType.LIFESTYLE_SOCIAL,
+                                                    VariationType.LIFESTYLE_OUTDOOR
+                                                ]
                                             },
-                                            required: ["Subject", "Composition", "Action", "Location", "Style", "Editing_Instructions"]
-                                        }
-                                    },
-                                    required: ["type", "prompt_data"]
+                                            prompt_data: {
+                                                type: Type.OBJECT,
+                                                properties: {
+                                                    Subject: { type: Type.STRING },
+                                                    Composition: { type: Type.STRING },
+                                                    Action: { type: Type.STRING },
+                                                    Location: { type: Type.STRING },
+                                                    Style: { type: Type.STRING },
+                                                    Editing_Instructions: { type: Type.STRING },
+                                                    Refining_Details: { type: Type.STRING },
+                                                    Reference_Instructions: { type: Type.STRING }
+                                                },
+                                                required: ["Subject", "Composition", "Action", "Location", "Style", "Editing_Instructions"]
+                                            }
+                                        },
+                                        required: ["type", "prompt_data"]
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
 
-            if (response.text) {
-                await logApiUsage('GEMINI_VISION_ANALYSIS');
-                const result = JSON.parse(response.text) as AnalysisResponse;
-                return result;
-            } else {
-                throw new Error("No JSON response from analysis model.");
+                if (response.text) {
+                    await logApiUsage('GEMINI_VISION_ANALYSIS');
+                    const result = JSON.parse(response.text) as AnalysisResponse;
+                    return result;
+                } else {
+                    throw new Error("No JSON response from analysis model.");
+                }
+            } catch (error: any) {
+                attempts++;
+                if (isModelOverloaded(error) && attempts < maxRetries) {
+                    const waitTime = 3000 * Math.pow(2, attempts - 1);
+                    await delay(waitTime);
+                    continue;
+                }
+                console.error("Analysis failed:", error);
+                // SANITIZE ERROR FOR SERVER ACTION SERIALIZATION
+                throw new Error(`Analysis Failed: ${error.message || "Unknown error"}`);
             }
-        } catch (error: any) {
-            attempts++;
-            if (isModelOverloaded(error) && attempts < maxRetries) {
-                const waitTime = 3000 * Math.pow(2, attempts - 1);
-                await delay(waitTime);
-                continue;
-            }
-            console.error("Analysis failed:", error);
-            // SANITIZE ERROR FOR SERVER ACTION SERIALIZATION
-            throw new Error(`Analysis Failed: ${error.message || "Unknown error"}`);
         }
     }
-    throw new Error("Analysis failed after retries.");
+        throw new Error("Analysis failed after retries.");
+} catch (criticalError: any) {
+    console.error("[Gemini Analysis] Fatal Error:", criticalError);
+    throw new Error(`Analysis System Failure: ${criticalError.message || "Unknown error"}`);
+}
 };
 
 // Validate Generated Image
@@ -288,67 +300,76 @@ export const generateSmileVariation = async (
     variationPrompt: string,
     aspectRatio: "1:1" | "3:4" | "4:3" | "9:16" | "16:9" = "1:1"
 ): Promise<string> => {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) throw new Error("API_KEY not found");
+    try {
+        const apiKey = process.env.API_KEY;
+        if (!apiKey) {
+            console.error("[Gemini Generation] Missing API_KEY");
+            throw new Error("Server configuration error: API_KEY missing");
+        }
 
-    const ai = new GoogleGenAI({ apiKey });
-    const mimeType = getMimeType(inputImageBase64);
-    const data = stripBase64Prefix(inputImageBase64);
+        const ai = new GoogleGenAI({ apiKey });
+        const mimeType = getMimeType(inputImageBase64);
+        const data = stripBase64Prefix(inputImageBase64);
 
-    let attempts = 0;
-    const maxRetries = 5;
+        let attempts = 0;
+        const maxRetries = 5;
 
-    while (attempts < maxRetries) {
-        try {
-            // NOTE: Using a specific model identifier. Check docs for latest Imagen/Gemini image gen model if this fails.
-            // Prototype used: gemini-3-pro-image-preview. 
-            // We will try to use the same if possible, or 'imagen-3.0-generate-001'
-            const response = await ai.models.generateContent({
-                model: TARGET_IMAGE_MODEL,
-                // If the user specifically needs the image model, we might need to change this.
-                // For now, using flash for broader compatibility unless specified otherwise.
-                // ACTUALLY, strict 'text-to-image' or 'image-to-image' via `generateContent` in new SDK depends on model capabilities.
-                // Let's assume the user has access to the model they specified.
-                contents: {
-                    parts: [
-                        { inlineData: { mimeType, data } },
-                        { text: variationPrompt }
-                    ]
-                },
-                // config: { 
-                //   imageConfig: { imageSize: "1024x1024" } // check correct config param
-                // }
-            });
-            // The new SDK returns images differently sometimes.
-            // If it's pure image generation model like Imagen, response structure matches.
+        while (attempts < maxRetries) {
+            try {
+                // NOTE: Using a specific model identifier. Check docs for latest Imagen/Gemini image gen model if this fails.
+                // Prototype used: gemini-3-pro-image-preview. 
+                // We will try to use the same if possible, or 'imagen-3.0-generate-001'
+                const response = await ai.models.generateContent({
+                    model: TARGET_IMAGE_MODEL,
+                    // If the user specifically needs the image model, we might need to change this.
+                    // For now, using flash for broader compatibility unless specified otherwise.
+                    // ACTUALLY, strict 'text-to-image' or 'image-to-image' via `generateContent` in new SDK depends on model capabilities.
+                    // Let's assume the user has access to the model they specified.
+                    contents: {
+                        parts: [
+                            { inlineData: { mimeType, data } },
+                            { text: variationPrompt }
+                        ]
+                    },
+                    // config: { 
+                    //   imageConfig: { imageSize: "1024x1024" } // check correct config param
+                    // }
+                });
+                // The new SDK returns images differently sometimes.
+                // If it's pure image generation model like Imagen, response structure matches.
 
-            for (const part of response.candidates?.[0]?.content?.parts || []) {
-                if (part.inlineData) {
-                    await logApiUsage('NANO_BANANA_IMAGE');
-                    return `data:image/png;base64,${part.inlineData.data}`;
+                for (const part of response.candidates?.[0]?.content?.parts || []) {
+                    if (part.inlineData) {
+                        await logApiUsage('NANO_BANANA_IMAGE');
+                        return `data:image/png;base64,${part.inlineData.data}`;
+                    }
                 }
-            }
 
-            // If text response, maybe it failed to gen image?
-            if (response.text) {
-                console.log("Model returned text instead of image:", response.text);
-            }
+                // If text response, maybe it failed to gen image?
+                if (response.text) {
+                    console.log("Model returned text instead of image:", response.text);
+                }
 
-            throw new Error("No image data found in generation response.");
+                throw new Error("No image data found in generation response.");
 
-        } catch (error: any) {
-            attempts++;
-            if (isModelOverloaded(error) && attempts < maxRetries) {
-                const waitTime = 3000 * Math.pow(2, attempts - 1);
-                await delay(waitTime);
-                continue;
+            } catch (error: any) {
+                attempts++;
+                if (isModelOverloaded(error) && attempts < maxRetries) {
+                    const waitTime = 3000 * Math.pow(2, attempts - 1);
+                    await delay(waitTime);
+                    continue;
+                }
+                console.error("Image generation failed:", error);
+                // SANITIZE ERROR
+                throw new Error(`Generation Failed: ${error.message || "Unknown error"}`);
             }
-            console.error("Image generation failed:", error);
-            // SANITIZE ERROR
-            throw new Error(`Generation Failed: ${error.message || "Unknown error"}`);
         }
     }
-    throw new Error("Image generation failed after multiple retries.");
+        throw new Error("Image generation failed after multiple retries.");
+} catch (criticalGenError: any) {
+    console.error("[Gemini Generation] Fatal Error:", criticalGenError);
+    throw new Error(`Image Generation System Failure: ${criticalGenError.message || "Unknown error"}`);
+}
 };
 
 // Generate Video

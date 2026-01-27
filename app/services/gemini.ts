@@ -37,33 +37,33 @@ const isModelOverloaded = (error: any): boolean => {
 
 // Gatekeeper
 export const validateImageStrict = async (base64Image: string): Promise<{ isValid: boolean; reason: string }> => {
-    // console.log("[Gatekeeper] Verificando calidad biométrica...");
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) throw new Error("API_KEY not found in environment variables");
-
-    const ai = new GoogleGenAI({ apiKey });
-    const mimeType = getMimeType(base64Image);
-    const data = stripBase64Prefix(base64Image);
-
-    const prompt = `
-    You are a Strict Biometric Validator for a dental AI app. Analyze the image and determine if it is suitable for clinical smile design.
-    
-    THE RULES (Rejection Criteria):
-    1. Non-Human: Reject cars, animals, cartoons, landscapes, objects. MUST BE A REAL HUMAN.
-    2. No Face: Reject if face is not clearly visible or too far away.
-    3. Obstruction: Reject if mouth is covered (hands, mask, phone).
-    4. Angle: Reject extreme profiles.
-    5. Quality: Reject if too dark, too blurry, or pixelated.
-
-    OUTPUT REQUIREMENT:
-    Return ONLY a JSON object.
-    {
-      "is_valid": boolean,
-      "rejection_reason": "string (Max 6 words, in Spanish)"
-    }
-  `;
-
     try {
+        // console.log("[Gatekeeper] Verificando calidad biométrica...");
+        const apiKey = process.env.API_KEY;
+        if (!apiKey) return { isValid: false, reason: "API_KEY no encontrada en el servidor." };
+
+        const ai = new GoogleGenAI({ apiKey });
+        const mimeType = getMimeType(base64Image);
+        const data = stripBase64Prefix(base64Image);
+
+        const prompt = `
+        You are a Strict Biometric Validator for a dental AI app. Analyze the image and determine if it is suitable for clinical smile design.
+        
+        THE RULES (Rejection Criteria):
+        1. Non-Human: Reject cars, animals, cartoons, landscapes, objects. MUST BE A REAL HUMAN.
+        2. No Face: Reject if face is not clearly visible or too far away.
+        3. Obstruction: Reject if mouth is covered (hands, mask, phone).
+        4. Angle: Reject extreme profiles.
+        5. Quality: Reject if too dark, too blurry, or pixelated.
+    
+        OUTPUT REQUIREMENT:
+        Return ONLY a JSON object.
+        {
+          "is_valid": boolean,
+          "rejection_reason": "string (Max 6 words, in Spanish)"
+        }
+      `;
+
         const response = await ai.models.generateContent({
             model: VALIDATION_MODEL,
             contents: {
@@ -86,26 +86,25 @@ export const validateImageStrict = async (base64Image: string): Promise<{ isVali
         });
 
         if (response.text) {
-            const result = JSON.parse(response.text);
-            if (result.is_valid) {
-                return { isValid: true, reason: "" };
-            } else {
-                return { isValid: false, reason: result.rejection_reason };
+            try {
+                const result = JSON.parse(response.text);
+                if (result.is_valid) {
+                    return { isValid: true, reason: "" };
+                } else {
+                    return { isValid: false, reason: result.rejection_reason };
+                }
+            } catch (jsonError) {
+                console.error("JSON Parse Error:", jsonError);
+                return { isValid: false, reason: "Error procesando la respuesta de la IA (JSON)." };
             }
         }
 
         return { isValid: false, reason: "Error de validación. Intenta otra foto." };
 
     } catch (error: any) {
-        console.error("Gatekeeper error:", error);
-        if (
-            error.message?.includes('API key expired') ||
-            error.message?.includes('API_KEY_INVALID') ||
-            (error.status === 400 && error.message?.includes('expired'))
-        ) {
-            throw error;
-        }
-        return { isValid: false, reason: `Error: ${error.message || "Error desconocido"}` };
+        console.error("Gatekeeper Critical Error:", error);
+        // Ensure we return a serializable object, not throw, to avoid 500s
+        return { isValid: false, reason: `Error Crítico: ${error.message || JSON.stringify(error)}` };
     }
 };
 

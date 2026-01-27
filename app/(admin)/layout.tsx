@@ -1,11 +1,29 @@
+"use client";
+
 import Link from "next/link";
 import { LayoutDashboard, Users, Settings, LogOut } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    const router = useRouter();
+    const supabase = createClient();
+
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            toast.error("Error al cerrar sesión");
+        } else {
+            router.push("/login");
+            router.refresh();
+        }
+    };
+
     return (
         <div className="min-h-screen bg-muted/20 flex">
             {/* Sidebar */}
@@ -31,7 +49,10 @@ export default function AdminLayout({
                 </nav>
 
                 <div className="p-4 border-t border-border">
-                    <button className="flex items-center gap-3 p-3 rounded-lg hover:bg-destructive/10 text-destructive w-full transition-colors">
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-destructive/10 text-destructive w-full transition-colors font-medium"
+                    >
                         <LogOut size={20} />
                         <span>Cerrar Sesión</span>
                     </button>

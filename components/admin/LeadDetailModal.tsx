@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
     Dialog,
     DialogContent,
@@ -9,19 +10,53 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Phone, Calendar, User, ImageIcon, MonitorPlay, Download, Share2 } from "lucide-react";
+import { Mail, Phone, Calendar, User, ImageIcon, MonitorPlay, Download, Share2, CheckCircle2, Loader2, Archive } from "lucide-react";
 import Image from "next/image";
 import { BeforeAfterSlider } from "@/components/widget/BeforeAfterSlider";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/utils/supabase/client";
+import { toast } from "sonner";
 
 interface LeadDetailModalProps {
     lead: any | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    onLeadUpdated?: () => void;
 }
 
-export function LeadDetailModal({ lead, open, onOpenChange }: LeadDetailModalProps) {
+export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: LeadDetailModalProps) {
+    const [loadingAction, setLoadingAction] = useState(false);
+
     if (!lead) return null;
+
+    const supabase = createClient();
+
+    const handleMarkContacted = async () => {
+        setLoadingAction(true);
+        try {
+            const { error } = await supabase
+                .from('leads')
+                .update({ status: 'contacted' })
+                .eq('id', lead.id);
+
+            if (error) throw error;
+
+            toast.success("Lead marcado como contactado");
+            if (onLeadUpdated) onLeadUpdated();
+            onOpenChange(false);
+        } catch (error: any) {
+            toast.error("Error al actualizar estado");
+            console.error(error);
+        } finally {
+            setLoadingAction(false);
+        }
+    };
+
+    const handleWhatsApp = () => {
+        if (!lead.phone) return;
+        const cleanNumber = lead.phone.replace(/\+/g, '').replace(/\s+/g, '').replace(/-/g, '');
+        window.open(`https://wa.me/${cleanNumber}`, '_blank');
+    };
 
     const StatusBadge = ({ status }: { status: string }) => {
         const styles: Record<string, string> = {
@@ -50,7 +85,7 @@ export function LeadDetailModal({ lead, open, onOpenChange }: LeadDetailModalPro
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-5xl h-[90vh] sm:h-[80vh] overflow-hidden flex flex-col p-0 gap-0">
+            <DialogContent className="max-w-6xl w-full h-[90vh] sm:h-[80vh] overflow-hidden flex flex-col p-0 gap-0">
                 <div className="p-6 border-b flex-none bg-background">
                     <DialogHeader className="flex flex-row items-center justify-between space-y-0">
                         <div>
@@ -68,7 +103,7 @@ export function LeadDetailModal({ lead, open, onOpenChange }: LeadDetailModalPro
 
                 <div className="grid grid-cols-1 md:grid-cols-12 flex-1 overflow-hidden">
                     {/* Left Column: Details */}
-                    <div className="col-span-12 md:col-span-5 border-r bg-muted/10 p-6 space-y-6 overflow-y-auto">
+                    <div className="col-span-12 md:col-span-5 border-r bg-muted/10 p-8 space-y-8 overflow-y-auto">
 
                         {/* Contact Card */}
                         <div className="space-y-4">
@@ -109,16 +144,28 @@ export function LeadDetailModal({ lead, open, onOpenChange }: LeadDetailModalPro
                             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground border-b pb-2">
                                 Acciones Rápidas
                             </h3>
-                            <div className="grid gap-2">
-                                <Button className="w-full bg-green-600 hover:bg-green-700 font-bold" size="lg">
+                            <div className="grid gap-3">
+                                <Button
+                                    className="w-full bg-green-600 hover:bg-green-700 font-bold"
+                                    size="lg"
+                                    onClick={handleWhatsApp}
+                                >
                                     <Share2 className="w-4 h-4 mr-2" />
                                     Contactar por WhatsApp
                                 </Button>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <Button variant="outline" className="w-full">
-                                        Marcar Contactado
+                                <div className="grid grid-cols-2 gap-3">
+                                    <Button
+                                        variant="outline"
+                                        className="w-full"
+                                        onClick={handleMarkContacted}
+                                        disabled={loadingAction || lead.status === 'contacted'}
+                                    >
+                                        {loadingAction ? <Loader2 className="w-4 h-4 animate-spin" /> :
+                                            lead.status === 'contacted' ? <CheckCircle2 className="w-4 h-4 mr-2" /> : null}
+                                        {lead.status === 'contacted' ? "Contactado" : "Marcar Contactado"}
                                     </Button>
                                     <Button variant="secondary" className="w-full">
+                                        <Archive className="w-4 h-4 mr-2" />
                                         Archivar
                                     </Button>
                                 </div>
@@ -132,7 +179,7 @@ export function LeadDetailModal({ lead, open, onOpenChange }: LeadDetailModalPro
                         {generation ? (
                             <div className="relative w-full h-full flex items-center justify-center">
                                 <div className="relative h-full w-full p-4 flex items-center justify-center">
-                                    <div className="relative h-full w-full max-w-[400px] aspect-[9/16]">
+                                    <div className="relative h-full w-full max-w-[500px] aspect-[9/16]">
                                         {generation.input_path && generation.input_path !== 'unknown' ? (
                                             <BeforeAfterSlider
                                                 beforeImage={generation.input_path}

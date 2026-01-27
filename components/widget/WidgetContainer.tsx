@@ -351,7 +351,7 @@ export default function WidgetContainer() {
                         </motion.div>
                     )}
 
-                    {/* LOCKED RESULT */}
+                    {/* LOCKED RESULT (Watermarked Preview) */}
                     {step === "LOCKED_RESULT" && (
                         <motion.div
                             key="locked"
@@ -362,27 +362,33 @@ export default function WidgetContainer() {
                             <div className="relative w-full max-w-[280px] aspect-[9/16] bg-muted rounded-2xl overflow-hidden border border-border/50 shadow-2xl group">
                                 {generatedImage ? (
                                     <>
-                                        <img src={generatedImage} alt="Generated" className="w-full h-full object-cover blur-md scale-105 saturate-150 opacity-90 transition-all duration-700" />
-                                        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+                                        {/* Blurred/Darkened Image - Actually we show it clear but with watermark per user request "preview... with watermark" */}
+                                        <img src={generatedImage} alt="Preview" className="w-full h-full object-cover transition-all duration-700" />
+
+                                        {/* Watermark Overlay */}
+                                        <div className="absolute inset-0 flex items-center justify-center p-6 z-10 pointer-events-none opacity-80">
+                                            <img
+                                                src="https://dentalcorbella.com/wp-content/uploads/2023/07/logo-white-trans2.png"
+                                                alt="Watermark"
+                                                className="w-full opacity-60 drop-shadow-md rotate-[-20deg]"
+                                            />
+                                        </div>
                                     </>
                                 ) : null}
-                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 p-6 text-center text-white">
-                                    <div className="p-4 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                                        <Lock className="w-8 h-8" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-2xl drop-shadow-lg">¡Listo!</h3>
-                                        <p className="text-sm text-white/80 font-medium mt-1">Tu nueva sonrisa está generada.</p>
-                                    </div>
-                                </div>
                             </div>
-                            <Button
-                                onClick={() => setStep("LEAD_FORM")}
-                                className="w-full max-w-xs text-lg h-12 font-bold rounded-xl shadow-lg animate-bounce-subtle"
-                                size="lg"
-                            >
-                                Desbloquear Ahora
-                            </Button>
+
+                            <div className="text-center px-4">
+                                <h3 className="font-bold text-xl mb-2">¿Te gusta tu nueva sonrisa?</h3>
+                                <p className="text-sm text-muted-foreground mb-4">Recibe esta imagen en <strong>Full HD</strong> y sin marca de agua directamente en tu WhatsApp.</p>
+
+                                <Button
+                                    onClick={() => setStep("LEAD_FORM")}
+                                    className="w-full max-w-xs text-base h-12 font-bold rounded-xl shadow-lg bg-green-600 hover:bg-green-700 text-white animate-pulse"
+                                    size="lg"
+                                >
+                                    <span className="mr-2">📲</span> Recibir en WhatsApp
+                                </Button>
+                            </div>
                         </motion.div>
                     )}
 
@@ -392,27 +398,51 @@ export default function WidgetContainer() {
                             key="form"
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="h-full flex flex-col items-center justify-center"
+                            className="h-full flex flex-col items-center justify-center p-4 overflow-y-auto"
                         >
                             <div className="w-full max-w-sm space-y-6">
                                 <div className="text-center space-y-1">
-                                    <h2 className="text-2xl font-heading font-bold">Último Paso</h2>
-                                    <p className="text-sm text-muted-foreground">Ingresa tus datos para ver el resultado.</p>
+                                    <h2 className="text-2xl font-heading font-bold">¡Casi listo!</h2>
+                                    <p className="text-sm text-muted-foreground">Envíanos tus datos para recibir tu diseño.</p>
                                 </div>
                                 <form className="space-y-4" onSubmit={handleLeadSubmit}>
                                     <div className="grid gap-4">
-                                        <Input id="name" name="name" placeholder="Nombre completo" required className="h-11" />
-                                        <Input id="email" name="email" type="email" placeholder="Correo electrónico" required className="h-11" />
-                                        <Input id="phone" name="phone" type="tel" placeholder="Teléfono" required className="h-11" />
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="name">Nombre Completo</Label>
+                                            <Input id="name" name="name" placeholder="Ej: Juan Pérez" required className="h-11" />
+                                        </div>
+
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="email">Correo Electrónico</Label>
+                                            <Input id="email" name="email" type="email" placeholder="juan@ejemplo.com" required className="h-11" />
+                                        </div>
+
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="phone">WhatsApp (con código de país)</Label>
+                                            <Input
+                                                id="phone"
+                                                name="phone"
+                                                type="tel"
+                                                placeholder="+34 600 000 000"
+                                                required
+                                                className="h-11 font-mono"
+                                            />
+                                            <p className="text-[10px] text-muted-foreground">Importante: Incluye el prefijo (ej: +34 para España).</p>
+                                        </div>
                                     </div>
-                                    <div className="flex items-start space-x-3">
+
+                                    <div className="flex items-start space-x-3 bg-muted/30 p-3 rounded-lg">
                                         <Checkbox id="terms" required className="mt-1" />
-                                        <Label htmlFor="terms" className="text-xs text-muted-foreground font-normal">
-                                            Acepto la política de privacidad y el uso de mi imagen.
+                                        <Label htmlFor="terms" className="text-xs text-muted-foreground font-normal leading-tight">
+                                            Acepto recibir mi diseño por WhatsApp y la política de privacidad de Dental Corbella.
                                         </Label>
                                     </div>
+
                                     <Button type="submit" className="w-full h-12 text-base font-bold rounded-xl shadow-md">
-                                        Ver Resultado
+                                        Enviar y Recibir Diseño 🚀
+                                    </Button>
+                                    <Button type="button" variant="ghost" size="sm" onClick={() => setStep("LOCKED_RESULT")} className="w-full">
+                                        Volver
                                     </Button>
                                 </form>
                             </div>

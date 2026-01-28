@@ -46,17 +46,24 @@ Deno.serve(async (req) => {
         if (genError || !generation) throw new Error('No smile image found for this lead')
 
         // 3. Prepare Prompts based on Scenarios
-        let scenarioPrompt = "";
-        const baseScene = "The subject is INSTANTLY in the target environment. The background IS NOT black; it is the target scene from the very first frame. FIXED CAMERA, NO ZOOM, NO ROTATION. The subject faces forward. Lips sealed, gentle smile. Cinematic vertical video. High quality, photorealistic, 4k. Background sound: emotive music.";
+        // User-defined Structured Prompt for Veo
+        const baseInstructions = `
+        - Subject: "The person from the reference image, maintaining the EXACT same smile and dental geometry."
+        - Composition: "9:16 Vertical Portrait. FIXED CAMERA. NO ROTATION."
+        - Editing_Instructions: "Keep the teeth identical to the Reference Image."
+        - Reference_Instructions: "Use the provided input image to lock the facial identity and the smile design."
+        `;
 
+        let scenarioDetails = "";
         if (ageRange === '18-30') {
-            scenarioPrompt = `The subject is already laughing manually and warmly in a vibrant green park. Green background. Natural daylight. Gentle head tilting in joy, but camera stays fixed. ${baseScene}`;
+            scenarioDetails = `- Location: "Vibrant green park. Natural daylight. Green background."\n- Action: "Laughing naturally and warmly. Gentle head tilting in joy."`;
         } else if (ageRange === '55+') {
-            scenarioPrompt = `The subject is already smiling at a warm family celebration. Warm indoor lighting. Background of a dining room. Continuous gentle movement. ${baseScene}`;
+            scenarioDetails = `- Location: "Warm family dining room. Indoor lighting."\n- Action: "Smiling and interacting. Continuous gentle movement."`;
         } else {
-            // Default 30-55 or others
-            scenarioPrompt = `The subject is already on a stylish urban rooftop terrace. City sunset background. They are holding a drink. Continuous light activity. ${baseScene}`;
+            scenarioDetails = `- Location: "Stylish urban rooftop terrace. City sunset background."\n- Action: "Holding a drink and chatting naturally. Continuous light activity."`;
         }
+
+        const scenarioPrompt = `${baseInstructions}\n${scenarioDetails}\n- Style: "Cinematic, Photorealistic, 4k High Quality."\n- NOTE: The video must start INSTANTLY in the target location (${ageRange === '18-30' ? 'Park' : 'Room/Roof'}). Do NOT fade in from the input image background.`;
 
         const negativePrompt = "black background, dark background, studio background, black void, morphing face, changing teeth, closing mouth, distortion, cartoon, low quality, glitchy motion, talking, flashing lights, extra limbs, blurry face, flickering teeth, floating objects, static start, frozen face, pause before moving, camera rotation, spinning camera, zoom out, open mouth";
 
@@ -64,124 +71,46 @@ Deno.serve(async (req) => {
         const apiKey = Deno.env.get('GOOGLE_API_KEY')
         if (!apiKey) throw new Error("GOOGLE_API_KEY missing")
 
-        // Endpoint for Veo 3.1 - Defined later after scene generation
-        // const endpoint = ...
+        // Endpoint for Veo 3.1
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning?key=${apiKey}`;
 
-        // Clean path: if it's a full URL, extract the relative path
+        // Clean path... (existing)
         let storagePath = generation.output_path;
         if (storagePath.startsWith('http')) {
             const urlObj = new URL(storagePath);
-            // URL format: .../storage/v1/object/public/generated/PATH...
-            // We want PATH...
             const pathParts = urlObj.pathname.split('/generated/');
             if (pathParts.length > 1) {
                 storagePath = decodeURIComponent(pathParts[1]);
             }
         }
-
         console.log(`Original path: ${generation.output_path}, Parsed storage path: ${storagePath}`);
 
-        // Get Signed URL for the image (safer if bucket is private)
+        // Get Signed URL
         const { data: signedUrlData, error: signError } = await supabase
             .storage
             .from('generated')
-            .createSignedUrl(storagePath, 60); // Valid for 60 seconds
+            .createSignedUrl(storagePath, 60);
 
         if (signError || !signedUrlData) {
-            console.error("Signed URL Error:", signError, "Path:", storagePath);
-            throw new Error(`Failed to create signed URL for ${generation.output_path}`);
+            console.error("Signed URL Error:", signError);
+            throw new Error(`Failed to create signed URL`);
         }
 
         const imageUrl = signedUrlData.signedUrl;
-        console.log(`Fetching image from: ${imageUrl}`);
 
-        // Download image to send as bytes
+        // Download image
         const imgResponse = await fetch(imageUrl);
-        if (!imgResponse.ok) {
-            throw new Error(`Failed to fetch source image: ${imgResponse.statusText}`);
-        }
+        if (!imgResponse.ok) throw new Error("Failed to fetch source image");
 
         const imgBlob = await imgResponse.blob();
         const arrayBuffer = await imgBlob.arrayBuffer();
-        // Use Buffer for safer/faster base64 encoding (Deno/Supabase support Node Buffer)
         const imgBase64 = Buffer.from(arrayBuffer).toString('base64');
         const mimeType = imgBlob.type || 'image/jpeg';
 
-        // ... (lines 1-103 same as before, preserving fetch logic)
-
         console.log(`Starting video generation for ${lead.name} (${ageRange})... Image Type: ${mimeType}`);
 
-        // --- NEW STEP: SCENE GENERATION via Imagen 4 ---
-        console.log("Generating intermediate scene image via Imagen 4...");
-        const imagenEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict?key=${apiKey}`;
-
-        // Prompt for background replacement (Scene Generation)
-        let bgPrompt = `A photorealistic portrait of the subject in ${ageRange === '18-30' ? "a vibrant green park" : (ageRange === '55+' ? "a warm family dining room" : "a stylish urban rooftop")}. The background is fully visible. The subject maintains their EXACT facial features and smile. High quality, 8k. Background replacement.`;
-
-        let sceneImgBase64 = imgBase64; // Default to original if fails
-        let sceneImgMimeType = mimeType;
-        let scenePath = generation.output_path; // Default
-
-        try {
-            const imagenResponse = await fetch(imagenEndpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    instances: [
-                        {
-                            prompt: bgPrompt,
-                            image: {
-                                bytesBase64Encoded: imgBase64,
-                                mimeType: mimeType
-                            }
-                        }
-                    ],
-                    parameters: {
-                        sampleCount: 1,
-                        aspectRatio: "9:16"
-                    }
-                })
-            });
-
-            if (!imagenResponse.ok) {
-                const errText = await imagenResponse.text();
-                console.error(`Imagen 4 generation failed: ${errText}`);
-                throw new Error(`Scene Generation Failed: ${errText}`);
-            }
-
-            const imgData = await imagenResponse.json();
-            if (imgData.predictions?.[0]?.bytesBase64Encoded) {
-                sceneImgBase64 = imgData.predictions[0].bytesBase64Encoded;
-                sceneImgMimeType = imgData.predictions[0].mimeType || 'image/png';
-                console.log("Scene image generated successfully.");
-
-                const sceneFileName = `${generation.output_path.split('/').pop()?.split('.')[0]}_scene.png`;
-                const sceneBuffer = Buffer.from(sceneImgBase64, 'base64');
-
-                const { data: uploadData, error: uploadError } = await supabase
-                    .storage
-                    .from('generated')
-                    .upload(`${lead_id}/${sceneFileName}`, sceneBuffer, {
-                        contentType: sceneImgMimeType,
-                        upsert: true
-                    });
-
-                if (!uploadError && uploadData) {
-                    scenePath = uploadData.path; // Correctly update path
-                    console.log(`Scene image uploaded to: ${scenePath}`);
-                }
-            } else {
-                throw new Error("Imagen 4 returned no image data.");
-            }
-
-        } catch (err) {
-            console.error("Critical Error in Scene Generation step:", err);
-            throw err; // ABORT Video Generation if Scene fails
-        }
-
-        // --- CALL VEO WITH SCENE IMAGE ---
-        // Use Veo Preview as per revert decision
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning?key=${apiKey}`;
+        // SKIP IMAGEN GENERATION (Not supported by available API models)
+        // Proceeding directly to Veo with Enhanced Prompt
 
         const aiResponse = await fetch(endpoint, {
             method: 'POST',
@@ -191,8 +120,8 @@ Deno.serve(async (req) => {
                     {
                         prompt: scenarioPrompt,
                         image: {
-                            bytesBase64Encoded: sceneImgBase64, // Use the NEW scene image
-                            mimeType: sceneImgMimeType
+                            bytesBase64Encoded: imgBase64, // Use the NEW scene image
+                            mimeType: mimeType
                         }
                     }
                 ],
@@ -222,7 +151,7 @@ Deno.serve(async (req) => {
                 lead_id: lead_id,
                 type: 'video',
                 status: 'processing',
-                input_path: scenePath, // Enforce using the scene path
+                input_path: generation.output_path,
                 metadata: {
                     operation_name: operationName,
                     scenario: ageRange,

@@ -51,52 +51,24 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen font-sans bg-white dark:bg-zinc-950 text-foreground selection:bg-teal-100 selection:text-teal-900 transition-colors duration-500">
       {/* Header - Minimal & Premium */}
-      {/* Header - Dental Corbella Premium Style */}
+      {/* Header - Minimal & Premium (Dark Glass) */}
       <header className="fixed top-0 z-50 w-full bg-black/40 backdrop-blur-md border-b border-white/10 transition-all duration-300">
-        {/* Top Bar for Phone */}
-        <div className="hidden md:block w-full border-b border-white/5 bg-black/20">
-          <div className="container flex justify-end items-center h-8 px-8 gap-4 text-[11px] tracking-widest font-sans text-white/90">
-            <span className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity cursor-pointer">
-              <Smartphone className="w-3 h-3" strokeWidth={1.5} /> 91 111 7575
-            </span>
-          </div>
-        </div>
-
-        {/* Main Navbar */}
         <div className="container flex h-20 items-center justify-between px-8">
-          {/* Logo */}
           <h1 className="text-2xl font-serif tracking-tight flex items-center gap-2 text-white">
-            Smile Forward
+            <Sparkles className="w-5 h-5 text-teal-500" strokeWidth={1} /> Smile Forward
           </h1>
-
-          {/* Desktop Nav Items (Visual imitation of Corbella) */}
-          <nav className="hidden lg:flex items-center gap-6 text-[11px] font-sans font-medium tracking-[0.15em] text-white/90">
-            {['NOSOTROS', 'TRATAMIENTOS', 'SOLUCIONES', 'CASOS', 'BLOG', 'CONTACTO'].map((item) => (
-              <a key={item} href="#" className="hover:text-teal-400 transition-colors relative group">
-                {item}
-                <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-teal-400 transition-all group-hover:w-full"></span>
-              </a>
-            ))}
-          </nav>
-
-          {/* Right Actions */}
           <div className="flex items-center gap-4">
-            <Link href="/widget">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full border-white/80 text-white bg-transparent hover:bg-white hover:text-black hover:border-white font-sans tracking-widest text-[10px] uppercase h-9 px-6 transition-all duration-300"
-              >
-                HAZ TU CONSULTA
+            <Link href="/admin/dashboard" className="hidden md:block">
+              <Button variant="ghost" size="sm" className="rounded-full font-sans tracking-wide uppercase text-xs text-white/80 hover:text-white hover:bg-white/10 gap-2">
+                <LayoutDashboard className="w-4 h-4" strokeWidth={1.5} /> {t.admin}
               </Button>
             </Link>
-
-            <div className="hidden md:flex gap-3 text-white/80">
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full w-8 h-8">
-                <LayoutDashboard className="w-4 h-4" strokeWidth={1.5} />
+            <Link href="/widget" className="hidden md:block">
+              <Button variant="ghost" size="sm" className="rounded-full font-sans tracking-wide uppercase text-xs text-white/80 hover:text-white hover:bg-white/10 gap-2">
+                <AppWindow className="w-4 h-4" strokeWidth={1.5} /> {t.widget}
               </Button>
-              <ModeToggle />
-            </div>
+            </Link>
+            <ModeToggle />
           </div>
         </div>
       </header>

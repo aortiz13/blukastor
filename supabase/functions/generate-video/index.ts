@@ -46,12 +46,102 @@ Deno.serve(async (req) => {
         if (genError || !generation) throw new Error('No smile image found for this lead')
 
         // 3. Prepare Prompts based on Scenarios
-        // User-defined Structured Prompt for Veo
+        // STEP 1: Clinical Analysis with Gemini 3 Pro (Nano Banana)
+        console.log("Starting Clinical Analysis with Gemini 3 Pro...");
+
+        // Specific API Key for Image/Vision Model as requested
+        const visionApiKey = "AIzaSyCAGpraoO91K3Qu8SAcFEinAEfZFNBf1Ko";
+        const visionEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/nano-banana-pro-preview:generateContent?key=${visionApiKey}`;
+
+        const analysisSystemPrompt = `
+    [System] Enforcing Clinical Landmarks:
+    1. Interpupillary Horizon (Eyes)
+    2. Alar Base Width Guide (Nose)
+    3. Upper Facial Frame Balance (Brows/Hair)
+
+    ROLE: Expert Dental Morphologist and AI Prompt Engineer. 
+    TASK: Analyze the user's face using specific landmarks: Eyes, Nose, and Hairline. Generate a restoration plan that harmonizes with these features.
+    
+    SCIENTIFIC ANALYSIS PARAMETERS (Clinical Landmarks & Rules):
+    1. The Interpupillary Rule (Eyes): Detect the user's eyes. The line connecting the center of the eyes (interpupillary line) must be the horizon for the smile. The "Incisal Plane" must be perfectly parallel to this eye line.
+    2. The Nasal Width Guide (Nose): Use the width of the base of the nose (alar base) to determine the position of the Canines. 
+    3. Facial Midline: Strictly align the Dental Midline (between two front teeth) with the Philtrum and Tip of the Nose.
+    4. Facial Frame Balance (Hair/Brows): Analyze the visual weight of the "Upper Facial Third" (Hair volume and Brow thickness). If the subject has a heavy upper frame, slighty increase the dominance/size of the Central Incisors to maintain vertical balance.
+    5. Golden Proportion (1.618): Central width should be ~1.618x the visible width of Lateral Incisor.
+
+    WORKFLOW STRATEGY: 
+    1. The first variation (original_bg) is the CLINICAL RESTORATION. It serves as the SOURCE OF TRUTH.
+       - You must map the scientific analysis above into the editing instructions.
+       - CRITICAL FRAMING: The output must be a 9:16 Vertical Portrait showing the FULL FACE.
+    2. The other 2 variations MUST use the result of step 1 as a Reference Image for consistency.
+
+    OUTPUT FORMAT: Strictly JSON.
+
+    REQUIRED VARIATIONS & GUIDELINES:
+
+    1. original_bg (Scientific Natural Restoration):
+       - Subject: "A photorealistic vertical medium shot of the user, featuring a scientifically aligned smile restoration based on facial morphopsychology."
+       - Composition: "9:16 Vertical Portrait (Stories Format). Medium Shot. Full head and shoulders visible."
+       - Action: "The subject is smiling naturally, with a dentition aligned to their interpupillary horizon."
+       - Location: "Soft-focus professional studio or original background."
+       - Style: "High-End Aesthetic Dentistry Photography, 8K resolution."
+       - Editing_Instructions: "APPLY CLINICAL LANDMARKS: \n1. HORIZON: Align the Incisal Plane to be strictly parallel with the Interpupillary Line (Eyes).\n2. MIDLINE & WIDTH: Align the dental midline with the Philtrum/Nose Tip. Use the alar base width (nose width) to guide the cusp tip position of the Canines.\n3. VERTICAL BALANCE: Assess the visual weight of the Hair and Eyebrows. If the upper face is dominant, increase the length of Central Incisors slightly to balance the face.\n4. PROPORTIONS: Enforce the esthetic dental proportion of 1.6:1:0.6 (Central:Lateral:Canine)."
+       - Refining_Details: "Texture must be polychromatic natural ivory with realistic translucency at incisal edges. Ensure the smile arc follows the lower lip."
+       - Reference_Instructions: "Use the user's original photo strictly for Facial Identity, Skin Tone, and Lip Shape. Completely replace the dental structure using the landmarks defined above."
+        `;
+
+        let specializedInstructions = "";
+
+        try {
+            const analysisResponse = await fetch(visionEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: analysisSystemPrompt },
+                            { inline_data: { mime_type: mimeType, data: imgBase64 } }
+                        ]
+                    }],
+                    generationConfig: {
+                        response_mime_type: "application/json"
+                    }
+                })
+            });
+
+            if (analysisResponse.ok) {
+                const analysisData = await analysisResponse.json();
+                const analysisText = analysisData.candidates?.[0]?.content?.parts?.[0]?.text;
+                console.log("Gemini 3 Pro Analysis Result:", analysisText);
+
+                if (analysisText) {
+                    const analysisJson = JSON.parse(analysisText);
+                    // Extract Editing Instructions from the JSON
+                    // The prompt defines "original_bg" key or similar structure. 
+                    // We try to grab the most relevant fields.
+                    const restoreData = analysisJson['original_bg'] || analysisJson['1'] || analysisJson;
+
+                    if (restoreData) {
+                        specializedInstructions = `
+                        - Editing_Instructions: "${restoreData.Editing_Instructions || ''}"
+                        - Refining_Details: "${restoreData.Refining_Details || ''}"
+                        - Reference_Instructions: "${restoreData.Reference_Instructions || ''}"
+                         `;
+                    }
+                }
+            } else {
+                console.warn("Gemini 3 Pro Analysis Failed:", await analysisResponse.text());
+                // Fallback to default instruction if analysis fails
+            }
+        } catch (err) {
+            console.error("Error in Clinical Analysis:", err);
+        }
+
+        // Combine Analysis with Scenario for Veo
         const baseInstructions = `
         - Subject: "The person from the reference image, maintaining the EXACT same smile and dental geometry."
         - Composition: "9:16 Vertical Portrait. FIXED CAMERA. NO ROTATION."
-        - Editing_Instructions: "Keep the teeth identical to the Reference Image."
-        - Reference_Instructions: "Use the provided input image to lock the facial identity and the smile design."
+        ${specializedInstructions || '- Editing_Instructions: "Keep the teeth identical to the Reference Image."'} 
         `;
 
         let scenarioDetails = "";

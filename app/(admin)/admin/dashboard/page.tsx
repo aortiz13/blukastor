@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { Users, Sparkles, Video } from "lucide-react";
+import { ExportGenerationsButton } from "@/components/admin/ExportGenerationsButton";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -28,7 +29,10 @@ export default async function DashboardPage() {
 
     return (
         <div className="p-8 space-y-8">
-            <h2 className="text-3xl font-heading font-bold text-foreground">Dashboard</h2>
+            <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-heading font-bold text-foreground">Dashboard</h2>
+                <ExportGenerationsButton />
+            </div>
 
             {/* Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

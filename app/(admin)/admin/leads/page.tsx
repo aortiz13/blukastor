@@ -44,11 +44,50 @@ export default function LeadsPage() {
         rejected: "Rechazado"
     };
 
+    const handleExportCSV = () => {
+        if (!leads.length) {
+            toast.error("No hay leads para exportar");
+            return;
+        }
+
+        const headers = ["ID", "Fecha", "Nombre", "Email", "Teléfono", "Estado", "Rango Edad", "Objetivo", "Plazo", "Clínica"];
+        const rows = leads.map(lead => [
+            lead.id,
+            new Date(lead.created_at).toLocaleString(),
+            `"${lead.name?.replace(/"/g, '""') || ''}"`,
+            `"${lead.email?.replace(/"/g, '""') || ''}"`,
+            `"${lead.phone?.replace(/"/g, '""') || ''}"`,
+            lead.status,
+            lead.survey_data?.ageRange || '',
+            lead.survey_data?.improvementGoal || '',
+            lead.survey_data?.timeframe || '',
+            lead.survey_data?.clinicPreference || ''
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `leads_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="p-8 space-y-8">
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-heading font-bold text-foreground">Gestión de Leads</h2>
-                <button className="flex items-center px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-secondary/80">
+                <button
+                    onClick={handleExportCSV}
+                    className="flex items-center px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors"
+                >
                     <Download className="w-4 h-4 mr-2" strokeWidth={1.5} /> Exportar CSV
                 </button>
             </div>

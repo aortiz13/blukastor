@@ -294,7 +294,7 @@ export default function WidgetContainer() {
                             <p className="text-sm text-zinc-500">Por favor completa el captcha para continuar.</p>
                         </div>
                         <Turnstile
-                            siteKey="0x4AAAAAAACUl6BXJSwE0jdk1"
+                            siteKey="0x4AAAAAACUl6BXJSwE0jdkl"
                             onSuccess={(token) => setIsVerified(true)}
                             options={{
                                 size: 'normal',

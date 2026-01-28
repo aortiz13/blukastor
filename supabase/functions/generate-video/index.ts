@@ -90,19 +90,20 @@ Deno.serve(async (req) => {
         // STEP 1: GENERATE SCENE IMAGE (Image-to-Image)
         console.log(`Generating SCENE IMAGE for ${lead.name} (${ageRange})...`);
 
+        // Default to original image if generation fails
         let sceneImgBase64 = imgBase64;
         let sceneImgMimeType = mimeType;
         let generatedScenePath = generation.output_path;
 
         const sceneGenerationPrompt = `
-    Subject: The person in the input image.
-    Action: ${ageRange === '18-30' ? 'Laughing naturally' : ageRange === '55+' ? 'Smiling warmly' : 'Smiling casually'}.
-    Location: ${sceneDescription}
-    Style: Photorealistic, Cinematic, 8k resolution, High Quality.
-    Editing Input: Change the background to match the Location description. Keep the person's face, hair, and smile EXACTLY the same. Seamlessly blend the lighting.
+      Subject: The person in the input image.
+      Action: ${ageRange === '18-30' ? 'Laughing naturally' : ageRange === '55+' ? 'Smiling warmly' : 'Smiling casually'}.
+      Location: ${sceneDescription}
+      Style: Photorealistic, cinematic lighting, 8k resolution, High Quality.
+      Editing Input: Change the background to match the Location description. Keep the person's face, hair, and smile EXACTLY the same. Seamlessly blend the lighting.
     `;
 
-        // Use gemini-3-pro-image-preview for Scene Generation
+        // EXACT PATTERN FROM generate-smile
         const visionEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${apiKey}`;
 
         try {
@@ -119,14 +120,33 @@ Deno.serve(async (req) => {
                 })
             });
 
-            if (sceneResponse.ok) {
-                const sceneData = await sceneResponse.json();
-                const part = sceneData.candidates?.[0]?.content?.parts?.[0];
+            if (!sceneResponse.ok) {
+                const errText = await sceneResponse.text();
+                console.warn("Scene Generation API Failed:", errText);
+                // We don't throw here to allow fallback to original image
+            } else {
+                const result = await sceneResponse.json();
+                const candidates = result.candidates;
 
-                if (part?.inline_data) {
+                let foundBase64 = null;
+                let foundMime = null;
+
+                if (candidates && candidates[0]?.content?.parts) {
+                    for (const part of candidates[0].content.parts) {
+                        // Check for inline_data (snake_case) or inlineData (camelCase)
+                        const inlineData = part.inline_data || part.inlineData;
+                        if (inlineData) {
+                            foundBase64 = inlineData.data;
+                            foundMime = inlineData.mime_type || inlineData.mimeType || "image/jpeg";
+                            break;
+                        }
+                    }
+                }
+
+                if (foundBase64) {
                     console.log("New Scene Image Generated Successfully.");
-                    sceneImgBase64 = part.inline_data.data;
-                    sceneImgMimeType = part.inline_data.mime_type;
+                    sceneImgBase64 = foundBase64;
+                    sceneImgMimeType = foundMime;
 
                     // Upload this new "Scene Image" to Storage
                     const sceneFileName = `${lead_id}_scene_${ageRange}_${Date.now()}.png`;
@@ -145,15 +165,9 @@ Deno.serve(async (req) => {
                         console.log(`Scene Image uploaded to: ${generatedScenePath}`);
                     }
                 } else {
-                    console.warn("Gemini did not return an image part. Using original image.");
-                    if (part?.text) {
-                        console.log("Gemini Returned TEXT instead:", part.text);
-                    }
-                    console.log("Full Gemini Response:", JSON.stringify(sceneData));
+                    console.warn("Gemini successful but NO IMAGE found in response Parts.");
+                    console.log("Response dump:", JSON.stringify(result));
                 }
-            } else {
-                console.warn("Scene Generation Failed:", await sceneResponse.text());
-                // Fallback: Proceed with original image, but log the failure.
             }
         } catch (err) {
             console.error("Error in Scene Generation:", err);

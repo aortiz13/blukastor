@@ -58,7 +58,7 @@ export function DashboardCharts({ data }: DashboardChartsProps) {
                     <CardDescription>Generaciones realizadas en los últimos 30 días</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="h-[300px] w-full">
+                    <div className="h-[250px] md:h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={activityData}>
                                 <defs>

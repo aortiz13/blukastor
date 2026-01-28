@@ -270,10 +270,10 @@ export default function WidgetContainer() {
     );
 
     return (
-        <div className="relative h-[calc(100vh-100px)] min-h-[600px] w-full bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm flex flex-col font-sans overflow-hidden rounded-[2rem]">
+        <div className="relative h-auto md:h-[calc(100vh-100px)] min-h-[600px] w-full bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm flex flex-col font-sans overflow-hidden rounded-[2rem]">
             {/* Header - Minimal with Serif Font */}
             <div className="flex-none p-6 md:p-8 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md z-20">
-                <h1 className="text-2xl font-serif text-black dark:text-white tracking-tight">Smile Forward</h1>
+                <h1 className="text-xl md:text-2xl font-serif text-black dark:text-white tracking-tight">Smile Forward</h1>
                 {/* Subtle Status Indicator */}
                 <div className="flex items-center gap-2 px-3 py-1 bg-zinc-50 dark:bg-zinc-800 rounded-full border border-zinc-100 dark:border-zinc-700">
                     <span className="relative flex h-2 w-2">
@@ -296,7 +296,7 @@ export default function WidgetContainer() {
                             className="h-full flex flex-col justify-center items-center text-center space-y-8"
                         >
                             <div
-                                className="group relative w-full aspect-[4/3] max-w-xs md:max-w-sm border border-dashed border-zinc-300 dark:border-zinc-700 rounded-[2rem] hover:border-teal-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-zinc-50/50 dark:bg-zinc-900/50"
+                                className="group relative w-full aspect-[4/3] max-w-[280px] md:max-w-sm border border-dashed border-zinc-300 dark:border-zinc-700 rounded-[2rem] hover:border-teal-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-zinc-50/50 dark:bg-zinc-900/50"
                                 onDragOver={(e) => e.preventDefault()}
                                 onDrop={(e) => {
                                     e.preventDefault();
@@ -331,10 +331,10 @@ export default function WidgetContainer() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="h-full flex flex-col md:flex-row gap-10 items-center justify-center"
+                            className="h-full flex flex-col md:flex-row gap-10 items-center justify-center py-8 md:py-0"
                         >
                             {/* Left: Visual Scanner - Minimal */}
-                            <div className="relative w-full max-w-[280px] aspect-[3/4] rounded-[2rem] overflow-hidden shadow-2xl border border-zinc-100 dark:border-zinc-800 bg-zinc-900 flex-shrink-0">
+                            <div className="relative w-full max-w-[240px] md:max-w-[280px] aspect-[3/4] rounded-[2rem] overflow-hidden shadow-2xl border border-zinc-100 dark:border-zinc-800 bg-zinc-900 flex-shrink-0">
                                 {image ? (
                                     <img src={URL.createObjectURL(image)} alt="Analyzing" className="w-full h-full object-cover opacity-80" />
                                 ) : (
@@ -349,8 +349,8 @@ export default function WidgetContainer() {
                             </div>
 
                             {/* Right: Progress List - Clean Typography */}
-                            <div className="w-full max-w-sm space-y-4">
-                                <h3 className="text-2xl font-serif text-black dark:text-white mb-6">Analizando...</h3>
+                            <div className="w-full max-w-sm space-y-4 px-4 md:px-0">
+                                <h3 className="text-2xl font-serif text-black dark:text-white mb-6 text-center md:text-left">Analizando...</h3>
                                 <StatusItem
                                     label="Validación Biométrica"
                                     icon={ScanFace}
@@ -385,9 +385,9 @@ export default function WidgetContainer() {
                             key="locked"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="h-full flex flex-col items-center justify-center space-y-8"
+                            className="h-full flex flex-col items-center justify-center space-y-8 py-8 md:py-0"
                         >
-                            <div className="relative w-full max-w-[380px] aspect-[9/16] bg-zinc-100 dark:bg-zinc-900 rounded-[2rem] overflow-hidden shadow-2xl group">
+                            <div className="relative w-full max-w-[320px] md:max-w-[380px] aspect-[9/16] bg-zinc-100 dark:bg-zinc-900 rounded-[2rem] overflow-hidden shadow-2xl group">
                                 {generatedImage ? (
                                     <>
                                         <img src={generatedImage} alt="Preview" className="w-full h-full object-cover" />
@@ -403,7 +403,7 @@ export default function WidgetContainer() {
                                 ) : null}
                             </div>
 
-                            <div className="text-center space-y-6 max-w-sm">
+                            <div className="text-center space-y-6 max-w-sm px-4 md:px-0">
                                 <div>
                                     <h3 className="font-serif text-2xl text-black dark:text-white mb-2">Tu sonrisa, rediseñada.</h3>
                                     <p className="text-sm text-zinc-500 leading-relaxed">Recibe la imagen en alta calidad y descubre cómo lograr este resultado.</p>
@@ -428,7 +428,7 @@ export default function WidgetContainer() {
                             animate={{ opacity: 1, x: 0 }}
                             className="h-full flex flex-col items-center justify-center p-4 overflow-y-auto"
                         >
-                            <div className="w-full max-w-sm space-y-8">
+                            <div className="w-full max-w-sm space-y-8 py-8 md:py-0">
                                 <div className="text-center space-y-2">
                                     <h2 className="text-3xl font-serif text-black dark:text-white">Casi listo</h2>
                                     <p className="text-sm text-zinc-500">Completa tus datos para recibir tu diseño.</p>
@@ -482,7 +482,7 @@ export default function WidgetContainer() {
                             key="result"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="h-full flex flex-col items-center gap-6 pt-4"
+                            className="h-full flex flex-col items-center gap-6 pt-4 pb-8"
                         >
                             <div className="relative w-full max-w-[320px] aspect-[9/16] rounded-[2rem] overflow-hidden shadow-2xl border border-zinc-100 bg-zinc-900">
                                 {generatedImage && image ? (
@@ -496,7 +496,7 @@ export default function WidgetContainer() {
                                 )}
                             </div>
 
-                            <div className="w-full max-w-[320px]">
+                            <div className="w-full max-w-[320px] px-4 md:px-0">
                                 <Dialog open={isVideoDialogOpen} onOpenChange={setIsVideoDialogOpen}>
                                     <DialogTrigger asChild>
                                         <Button
@@ -523,7 +523,7 @@ export default function WidgetContainer() {
                             animate={{ opacity: 1, x: 0 }}
                             className="h-full flex flex-col items-center justify-center p-4 overflow-y-auto"
                         >
-                            <div className="w-full max-w-sm space-y-6">
+                            <div className="w-full max-w-sm space-y-6 py-8 md:py-0">
                                 <div className="text-center space-y-2">
                                     <h2 className="text-2xl font-serif text-black dark:text-white">Personalizar</h2>
                                     <p className="text-sm text-zinc-500">Ayúdanos a mejorar tu simulación.</p>
@@ -580,7 +580,7 @@ export default function WidgetContainer() {
                             key="verification"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="h-full flex flex-col items-center justify-center p-6 space-y-8"
+                            className="h-full flex flex-col items-center justify-center p-6 space-y-8 py-10 md:py-0"
                         >
                             <div className="bg-zinc-50 p-6 rounded-full">
                                 <Video className="w-10 h-10 text-zinc-800" strokeWidth={1} />

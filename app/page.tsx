@@ -53,8 +53,8 @@ export default function Home() {
       {/* Header - Minimal & Premium */}
       {/* Header - Minimal & Premium (Dark Glass) */}
       <header className="fixed top-0 z-50 w-full bg-black/40 backdrop-blur-md border-b border-white/10 transition-all duration-300">
-        <div className="container flex h-20 items-center justify-between px-8">
-          <h1 className="text-2xl font-serif tracking-tight flex items-center gap-2 text-white">
+        <div className="container flex h-20 items-center justify-between px-6 md:px-8">
+          <h1 className="text-xl md:text-2xl font-serif tracking-tight flex items-center gap-2 text-white">
             <Sparkles className="w-5 h-5 text-teal-500" strokeWidth={1} /> Smile Forward
           </h1>
           <div className="flex items-center gap-4">
@@ -63,24 +63,23 @@ export default function Home() {
                 <LayoutDashboard className="w-4 h-4" strokeWidth={1.5} /> {t.admin}
               </Button>
             </Link>
-
             <ModeToggle />
           </div>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-start pt-16 md:pt-24 px-6 md:px-8 gap-16 pb-24">
+      <main className="flex-1 flex flex-col items-center justify-start pt-28 md:pt-24 px-4 md:px-8 gap-12 md:gap-16 pb-12 md:pb-24">
         {/* Intro Section */}
-        <section className="text-center max-w-4xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <section className="text-center max-w-4xl space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <div className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-sans font-medium text-zinc-500 uppercase tracking-widest shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
             {t.badge}
           </div>
 
-          <h2 className="text-5xl md:text-7xl lg:text-8xl font-serif font-light tracking-tight text-black dark:text-white leading-[1.1] md:leading-[1.05]">
+          <h2 className="text-4xl md:text-7xl lg:text-8xl font-serif font-light tracking-tight text-black dark:text-white leading-[1.1] md:leading-[1.05]">
             {t.title}
           </h2>
 
-          <p className="text-[23px] font-sans font-light text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-[23px] font-sans font-light text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed px-4 md:px-0">
             {t.subtitle}
           </p>
         </section>

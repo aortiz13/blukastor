@@ -270,21 +270,21 @@ export default function WidgetContainer() {
     );
 
     return (
-        <div className="relative h-[calc(100vh-100px)] min-h-[500px] w-full bg-card text-card-foreground flex flex-col font-sans overflow-hidden rounded-xl border-0 md:border shadow-sm">
-            {/* Header */}
-            <div className="flex-none p-4 border-b flex justify-between items-center bg-muted/20 backdrop-blur-sm z-20">
-                <h1 className="text-lg font-heading font-bold text-primary tracking-tight">Smile AI</h1>
-                <div className="flex items-center gap-2 px-2 py-1 bg-background/50 rounded-full border shadow-sm">
+        <div className="relative h-[calc(100vh-100px)] min-h-[600px] w-full bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm flex flex-col font-sans overflow-hidden rounded-[2rem]">
+            {/* Header - Minimal with Serif Font */}
+            <div className="flex-none p-6 md:p-8 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md z-20">
+                <h1 className="text-2xl font-serif text-black dark:text-white tracking-tight">Smile Forward</h1>
+                {/* Subtle Status Indicator */}
+                <div className="flex items-center gap-2 px-3 py-1 bg-zinc-50 dark:bg-zinc-800 rounded-full border border-zinc-100 dark:border-zinc-700">
                     <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
                     </span>
-                    <span className="text-[10px] text-muted-foreground font-mono font-bold">ONLINE</span>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-sans tracking-widest uppercase">Online</span>
                 </div>
             </div>
 
             {/* Main Content Area - Scrollable if needed but mostly constrained */}
-            <main className="flex-1 relative overflow-y-auto overflow-x-hidden p-4 md:p-6 scrollbar-hide">
+            <main className="flex-1 relative overflow-y-auto overflow-x-hidden p-6 md:p-10 scrollbar-hide">
                 <AnimatePresence mode="wait">
                     {/* UPLOAD STEP */}
                     {step === "UPLOAD" && (
@@ -293,10 +293,10 @@ export default function WidgetContainer() {
                             initial={{ opacity: 0, scale: 0.98 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.98 }}
-                            className="h-full flex flex-col justify-center items-center text-center space-y-6"
+                            className="h-full flex flex-col justify-center items-center text-center space-y-8"
                         >
                             <div
-                                className="group relative w-full aspect-[4/3] max-w-xs md:max-w-sm border-2 border-dashed border-input rounded-2xl hover:border-primary/50 hover:bg-secondary/30 transition-all flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-background/50"
+                                className="group relative w-full aspect-[4/3] max-w-xs md:max-w-sm border border-dashed border-zinc-300 dark:border-zinc-700 rounded-[2rem] hover:border-teal-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-zinc-50/50 dark:bg-zinc-900/50"
                                 onDragOver={(e) => e.preventDefault()}
                                 onDrop={(e) => {
                                     e.preventDefault();
@@ -304,12 +304,11 @@ export default function WidgetContainer() {
                                 }}
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <div className="p-4 bg-background shadow-lg rounded-full mb-4 group-hover:scale-110 transition-transform duration-500 border border-primary/10">
-                                    <UploadCloud className="w-8 h-8 text-primary" />
+                                <div className="p-6 bg-white dark:bg-zinc-800 shadow-sm rounded-full mb-6 group-hover:scale-110 transition-transform duration-500">
+                                    <UploadCloud className="w-8 h-8 text-zinc-400 group-hover:text-teal-600 transition-colors" />
                                 </div>
-                                <h3 className="text-lg font-bold text-foreground">Sube tu Selfie</h3>
-                                <p className="text-xs text-muted-foreground px-6 mt-1">Arrastra o haz clic</p>
+                                <h3 className="text-xl font-serif text-black dark:text-white mb-2">Sube tu Selfie</h3>
+                                <p className="text-sm text-zinc-500 max-w-[200px]">Arrastra tu foto aquí o haz clic para explorar</p>
                                 <input
                                     ref={fileInputRef}
                                     type="file"
@@ -318,10 +317,9 @@ export default function WidgetContainer() {
                                     onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
                                 />
                             </div>
-                            <div className="flex gap-4 text-[10px] text-muted-foreground bg-muted/30 px-4 py-2 rounded-full border border-border/50">
-                                <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> Privado</span>
-                                <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> Rápido</span>
-                                <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> IA Avanzada</span>
+                            <div className="flex flex-wrap justify-center gap-6 text-xs text-zinc-400 font-sans tracking-wide uppercase">
+                                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-teal-500" /> 100% Privado</span>
+                                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-teal-500" /> Resultados en segundos</span>
                             </div>
                         </motion.div>
                     )}
@@ -333,31 +331,26 @@ export default function WidgetContainer() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="h-full flex flex-col md:flex-row gap-6 items-center md:items-start justify-center p-2"
+                            className="h-full flex flex-col md:flex-row gap-10 items-center justify-center"
                         >
-                            {/* Left: Visual Scanner */}
-                            <div className="relative w-full max-w-[280px] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border border-primary/20 bg-black flex-shrink-0">
+                            {/* Left: Visual Scanner - Minimal */}
+                            <div className="relative w-full max-w-[280px] aspect-[3/4] rounded-[2rem] overflow-hidden shadow-2xl border border-zinc-100 dark:border-zinc-800 bg-zinc-900 flex-shrink-0">
                                 {image ? (
-                                    <img src={URL.createObjectURL(image)} alt="Analyzing" className="w-full h-full object-cover opacity-60" />
+                                    <img src={URL.createObjectURL(image)} alt="Analyzing" className="w-full h-full object-cover opacity-80" />
                                 ) : (
-                                    <div className="w-full h-full bg-muted" />
+                                    <div className="w-full h-full bg-zinc-800" />
                                 )}
                                 <motion.div
                                     variants={scanVariants}
                                     initial="initial"
                                     animate="animate"
-                                    className="absolute left-0 right-0 h-1 bg-cyan-400 shadow-[0_0_20px_4px_rgba(34,211,238,0.6)] z-10"
+                                    className="absolute left-0 right-0 h-[1px] bg-white/50 shadow-[0_0_20px_2px_rgba(255,255,255,0.5)] z-10"
                                 />
-                                <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
-                                <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                                    <span className="text-[10px] font-mono text-cyan-200">REC_MODE: ON</span>
-                                </div>
                             </div>
 
-                            {/* Right: Progress List */}
-                            <div className="w-full max-w-md md:max-w-lg space-y-2 pt-4 px-4">
-                                <h3 className="text-xl font-heading font-bold mb-4">Procesando...</h3>
+                            {/* Right: Progress List - Clean Typography */}
+                            <div className="w-full max-w-sm space-y-4">
+                                <h3 className="text-2xl font-serif text-black dark:text-white mb-6">Analizando...</h3>
                                 <StatusItem
                                     label="Validación Biométrica"
                                     icon={ScanFace}
@@ -392,42 +385,32 @@ export default function WidgetContainer() {
                             key="locked"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="h-full flex flex-col items-center justify-center space-y-6"
+                            className="h-full flex flex-col items-center justify-center space-y-8"
                         >
-                            <div className="relative w-full max-w-[420px] aspect-[9/16] bg-muted rounded-2xl overflow-hidden border border-border/50 shadow-2xl group">
+                            <div className="relative w-full max-w-[380px] aspect-[9/16] bg-zinc-100 dark:bg-zinc-900 rounded-[2rem] overflow-hidden shadow-2xl group">
                                 {generatedImage ? (
-                                    <>
-                                        {/* Blurred/Darkened Image - Actually we show it clear but with watermark per user request "preview... with watermark" */}
-                                        <img src={generatedImage} alt="Preview" className="w-full h-full object-cover transition-all duration-700" />
-
-                                        {/* Watermark Overlay */}
-                                        <div className="absolute inset-0 flex items-center justify-center p-6 z-10 pointer-events-none opacity-80">
-                                            <img
-                                                src="https://dentalcorbella.com/wp-content/uploads/2023/07/logo-white-trans2.png"
-                                                alt="Watermark"
-                                                className="w-full opacity-60 drop-shadow-md rotate-[-20deg]"
-                                            />
-                                        </div>
-                                    </>
+                                    <img src={generatedImage} alt="Preview" className="w-full h-full object-cover" />
                                 ) : null}
                             </div>
 
-                            <div className="text-center px-4">
-                                <h3 className="font-bold text-xl mb-2">¿Te gusta tu nueva sonrisa?</h3>
-                                <p className="text-sm text-muted-foreground mb-4">Recibe esta imagen en <strong>Full HD</strong> y sin marca de agua directamente en tu WhatsApp.</p>
+                            <div className="text-center space-y-6 max-w-sm">
+                                <div>
+                                    <h3 className="font-serif text-2xl text-black dark:text-white mb-2">Tu sonrisa, rediseñada.</h3>
+                                    <p className="text-sm text-zinc-500 leading-relaxed">Recibe la imagen en alta calidad y descubre cómo lograr este resultado.</p>
+                                </div>
 
                                 <Button
                                     onClick={() => setStep("LEAD_FORM")}
-                                    className="w-full max-w-xs text-base h-12 font-bold rounded-xl shadow-lg bg-green-600 hover:bg-green-700 text-white animate-pulse"
+                                    className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-base font-sans font-medium tracking-wide shadow-lg"
                                     size="lg"
                                 >
-                                    <span className="mr-2">📲</span> Recibir en WhatsApp
+                                    Continuar en WhatsApp
                                 </Button>
                             </div>
                         </motion.div>
                     )}
 
-                    {/* LEAD FORM */}
+                    {/* LEAD FORM - Clean & Minimal */}
                     {step === "LEAD_FORM" && (
                         <motion.div
                             key="form"
@@ -435,48 +418,47 @@ export default function WidgetContainer() {
                             animate={{ opacity: 1, x: 0 }}
                             className="h-full flex flex-col items-center justify-center p-4 overflow-y-auto"
                         >
-                            <div className="w-full max-w-sm space-y-6">
-                                <div className="text-center space-y-1">
-                                    <h2 className="text-2xl font-heading font-bold">¡Casi listo!</h2>
-                                    <p className="text-sm text-muted-foreground">Envíanos tus datos para recibir tu diseño.</p>
+                            <div className="w-full max-w-sm space-y-8">
+                                <div className="text-center space-y-2">
+                                    <h2 className="text-3xl font-serif text-black dark:text-white">Casi listo</h2>
+                                    <p className="text-sm text-zinc-500">Completa tus datos para recibir tu diseño.</p>
                                 </div>
-                                <form className="space-y-4" onSubmit={handleLeadSubmit}>
-                                    <div className="grid gap-4">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="name">Nombre Completo</Label>
-                                            <Input id="name" name="name" placeholder="Ej: Juan Pérez" required className="h-11" />
+                                <form className="space-y-5" onSubmit={handleLeadSubmit}>
+                                    <div className="space-y-4">
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="name" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Nombre Completo</Label>
+                                            <Input id="name" name="name" placeholder="Tu nombre" required className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all" />
                                         </div>
 
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="email">Correo Electrónico</Label>
-                                            <Input id="email" name="email" type="email" placeholder="juan@ejemplo.com" required className="h-11" />
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="email" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Correo Electrónico</Label>
+                                            <Input id="email" name="email" type="email" placeholder="tu@email.com" required className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all" />
                                         </div>
 
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="phone">WhatsApp (con código de país)</Label>
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="phone" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">WhatsApp</Label>
                                             <Input
                                                 id="phone"
                                                 name="phone"
                                                 type="tel"
-                                                placeholder="+34 600 000 000"
+                                                placeholder="+34"
                                                 required
-                                                className="h-11 font-mono"
+                                                className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all"
                                             />
-                                            <p className="text-[10px] text-muted-foreground">Importante: Incluye el prefijo (ej: +34 para España).</p>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-start space-x-3 bg-muted/30 p-3 rounded-lg">
-                                        <Checkbox id="terms" required className="mt-1" />
-                                        <Label htmlFor="terms" className="text-xs text-muted-foreground font-normal leading-tight">
-                                            Acepto recibir mi diseño por WhatsApp y la política de privacidad de Dental Corbella.
+                                    <div className="flex items-start space-x-3 px-2">
+                                        <Checkbox id="terms" required className="mt-1 rounded-full border-zinc-300 data-[state=checked]:bg-black data-[state=checked]:text-white" />
+                                        <Label htmlFor="terms" className="text-xs text-zinc-400 font-normal leading-tight">
+                                            Acepto recibir mi diseño y la política de privacidad.
                                         </Label>
                                     </div>
 
-                                    <Button type="submit" className="w-full h-12 text-base font-bold rounded-xl shadow-md">
-                                        Enviar y Recibir Diseño 🚀
+                                    <Button type="submit" className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-base font-sans font-medium tracking-wide shadow-md mt-4">
+                                        Ver mi Resultado
                                     </Button>
-                                    <Button type="button" variant="ghost" size="sm" onClick={() => setStep("LOCKED_RESULT")} className="w-full">
+                                    <Button type="button" variant="ghost" size="sm" onClick={() => setStep("LOCKED_RESULT")} className="w-full rounded-full text-zinc-400 hover:text-black hover:bg-transparent">
                                         Volver
                                     </Button>
                                 </form>
@@ -490,9 +472,9 @@ export default function WidgetContainer() {
                             key="result"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="h-full flex flex-col items-center gap-4"
+                            className="h-full flex flex-col items-center gap-6 pt-4"
                         >
-                            <div className="relative w-full max-w-[420px] aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-primary/20 bg-black">
+                            <div className="relative w-full max-w-[320px] aspect-[9/16] rounded-[2rem] overflow-hidden shadow-2xl border border-zinc-100 bg-zinc-900">
                                 {generatedImage && image ? (
                                     <BeforeAfterSlider
                                         beforeImage={URL.createObjectURL(image)}
@@ -500,37 +482,24 @@ export default function WidgetContainer() {
                                         className="h-full w-full"
                                     />
                                 ) : (
-                                    <div className="flex items-center justify-center w-full h-full text-destructive">Error</div>
+                                    <div className="flex items-center justify-center w-full h-full text-zinc-400">Error</div>
                                 )}
-                                <div className="absolute bottom-4 right-4 z-20 pointer-events-none">
-                                    <span className="bg-white/90 text-primary px-3 py-1 rounded-full text-[10px] font-bold shadow-sm backdrop-blur">
-                                        AI GENERATED
-                                    </span>
-                                </div>
                             </div>
 
-                            <div className="w-full max-w-[420px] flex gap-2">
+                            <div className="w-full max-w-[320px]">
                                 <Dialog open={isVideoDialogOpen} onOpenChange={setIsVideoDialogOpen}>
                                     <DialogTrigger asChild>
                                         <Button
                                             variant="outline"
-                                            className="flex-1 gap-2 border-primary/20 hover:bg-primary/5 h-12 text-base font-bold"
+                                            className="w-full h-12 rounded-full border-zinc-200 text-zinc-600 hover:border-black hover:text-black transition-all font-sans"
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 setStep("SURVEY");
                                             }}
                                         >
-                                            <Video className="w-5 h-5 text-primary" /> Generar Video
+                                            <Video className="w-4 h-4 mr-2" /> Generar Video Simulación
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Video Generativo</DialogTitle>
-                                            <DialogDescription>Crea un video hablando con tu nueva sonrisa.</DialogDescription>
-                                        </DialogHeader>
-                                        <div className="py-4 text-center text-sm text-muted-foreground">Próximamente disponible.</div>
-                                        <DialogFooter><Button onClick={handleVideoRequest}>Notificarme</Button></DialogFooter>
-                                    </DialogContent>
                                 </Dialog>
                             </div>
                         </motion.div>
@@ -545,15 +514,15 @@ export default function WidgetContainer() {
                             className="h-full flex flex-col items-center justify-center p-4 overflow-y-auto"
                         >
                             <div className="w-full max-w-sm space-y-6">
-                                <div className="text-center space-y-1">
-                                    <h2 className="text-2xl font-heading font-bold">Personaliza tu Video</h2>
-                                    <p className="text-sm text-muted-foreground">3 preguntas rápidas para adaptar el resultado.</p>
+                                <div className="text-center space-y-2">
+                                    <h2 className="text-2xl font-serif text-black dark:text-white">Personalizar</h2>
+                                    <p className="text-sm text-zinc-500">Ayúdanos a mejorar tu simulación.</p>
                                 </div>
-                                <form className="space-y-4" onSubmit={handleSurveySubmit}>
+                                <form className="space-y-5" onSubmit={handleSurveySubmit}>
                                     <div className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label>Rango de Edad</Label>
-                                            <select name="ageRange" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Rango de Edad</Label>
+                                            <select name="ageRange" className="flex h-12 w-full items-center justify-between rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:opacity-50 appearance-none" required>
                                                 <option value="">Selecciona una opción</option>
                                                 <option value="18-30">Joven (18 - 30 años)</option>
                                                 <option value="30-55">Mediana Edad (30 - 55 años)</option>
@@ -561,9 +530,9 @@ export default function WidgetContainer() {
                                             </select>
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <Label>¿Qué te gustaría mejorar?</Label>
-                                            <select name="improvementGoal" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Objetivo</Label>
+                                            <select name="improvementGoal" className="flex h-12 w-full items-center justify-between rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:opacity-50 appearance-none" required>
                                                 <option value="">Selecciona una opción</option>
                                                 <option value="alignment">Alineación</option>
                                                 <option value="veneers">Carillas</option>
@@ -573,31 +542,21 @@ export default function WidgetContainer() {
                                             </select>
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <Label>Plazo deseado</Label>
-                                            <select name="timeframe" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Plazo</Label>
+                                            <select name="timeframe" className="flex h-12 w-full items-center justify-between rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:opacity-50 appearance-none" required>
                                                 <option value="">Selecciona una opción</option>
                                                 <option value="now">Ahora mismo</option>
                                                 <option value="1-3_months">1 - 3 meses</option>
                                                 <option value="later">Más adelante</option>
                                             </select>
                                         </div>
-
-                                        <div className="space-y-2">
-                                            <Label>Clínica de preferencia</Label>
-                                            <select name="clinicPreference" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
-                                                <option value="">Selecciona una opción</option>
-                                                <option value="Goya">Goya</option>
-                                                <option value="Majadahonda">Majadahonda</option>
-                                                <option value="Las Rozas">Las Rozas</option>
-                                            </select>
-                                        </div>
                                     </div>
 
-                                    <Button type="submit" className="w-full h-12 text-base font-bold rounded-xl shadow-md mt-6">
+                                    <Button type="submit" className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 text-base font-sans font-medium tracking-wide shadow-md mt-4">
                                         Continuar
                                     </Button>
-                                    <Button type="button" variant="ghost" size="sm" onClick={() => setStep("RESULT")} className="w-full">
+                                    <Button type="button" variant="ghost" size="sm" onClick={() => setStep("RESULT")} className="w-full rounded-full text-zinc-400 hover:text-black hover:bg-transparent">
                                         Cancelar
                                     </Button>
                                 </form>
@@ -613,32 +572,29 @@ export default function WidgetContainer() {
                             animate={{ opacity: 1, scale: 1 }}
                             className="h-full flex flex-col items-center justify-center p-6 space-y-8"
                         >
-                            <div className="bg-primary/5 p-4 rounded-full">
-                                <Video className="w-12 h-12 text-primary" />
+                            <div className="bg-zinc-50 p-6 rounded-full">
+                                <Video className="w-10 h-10 text-zinc-800" />
                             </div>
 
                             <div className="text-center space-y-4 max-w-sm">
-                                <h2 className="text-2xl font-heading font-bold">Solicitud de Vídeo</h2>
-                                <p className="text-sm text-balance text-muted-foreground leading-relaxed">
-                                    Para mantener la calidad del servicio, los vídeos <strong>Smile Forward</strong> se generan de forma personalizada y se entregan solo a solicitudes verificadas.
-                                </p>
-                                <p className="text-sm text-balance text-muted-foreground leading-relaxed">
-                                    Para verificar su solicitud, envíenos un WhatsApp haciendo clic en el siguiente botón.
+                                <h2 className="text-2xl font-serif text-black dark:text-white">Vídeo Personalizado</h2>
+                                <p className="text-sm text-zinc-500 leading-relaxed">
+                                    Para asegurar la calidad, generamos cada vídeo bajo demanda. Verifica tu solicitud en WhatsApp para comenzar.
                                 </p>
                             </div>
 
                             <Button
-                                className="w-full max-w-xs h-14 text-lg font-bold rounded-2xl shadow-xl bg-green-600 hover:bg-green-700 text-white gap-2"
+                                className="w-full max-w-xs h-14 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white text-base font-bold shadow-lg flex items-center justify-center gap-3"
                                 onClick={() => {
                                     window.open(`https://wa.me/34600000000?text=${encodeURIComponent("Hola, me gustaría verificar mi solicitud de vídeo Smile Forward.")}`, '_blank');
                                 }}
                             >
-                                <Share2 className="w-6 h-6" />
-                                Verificar solicitud
+                                <Share2 className="w-5 h-5" />
+                                Verificar en WhatsApp
                             </Button>
 
-                            <Button variant="ghost" size="sm" onClick={() => setStep("RESULT")}>
-                                Volver al resultado
+                            <Button variant="ghost" size="sm" onClick={() => setStep("RESULT")} className="text-zinc-400 hover:text-black">
+                                Volver
                             </Button>
                         </motion.div>
                     )}

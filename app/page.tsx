@@ -1,110 +1,97 @@
+"use client";
+
 import Link from "next/link";
 import WidgetContainer from "@/components/widget/WidgetContainer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { ModeToggle } from "@/components/mode-toggle";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [lang, setLang] = useState("es"); // Default to Spanish as requested
+
+  useEffect(() => {
+    // Simple browser language detection
+    const browserLang = navigator.language.split('-')[0];
+    if (browserLang === 'en') {
+      setLang('en');
+    }
+  }, []);
+
+  const t = {
+    es: {
+      badge: "Odontología Avanzada",
+      title: "¿Y si pudieras conocer hoy a tu mejor versión?",
+      subtitle: "Adelántate al tiempo con Smile Forward, una experiencia única que te ofrece Dental Corbella.",
+      cta: "Empezar",
+      learnMore: "Saber más",
+      admin: "Panel Admin",
+      widget: "Widget"
+    },
+    en: {
+      badge: "Advanced Dentistry",
+      title: "What if you could meet your best version today?",
+      subtitle: "Get ahead of time with Smile Forward, a unique experience offered by Dental Corbella.",
+      cta: "Get Started",
+      learnMore: "Learn More",
+      admin: "Admin Panel",
+      widget: "Widget"
+    }
+  }[lang as 'es' | 'en'] || { // Fallback
+    badge: "Odontología Avanzada",
+    title: "¿Y si pudieras conocer hoy a tu mejor versión?",
+    subtitle: "Adelántate al tiempo con Smile Forward, una experiencia única que te ofrece Dental Corbella.",
+    cta: "Empezar",
+    learnMore: "Saber más",
+    admin: "Panel Admin",
+    widget: "Widget"
+  };
+
   return (
-    <div className="flex flex-col min-h-screen font-sans bg-background text-foreground selection:bg-primary/20">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center justify-between px-8">
-          <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-            <span className="text-primary text-2xl">✨</span> Smile Forward
+    <div className="flex flex-col min-h-screen font-sans bg-white dark:bg-zinc-950 text-foreground selection:bg-teal-100 selection:text-teal-900 transition-colors duration-500">
+      {/* Header - Minimal & Premium */}
+      <header className="sticky top-0 z-50 w-full bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-100 dark:border-zinc-800">
+        <div className="container flex h-20 items-center justify-between px-8">
+          <h1 className="text-2xl font-serif tracking-tight flex items-center gap-2 text-black dark:text-white">
+            <span className="text-teal-600">✨</span> Smile Forward
           </h1>
-          <div className="flex gap-4">
-            <Link href="/admin/dashboard">
-              <Button variant="ghost" size="sm">Admin Panel</Button>
+          <div className="flex items-center gap-4">
+            <Link href="/admin/dashboard" className="hidden md:block">
+              <Button variant="ghost" size="sm" className="rounded-full font-sans tracking-wide uppercase text-xs text-zinc-500 hover:text-black hover:bg-zinc-100">{t.admin}</Button>
             </Link>
-            <Link href="/widget">
-              <Button variant="outline" size="sm">Standalone Widget</Button>
+            <Link href="/widget" className="hidden md:block">
+              <Button variant="ghost" size="sm" className="rounded-full font-sans tracking-wide uppercase text-xs text-zinc-500 hover:text-black hover:bg-zinc-100">{t.widget}</Button>
             </Link>
             <ModeToggle />
           </div>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-start p-8 md:p-24 gap-16">
+      <main className="flex-1 flex flex-col items-center justify-start pt-16 md:pt-24 px-6 md:px-8 gap-16 pb-24">
         {/* Intro Section */}
-        <section className="text-center max-w-3xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          <Badge variant="secondary" className="mb-4">AI-Powered Dentistry</Badge>
-          <h2 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-gradient-to-br from-primary via-teal-500 to-cyan-600 bg-clip-text text-transparent pb-2">
-            Perfect Smiles <br /> Start Here
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Experience the future of dental aesthetics. Our advanced AI analyzes your facial structure to design your ideal smile in seconds.
-          </p>
-          <div className="flex justify-center gap-4 pt-4">
-            <Button size="lg" className="rounded-full px-8">Get Started</Button>
-            <Button size="lg" variant="outline" className="rounded-full px-8">Learn More</Button>
+        <section className="text-center max-w-4xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-sans font-medium text-zinc-500 uppercase tracking-widest shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+            {t.badge}
           </div>
+
+          <h2 className="text-5xl md:text-7xl lg:text-8xl font-serif font-light tracking-tight text-black dark:text-white leading-[1.1] md:leading-[1.05]">
+            {t.title}
+          </h2>
+
+          <p className="text-lg md:text-xl font-sans font-light text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+            {t.subtitle}
+          </p>
         </section>
 
-        {/* Demo Widget Section */}
-        <section className="w-full max-w-5xl relative group">
-          {/* Background Glow */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-primary to-cyan-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 animate-pulse"></div>
+        {/* Floating Widget Container */}
+        <section className="w-full max-w-6xl relative z-10">
+          {/* Subtle premium glow behind widget */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-teal-500/10 via-purple-500/5 to-transparent blur-3xl rounded-full opacity-60 pointer-events-none"></div>
 
-          <Card className="relative border-border/50 shadow-2xl overflow-hidden bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md">
-            <div className="absolute inset-0 bg-grid-zinc-900/[0.02] bg-[bottom_1px_center] dark:bg-grid-zinc-400/[0.05]" style={{ maskImage: 'linear-gradient(to bottom, transparent, black)' }}></div>
-
-            <div className="relative p-6 bg-muted/30 border-b flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-400/80"></div>
-                <div className="w-3 h-3 rounded-full bg-yellow-400/80"></div>
-                <div className="w-3 h-3 rounded-full bg-green-400/80"></div>
-                <span className="ml-2 text-xs font-mono text-muted-foreground uppercase tracking-widest pl-2 border-l">Live Experience</span>
-              </div>
-            </div>
-
-            {/* Widget Component */}
-            <div className="p-0 bg-background/50">
+          <Card className="relative border border-zinc-100 dark:border-zinc-800 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden bg-white dark:bg-zinc-900 rounded-[2rem]">
+            <div className="p-0">
               <WidgetContainer />
             </div>
-          </Card>
-        </section>
-
-        {/* Features Grid */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mt-12">
-          <Card className="bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950 border-input/50 transition-all hover:shadow-lg hover:-translate-y-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-primary">
-                ⚡️ Instant Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-base">
-                Advanced computer vision checks your facial structure, landmarks, and smile characteristics in seconds.
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950 border-input/50 transition-all hover:shadow-lg hover:-translate-y-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-primary">
-                🪄 AI Simulation
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-base">
-                See your future smile generated by state-of-the-art Generative AI models tailored to your refined aesthetic.
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950 border-input/50 transition-all hover:shadow-lg hover:-translate-y-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-primary">
-                📅 Seamless Booking
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-base">
-                Connect directly with verified dental professionals to turn your digital simulation into reality.
-              </CardDescription>
-            </CardContent>
           </Card>
         </section>
       </main>

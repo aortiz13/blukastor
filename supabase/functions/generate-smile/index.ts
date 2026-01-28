@@ -70,10 +70,7 @@ Deno.serve(async (req) => {
                         { text: `Generate a photorealistic image based on: ${finalPrompt}` },
                         { inline_data: { mime_type: 'image/jpeg', data: base64Image } }
                     ]
-                }],
-                generationConfig: {
-                    response_mime_type: "image/jpeg"
-                }
+                }]
             })
         })
 

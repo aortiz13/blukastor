@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
 
         // 3. Prepare Prompts based on Scenarios
         let scenarioPrompt = "";
-        const baseScene = "The smile is wide, prominent, and STABLE, maintaining the exact dental structure and whiteness from the input image. Cinematic vertical video. High quality, photorealistic, 4k.";
+        const baseScene = "The smile is wide, prominent, and STABLE, maintaining the exact dental structure and whiteness from the input image. Cinematic vertical video. High quality, photorealistic, 4k. Background sound: emotive music.";
 
         if (ageRange === '18-30') {
             scenarioPrompt = `The subject from the input image comes to life. They are laughing naturally and warmly with friends in a vibrant green park during a sunny afternoon. The head tilts slightly back in joy. ${baseScene}`;
@@ -125,7 +125,8 @@ Deno.serve(async (req) => {
                 parameters: {
                     sampleCount: 1,
                     aspectRatio: "9:16",
-                    resolution: "720p"
+                    resolution: "720p",
+                    negativePrompt: negativePrompt
                 }
             })
         });

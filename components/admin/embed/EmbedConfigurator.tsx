@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, ChevronLeft, Layout, MousePointerClick, MessageSquare, ExternalLink, X } from "lucide-react";
+import { Check, Copy, ChevronLeft, Layout, MousePointerClick, Smile, ExternalLink, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -87,7 +87,7 @@ function EmbedSelection({ onSelect }: { onSelect: (t: EmbedType) => void }) {
                                 <div className="w-2/3 h-2 bg-muted rounded"></div>
                             </div>
                             <div className="absolute bottom-4 right-4 w-10 h-10 bg-black rounded-full shadow-lg flex items-center justify-center text-white">
-                                <MessageSquare className="w-5 h-5" />
+                                <Smile className="w-5 h-5" />
                             </div>
                         </div>
                     }
@@ -249,7 +249,7 @@ function EmbedSettings({ type, onBack }: { type: EmbedType, onBack: () => void }
 
                     {type === 'floating' && (
                         <div className="p-4 bg-blue-50 text-blue-800 rounded-lg text-sm border border-blue-200 flex gap-3">
-                            <MessageSquare className="w-5 h-5 shrink-0 mt-0.5" />
+                            <Smile className="w-5 h-5 shrink-0 mt-0.5" />
                             <p className="leading-snug">El botón flotante está diseñado para ser discreto y aparecerá en la esquina inferior derecha por defecto.</p>
                         </div>
                     )}
@@ -350,7 +350,7 @@ function VisualPreview({ type, brandColor, theme }: { type: EmbedType, brandColo
                         className="h-14 px-6 rounded-full shadow-xl flex items-center gap-3 cursor-default hover:scale-105 transition-transform"
                         style={{ backgroundColor: brandColor }}
                     >
-                        <MessageSquare className="w-6 h-6 text-white" />
+                        <Smile className="w-6 h-6 text-white" />
                         <span className="font-bold text-white">Reservar</span>
                     </div>
                 </div>

@@ -25,7 +25,7 @@ export default function AdminLayout({
     };
 
     return (
-        <div className="min-h-screen bg-muted/20 flex">
+        <div className="h-screen overflow-hidden bg-muted/20 flex">
             {/* Sidebar */}
             <aside className="w-64 bg-card border-r border-border flex flex-col">
                 <div className="p-6 border-b border-border">

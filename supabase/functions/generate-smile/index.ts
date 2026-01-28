@@ -68,40 +68,84 @@ Deno.serve(async (req) => {
                     contents: [{
                         parts: [
                             { text: `Generate a photorealistic image based on: ${finalPrompt}` },
-                            // If we want imagen-like behavior, we might need different payload.
-                            // But for 'generateContent' with 3-pro, we'll try standard structure.
+                            { inlineData: { mimeType: 'image/jpeg', data: base64Image } }
                         ]
-                    }]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "image/jpeg"
+                    }
                 })
             })
 
             if (!response.ok) {
-                console.warn("AI Generation failed, using mock.")
+                const err = await response.text();
+                console.error("Gemini API Error:", err);
+                throw new Error(`Gemini API Failed: ${err}`)
             }
 
-            // Mock Result for Visuals (since we can't generate specific images with this key type easily)
-            const mockImages = [
-                "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=800&q=80",
-                "https://images.unsplash.com/photo-1588775224345-2979a83b92d7?auto=format&fit=crop&w=800&q=80"
-            ];
-            const randomMock = mockImages[Math.floor(Math.random() * mockImages.length)];
-            const generatedBase64 = "MOCK_DATA"; // Flag to skip upload or store metadata
+            const result = await response.json();
+            const candidates = result.candidates;
 
-            // For this demo, we return the public URL directly without uploading a duplicate mock.
+            let generatedBase64 = null;
+            let mimeType = "image/jpeg";
+
+            if (candidates && candidates[0]?.content?.parts) {
+                for (const part of candidates[0].content.parts) {
+                    if (part.inlineData) {
+                        generatedBase64 = part.inlineData.data;
+                        mimeType = part.inlineData.mimeType || "image/jpeg";
+                        break;
+                    }
+                }
+            }
+
+            if (!generatedBase64) {
+                console.error("No image in response:", JSON.stringify(result));
+                throw new Error("AI did not return an image.");
+            }
+
+            // Upload to Supabase Storage
+            const fileName = `smile_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+            const binaryString = atob(generatedBase64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            // Assuming 'generated' bucket exists and is public
+            const { data: uploadData, error: uploadError } = await supabase
+                .storage
+                .from('generated')
+                .upload(fileName, bytes, {
+                    contentType: mimeType,
+                    upsert: false
+                });
+
+            if (uploadError) {
+                console.error("Upload failed:", uploadError);
+                throw new Error(`Failed to upload generated image: ${uploadError.message}`);
+            }
+
+            const { data: { publicUrl } } = supabase
+                .storage
+                .from('generated')
+                .getPublicUrl(fileName);
+
             return new Response(JSON.stringify({
                 success: true,
-                output_path: "mock_path",
-                public_url: randomMock
+                public_url: publicUrl
             }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             })
 
-
-
         } catch (error) {
-            return new Response(JSON.stringify({ error: error.message }), {
+            console.error("Edge Function Error:", error);
+            return new Response(JSON.stringify({
+                success: false,
+                error: error.message
+            }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 400,
+                status: 500, // Return 500 so client knows it failed
             })
         }
     })

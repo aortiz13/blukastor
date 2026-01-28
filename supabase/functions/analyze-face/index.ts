@@ -70,20 +70,74 @@ Deno.serve(async (req) => {
             }
           `;
             } else {
-                // Default "analyze" mode
+                // "analyze" mode - Needs to return the Restoration Plan with Variations
                 prompt = `
-          Analyze this image strictly. 
-          1. Gatekeeper: Is this a real human face? Is it unobscured? Is it facing forward? 
-          2. Clinical: If yes, extract facial landmarks (eyes, nose, lips, chin) coordinates and smile description.
-          
-          Return JSON format:
-          {
-            "valid": boolean,
-            "reason": string (if invalid),
-            "landmarks": { ... },
-            "analysis": string
-          }
-        `;
+            ROLE: Expert Dental Morphologist and AI Prompt Engineer. 
+            TASK: Analyze the user's face using specific landmarks: Eyes, Nose, and Hairline. Generate a restoration plan that harmonizes with these features.
+            
+            SCIENTIFIC ANALYSIS PARAMETERS (Clinical Landmarks & Rules):
+            1. The Interpupillary Rule (Eyes): Detect the user's eyes. The line connecting the center of the eyes (interpupillary line) must be the horizon for the smile. The "Incisal Plane" must be perfectly parallel to this eye line.
+            2. The Nasal Width Guide (Nose): Use the width of the base of the nose (alar base) to determine the position of the Canines. 
+            3. Facial Midline: Strictly align the Dental Midline (between two front teeth) with the Philtrum and Tip of the Nose.
+            4. Facial Frame Balance (Hair/Brows): Analyze the visual weight of the "Upper Facial Third" (Hair volume and Brow thickness). If the subject has a heavy upper frame, slighty increase the dominance/size of the Central Incisors to maintain vertical balance.
+            5. Golden Proportion (1.618): Central width should be ~1.618x the visible width of Lateral Incisor.
+        
+            WORKFLOW STRATEGY: 
+            1. The first variation (original_bg) is the CLINICAL RESTORATION. It serves as the SOURCE OF TRUTH.
+            - You must map the scientific analysis above into the editing instructions.
+            - CRITICAL FRAMING: The output must be a 9:16 Vertical Portrait showing the FULL FACE.
+            2. The other 2 variations MUST use the result of step 1 as a Reference Image for consistency.
+
+            OUTPUT FORMAT: Strictly JSON.
+            Structure:
+            {
+                "variations": [
+                    { 
+                        "type": "original_bg" | "lifestyle_social" | "lifestyle_outdoor",
+                        "prompt_data": { 
+                            "Subject": string, 
+                            "Composition": string, 
+                            "Action": string, 
+                            "Location": string, 
+                            "Style": string, 
+                            "Editing_Instructions": string, 
+                            "Refining_Details": string, 
+                            "Reference_Instructions": string 
+                        } 
+                    }
+                ]
+            }
+
+            REQUIRED VARIATIONS & GUIDELINES:
+
+            1. original_bg (Scientific Natural Restoration):
+            - Subject: "A photorealistic vertical medium shot of the user, featuring a scientifically aligned smile restoration based on facial morphopsychology."
+            - Composition: "9:16 Vertical Portrait (Stories Format). Medium Shot. Full head and shoulders visible."
+            - Action: "The subject is smiling naturally, with a dentition aligned to their interpupillary horizon."
+            - Location: "Soft-focus professional studio or original background."
+            - Style: "High-End Aesthetic Dentistry Photography, 8K resolution."
+            - Editing_Instructions: "APPLY CLINICAL LANDMARKS: \n1. HORIZON: Align the Incisal Plane to be strictly parallel with the Interpupillary Line (Eyes).\n2. MIDLINE & WIDTH: Align the dental midline with the Philtrum/Nose Tip. Use the alar base width (nose width) to guide the cusp tip position of the Canines.\n3. VERTICAL BALANCE: Assess the visual weight of the Hair and Eyebrows. If the upper face is dominant, increase the length of Central Incisors slightly to balance the face.\n4. PROPORTIONS: Enforce the esthetic dental proportion of 1.6:1:0.6 (Central:Lateral:Canine)."
+            - Refining_Details: "Texture must be polychromatic natural ivory with realistic translucency at incisal edges. Ensure the smile arc follows the lower lip."
+            - Reference_Instructions: "Use the user's original photo strictly for Facial Identity, Skin Tone, and Lip Shape. Completely replace the dental structure using the landmarks defined above."
+
+            2. lifestyle_social:
+            - Subject: "The person from the reference image, maintaining the EXACT same smile and dental geometry."
+            - Composition: "9:16 Vertical Portrait."
+            - Action: "Laughing candidly at a gala or high-end dinner."
+            - Style: "Warm, social lifestyle photography, depth of field."
+            - Location: "Luxury restaurant or event space."
+            - Editing_Instructions: "Place subject in a social context. Keep the teeth identical to the Reference Image."
+            - Reference_Instructions: "Use the 'Natural Restoration' image to lock the facial identity and the smile design."
+
+            3. lifestyle_outdoor:
+            - Subject: "The person from the reference image, maintaining the EXACT same smile and dental geometry."
+            - Composition: "9:16 Vertical Portrait."
+            - Action: "Walking confidently, wind in hair."
+            - Style: "Cinematic outdoor lighting, vogue aesthetic."
+            - Location: "Urban architecture or nature at golden hour."
+            - Editing_Instructions: "Golden hour lighting. Keep the teeth identical to the Reference Image."
+            - Reference_Instructions: "Use the 'Natural Restoration' image to lock the facial identity and the smile design."
+            `;
             }
 
             const response = await fetch(endpoint, {

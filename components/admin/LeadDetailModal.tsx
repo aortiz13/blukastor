@@ -37,7 +37,7 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
     useEffect(() => {
         if (lead && open) {
             const video = lead.generations?.find((g: any) => g.type === 'video' && g.status === 'completed');
-            const pendingVideo = lead.generations?.find((g: any) => g.type === 'video' && g.status === 'pending');
+            const pendingVideo = lead.generations?.find((g: any) => g.type === 'video' && (g.status === 'pending' || g.status === 'processing'));
 
             if (video) {
                 setVideoGen(video);
@@ -54,7 +54,7 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
     // Polling logic for pending video
     useEffect(() => {
         let interval: any;
-        if (generatingVideo && videoGen?.id && videoGen.status === 'pending') {
+        if (generatingVideo && videoGen?.id && (videoGen.status === 'pending' || videoGen.status === 'processing')) {
             interval = setInterval(async () => {
                 try {
                     const { data, error } = await supabase.functions.invoke('check-video', {
@@ -98,7 +98,7 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
 
             if (error) throw error;
 
-            setVideoGen({ id: data.generation_id, status: 'pending' });
+            setVideoGen({ id: data.generation_id, status: 'processing' });
             toast.info("Generación de vídeo iniciada...", { description: "Esto puede tardar hasta 1 minuto." });
         } catch (error: any) {
             setGeneratingVideo(false);

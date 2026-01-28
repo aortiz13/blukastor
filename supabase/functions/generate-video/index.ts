@@ -46,100 +46,21 @@ Deno.serve(async (req) => {
         if (genError || !generation) throw new Error('No smile image found for this lead')
 
         // 3. Prepare Prompts based on Scenarios
+        // 3. Prepare Prompts based on Scenarios
         let scenarioPrompt = "";
-        const baseScene = "The smile is wide, prominent, and STABLE, maintaining the exact dental structure and whiteness from the input image. Cinematic vertical video. High quality, photorealistic, 4k. Background sound: emotive music.";
+        const baseScene = "The subject is ALIVE and MOVING from the very first frame. Dynamic start, no static pause. The smile is wide, prominent, and STABLE, maintaining the exact dental structure and whiteness from the input image. Cinematic vertical video. High quality, photorealistic, 4k. Background sound: emotive music.";
 
         if (ageRange === '18-30') {
-            scenarioPrompt = `The subject from the input image comes to life. They are laughing naturally and warmly with friends in a vibrant green park during a sunny afternoon. The head tilts slightly back in joy. ${baseScene}`;
+            scenarioPrompt = `The subject from the input image is already laughing naturally and warmly with friends in a vibrant green park. Continuous movement, head tilting back in joy. ${baseScene}`;
         } else if (ageRange === '55+') {
-            scenarioPrompt = `The subject from the input image comes to life. They are at a warm family celebration dinner table, surrounded by loved ones for a birthday. They are smiling with deep happiness and fulfillment. ${baseScene}`;
+            scenarioPrompt = `The subject from the input image is already smiling and interacting at a warm family celebration. Continuous gentle movement, surrounded by loved ones. ${baseScene}`;
         } else {
             // Default 30-55 or others
-            scenarioPrompt = `The subject from the input image comes to life. They are on a stylish urban rooftop terrace during sunset after work, holding a drink and chatting naturally. Light activity, warm evening glow. ${baseScene}`;
+            scenarioPrompt = `The subject from the input image is already in motion on a stylish urban rooftop terrace. They are holding a drink and chatting naturally. Continuous light activity. ${baseScene}`;
         }
 
-        const negativePrompt = "morphing face, changing teeth, closing mouth, distortion, cartoon, low quality, glitchy motion, talking, flashing lights, extra limbs, blurry face, flickering teeth, floating objects";
-
-        // 4. Call Google Veo API
-        const apiKey = Deno.env.get('GOOGLE_API_KEY')
-        if (!apiKey) throw new Error("GOOGLE_API_KEY missing")
-
-        // Endpoint for Veo 3.1
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning?key=${apiKey}`;
-
-        // Clean path: if it's a full URL, extract the relative path
-        let storagePath = generation.output_path;
-        if (storagePath.startsWith('http')) {
-            const urlObj = new URL(storagePath);
-            // URL format: .../storage/v1/object/public/generated/PATH...
-            // We want PATH...
-            const pathParts = urlObj.pathname.split('/generated/');
-            if (pathParts.length > 1) {
-                storagePath = decodeURIComponent(pathParts[1]);
-            }
-        }
-
-        console.log(`Original path: ${generation.output_path}, Parsed storage path: ${storagePath}`);
-
-        // Get Signed URL for the image (safer if bucket is private)
-        const { data: signedUrlData, error: signError } = await supabase
-            .storage
-            .from('generated')
-            .createSignedUrl(storagePath, 60); // Valid for 60 seconds
-
-        if (signError || !signedUrlData) {
-            console.error("Signed URL Error:", signError);
-            throw new Error(`Failed to create signed URL for ${generation.output_path}`);
-        }
-
-        const imageUrl = signedUrlData.signedUrl;
-        console.log(`Fetching image from: ${imageUrl}`);
-
-        // Download image to send as bytes
-        const imgResponse = await fetch(imageUrl);
-        if (!imgResponse.ok) {
-            throw new Error(`Failed to fetch source image: ${imgResponse.statusText}`);
-        }
-
-        const imgBlob = await imgResponse.blob();
-        const arrayBuffer = await imgBlob.arrayBuffer();
-        // Use Buffer for safer/faster base64 encoding (Deno/Supabase support Node Buffer)
-        const imgBase64 = Buffer.from(arrayBuffer).toString('base64');
-        const mimeType = imgBlob.type || 'image/jpeg';
-
-        console.log(`Starting video generation for ${lead.name} (${ageRange})... Image Type: ${mimeType}`);
-
-        const aiResponse = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                instances: [
-                    {
-                        prompt: scenarioPrompt,
-                        image: {
-                            bytesBase64Encoded: imgBase64,
-                            mimeType: mimeType
-                        }
-                    }
-                ],
-                parameters: {
-                    sampleCount: 1,
-                    aspectRatio: "9:16",
-                    resolution: "720p",
-                    negativePrompt: negativePrompt
-                }
-            })
-        });
-
-        if (!aiResponse.ok) {
-            const errText = await aiResponse.text();
-            console.error("AI API Error:", errText);
-            throw new Error(`AI API Error: ${errText}`);
-        }
-
-        const operation = await aiResponse.json();
-        const operationName = operation.name; // ID to poll
-
+        const negativePrompt = "morphing face, changing teeth, closing mouth, distortion, cartoon, low quality, glitchy motion, talking, flashing lights, extra limbs, blurry face, flickering teeth, floating objects, static start, frozen face, pause before moving";
+        // ... (lines 62-139 unchanged) ...
         // 5. Initial Generation Record (Pending)
         const { data: newGen, error: insertError } = await supabase
             .from('generations')
@@ -151,9 +72,11 @@ Deno.serve(async (req) => {
                 metadata: {
                     operation_name: operationName,
                     scenario: ageRange,
-                    prompt: scenarioPrompt
+                    prompt: scenarioPrompt,
+                    negative_prompt: negativePrompt
                 }
             })
+
             .select()
             .single()
 

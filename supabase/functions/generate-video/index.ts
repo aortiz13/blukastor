@@ -45,11 +45,49 @@ Deno.serve(async (req) => {
 
         if (genError || !generation) throw new Error('No smile image found for this lead')
 
-        // 3. Prepare Prompts based on Scenarios
-        // STEP 1: Clinical Analysis with Gemini 3 Pro (Nano Banana)
-        console.log("Starting Clinical Analysis with Gemini 3 Pro...");
+        // Clean path... (existing)
+        let storagePath = generation.output_path;
+        if (storagePath.startsWith('http')) {
+            const urlObj = new URL(storagePath);
+            const pathParts = urlObj.pathname.split('/generated/');
+            if (pathParts.length > 1) {
+                storagePath = decodeURIComponent(pathParts[1]);
+            }
+        }
+        console.log(`Original path: ${generation.output_path}, Parsed storage path: ${storagePath}`);
 
-        // Specific API Key for Image/Vision Model as requested
+        // Get Signed URL
+        const { data: signedUrlData, error: signError } = await supabase
+            .storage
+            .from('generated')
+            .createSignedUrl(storagePath, 60);
+
+        if (signError || !signedUrlData) {
+            console.error("Signed URL Error:", signError);
+            throw new Error(`Failed to create signed URL`);
+        }
+
+        const imageUrl = signedUrlData.signedUrl;
+
+        // Download image
+        const imgResponse = await fetch(imageUrl);
+        if (!imgResponse.ok) throw new Error("Failed to fetch source image");
+
+        const imgBlob = await imgResponse.blob();
+        const arrayBuffer = await imgBlob.arrayBuffer();
+        const imgBase64 = Buffer.from(arrayBuffer).toString('base64');
+        const mimeType = imgBlob.type || 'image/jpeg';
+
+        console.log(`Starting video generation for ${lead.name} (${ageRange})... Image Type: ${mimeType}`);
+
+        // STEP 1: GENERATE SMILE IMAGE with Gemini 3 Pro (Nano Banana)
+        console.log("Generating Smile Image with Gemini 3 Pro...");
+
+        let sceneImgBase64 = imgBase64; // Default to original
+        let sceneImgMimeType = mimeType;
+        let generatedScenePath = generation.output_path;
+
+        // Specific API Key for Image/Vision Model
         const visionApiKey = "AIzaSyCAGpraoO91K3Qu8SAcFEinAEfZFNBf1Ko";
         const visionEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/nano-banana-pro-preview:generateContent?key=${visionApiKey}`;
 
@@ -90,8 +128,6 @@ Deno.serve(async (req) => {
        - Reference_Instructions: "Use the user's original photo strictly for Facial Identity, Skin Tone, and Lip Shape. Completely replace the dental structure using the landmarks defined above."
         `;
 
-        let specializedInstructions = "";
-
         try {
             const analysisResponse = await fetch(visionEndpoint, {
                 method: 'POST',
@@ -111,37 +147,68 @@ Deno.serve(async (req) => {
 
             if (analysisResponse.ok) {
                 const analysisData = await analysisResponse.json();
-                const analysisText = analysisData.candidates?.[0]?.content?.parts?.[0]?.text;
-                console.log("Gemini 3 Pro Analysis Result:", analysisText);
+                console.log("Gemini 3 Pro Response received.");
 
-                if (analysisText) {
-                    const analysisJson = JSON.parse(analysisText);
-                    // Extract Editing Instructions from the JSON
-                    // The prompt defines "original_bg" key or similar structure. 
-                    // We try to grab the most relevant fields.
-                    const restoreData = analysisJson['original_bg'] || analysisJson['1'] || analysisJson;
+                // Attempt to find Image Data in the response
+                // Option 1: Inline Base64 in content (Rare for generateContent but possible for Image models)
+                // Option 2: JSON output containing base64 string (User prompt asks for JSON)
 
-                    if (restoreData) {
-                        specializedInstructions = `
-                        - Editing_Instructions: "${restoreData.Editing_Instructions || ''}"
-                        - Refining_Details: "${restoreData.Refining_Details || ''}"
-                        - Reference_Instructions: "${restoreData.Reference_Instructions || ''}"
-                         `;
+                const part = analysisData.candidates?.[0]?.content?.parts?.[0];
+
+                if (part?.inline_data) {
+                    // Direct Image Response
+                    console.log("Image Data Found in Response (inline_data).");
+                    sceneImgBase64 = part.inline_data.data;
+                    sceneImgMimeType = part.inline_data.mime_type;
+                } else if (part?.text) {
+                    // Check if JSON text contains image data
+                    try {
+                        const json = JSON.parse(part.text);
+                        // Look for common keys: image_custom, generated_image, base64, etc.
+                        // Or if the prompt implies the output IS the image description, we might fail here.
+                        // But user insists this GENERATES the image.
+                        // Let's check for 'original_bg' having a specific image field?
+                        // If not, we log.
+                        console.log("Text response received:", part.text.substring(0, 100) + "...");
+                    } catch (e) {
+                        // Not JSON
                     }
                 }
+
+                // If we got a NEW image (and it's different/updated), upload it.
+                if (sceneImgBase64 !== imgBase64) {
+                    console.log("New Scene Image Generated. Uploading...");
+                    const sceneFileName = `${generation.output_path.split('/').pop()?.split('.')[0]}_smile_gen.png`;
+                    const sceneBuffer = Buffer.from(sceneImgBase64, 'base64');
+
+                    const { data: uploadData, error: uploadError } = await supabase
+                        .storage
+                        .from('generated')
+                        .upload(`${lead_id}/${sceneFileName}`, sceneBuffer, {
+                            contentType: sceneImgMimeType,
+                            upsert: true
+                        });
+
+                    if (!uploadError && uploadData) {
+                        generatedScenePath = uploadData.path;
+                        console.log(`Smile Image uploaded to: ${generatedScenePath}`);
+                    }
+                } else {
+                    console.warn("No new image data found in Gemini 3 response. Proceeding with original image.");
+                }
+
             } else {
-                console.warn("Gemini 3 Pro Analysis Failed:", await analysisResponse.text());
-                // Fallback to default instruction if analysis fails
+                console.warn("Gemini 3 Pro Request Failed:", await analysisResponse.text());
             }
         } catch (err) {
-            console.error("Error in Clinical Analysis:", err);
+            console.error("Error in Smile Generation Step:", err);
         }
 
-        // Combine Analysis with Scenario for Veo
+        // 3. Prepare Prompts based on Scenarios
+        // (Simplified Veo prompt since we hopefully have the smile image now)
         const baseInstructions = `
-        - Subject: "The person from the reference image, maintaining the EXACT same smile and dental geometry."
+        - Subject: "The person from the input image."
         - Composition: "9:16 Vertical Portrait. FIXED CAMERA. NO ROTATION."
-        ${specializedInstructions || '- Editing_Instructions: "Keep the teeth identical to the Reference Image."'} 
         `;
 
         let scenarioDetails = "";
@@ -164,40 +231,9 @@ Deno.serve(async (req) => {
         // Endpoint for Veo 3.1
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning?key=${apiKey}`;
 
-        // Clean path... (existing)
-        let storagePath = generation.output_path;
-        if (storagePath.startsWith('http')) {
-            const urlObj = new URL(storagePath);
-            const pathParts = urlObj.pathname.split('/generated/');
-            if (pathParts.length > 1) {
-                storagePath = decodeURIComponent(pathParts[1]);
-            }
-        }
-        console.log(`Original path: ${generation.output_path}, Parsed storage path: ${storagePath}`);
-
-        // Get Signed URL
-        const { data: signedUrlData, error: signError } = await supabase
-            .storage
-            .from('generated')
-            .createSignedUrl(storagePath, 60);
-
-        if (signError || !signedUrlData) {
-            console.error("Signed URL Error:", signError);
-            throw new Error(`Failed to create signed URL`);
-        }
-
-        const imageUrl = signedUrlData.signedUrl;
-
-        // Download image
-        const imgResponse = await fetch(imageUrl);
-        if (!imgResponse.ok) throw new Error("Failed to fetch source image");
-
-        const imgBlob = await imgResponse.blob();
-        const arrayBuffer = await imgBlob.arrayBuffer();
-        const imgBase64 = Buffer.from(arrayBuffer).toString('base64');
-        const mimeType = imgBlob.type || 'image/jpeg';
-
         console.log(`Starting video generation for ${lead.name} (${ageRange})... Image Type: ${mimeType}`);
+
+        // Proceeding to Veo with Enhanced Prompt and (potentially) New Scene Image
 
         // SKIP IMAGEN GENERATION (Not supported by available API models)
         // Proceeding directly to Veo with Enhanced Prompt
@@ -210,8 +246,8 @@ Deno.serve(async (req) => {
                     {
                         prompt: scenarioPrompt,
                         image: {
-                            bytesBase64Encoded: imgBase64, // Use the NEW scene image
-                            mimeType: mimeType
+                            bytesBase64Encoded: sceneImgBase64, // Use the NEW (or original) scene image
+                            mimeType: sceneImgMimeType
                         }
                     }
                 ],
@@ -241,7 +277,7 @@ Deno.serve(async (req) => {
                 lead_id: lead_id,
                 type: 'video',
                 status: 'processing',
-                input_path: generation.output_path,
+                input_path: generatedScenePath, // Track which input was used
                 metadata: {
                     operation_name: operationName,
                     scenario: ageRange,

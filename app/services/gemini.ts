@@ -133,138 +133,65 @@ export const validateImageStrict = async (base64Image: string): Promise<{ succes
 
 // Analysis
 export const analyzeImageAndGeneratePrompts = async (base64Image: string): Promise<{ success: boolean; data?: AnalysisResponse; error?: string }> => {
-    console.log("[Gemini] ENTRY: analyzeImageAndGeneratePrompts called.");
+    console.log("[Gemini] ENTRY: analyzeImageAndGeneratePrompts called (Edge Function Delegate).");
     try {
-        const apiKey = process.env.API_KEY;
-        if (!apiKey) {
-            return { success: false, error: "Server configuration error: API_KEY missing" };
-        }
-
-        const ai = new GoogleGenAI({ apiKey });
-        const mimeType = getMimeType(base64Image);
         const data = stripBase64Prefix(base64Image);
 
-        const prompt = `
-    ROLE: Expert Dental Morphologist and AI Prompt Engineer. 
-    TASK: Analyze the user's face using specific landmarks: Eyes, Nose, and Hairline. Generate a restoration plan that harmonizes with these features.
-    
-    SCIENTIFIC ANALYSIS PARAMETERS (Clinical Landmarks & Rules):
-    1. The Interpupillary Rule (Eyes): Detect the user's eyes. The line connecting the center of the eyes (interpupillary line) must be the horizon for the smile. The "Incisal Plane" must be perfectly parallel to this eye line.
-    2. The Nasal Width Guide (Nose): Use the width of the base of the nose (alar base) to determine the position of the Canines. 
-    3. Facial Midline: Strictly align the Dental Midline (between two front teeth) with the Philtrum and Tip of the Nose.
-    4. Facial Frame Balance (Hair/Brows): Analyze the visual weight of the "Upper Facial Third" (Hair volume and Brow thickness). If the subject has a heavy upper frame, slighty increase the dominance/size of the Central Incisors to maintain vertical balance.
-    5. Golden Proportion (1.618): Central width should be ~1.618x the visible width of Lateral Incisor.
- 
-    WORKFLOW STRATEGY: 
-    1. The first variation (original_bg) is the CLINICAL RESTORATION. It serves as the SOURCE OF TRUTH.
-       - You must map the scientific analysis above into the editing instructions.
-       - CRITICAL FRAMING: The output must be a 9:16 Vertical Portrait showing the FULL FACE.
-    2. The other 2 variations MUST use the result of step 1 as a Reference Image for consistency.
+        const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    OUTPUT FORMAT: Strictly JSON.
-
-    REQUIRED VARIATIONS & GUIDELINES:
-
-    1. original_bg (Scientific Natural Restoration):
-       - Subject: "A photorealistic vertical medium shot of the user, featuring a scientifically aligned smile restoration based on facial morphopsychology."
-       - Composition: "9:16 Vertical Portrait (Stories Format). Medium Shot. Full head and shoulders visible."
-       - Action: "The subject is smiling naturally, with a dentition aligned to their interpupillary horizon."
-       - Location: "Soft-focus professional studio or original background."
-       - Style: "High-End Aesthetic Dentistry Photography, 8K resolution."
-       - Editing_Instructions: "APPLY CLINICAL LANDMARKS: \n1. HORIZON: Align the Incisal Plane to be strictly parallel with the Interpupillary Line (Eyes).\n2. MIDLINE & WIDTH: Align the dental midline with the Philtrum/Nose Tip. Use the alar base width (nose width) to guide the cusp tip position of the Canines.\n3. VERTICAL BALANCE: Assess the visual weight of the Hair and Eyebrows. If the upper face is dominant, increase the length of Central Incisors slightly to balance the face.\n4. PROPORTIONS: Enforce the esthetic dental proportion of 1.6:1:0.6 (Central:Lateral:Canine)."
-       - Refining_Details: "Texture must be polychromatic natural ivory with realistic translucency at incisal edges. Ensure the smile arc follows the lower lip."
-       - Reference_Instructions: "Use the user's original photo strictly for Facial Identity, Skin Tone, and Lip Shape. Completely replace the dental structure using the landmarks defined above."
-
-    2. lifestyle_social:
-       - Subject: "The person from the reference image, maintaining the EXACT same smile and dental geometry."
-       - Composition: "9:16 Vertical Portrait."
-       - Action: "Laughing candidly at a gala or high-end dinner."
-       - Style: "Warm, social lifestyle photography, depth of field."
-       - Location: "Luxury restaurant or event space."
-       - Editing_Instructions: "Place subject in a social context. Keep the teeth identical to the Reference Image."
-       - Reference_Instructions: "Use the 'Natural Restoration' image to lock the facial identity and the smile design."
-
-    3. lifestyle_outdoor:
-       - Subject: "The person from the reference image, maintaining the EXACT same smile and dental geometry."
-       - Composition: "9:16 Vertical Portrait."
-       - Action: "Walking confidently, wind in hair."
-       - Style: "Cinematic outdoor lighting, vogue aesthetic."
-       - Location: "Urban architecture or nature at golden hour."
-       - Editing_Instructions: "Golden hour lighting. Keep the teeth identical to the Reference Image."
-       - Reference_Instructions: "Use the 'Natural Restoration' image to lock the facial identity and the smile design."
-  `;
-
-        let attempts = 0;
-        const maxRetries = 2;
-
-        while (attempts < maxRetries) {
-            try {
-                const response = await ai.models.generateContent({
-                    model: ANALYSIS_MODEL,
-                    contents: {
-                        parts: [
-                            { inlineData: { mimeType, data } },
-                            { text: prompt }
-                        ]
-                    },
-                    config: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            type: Type.OBJECT,
-                            properties: {
-                                variations: {
-                                    type: Type.ARRAY,
-                                    items: {
-                                        type: Type.OBJECT,
-                                        properties: {
-                                            type: {
-                                                type: Type.STRING,
-                                                enum: [
-                                                    VariationType.ORIGINAL_BG,
-                                                    VariationType.LIFESTYLE_SOCIAL,
-                                                    VariationType.LIFESTYLE_OUTDOOR
-                                                ]
-                                            },
-                                            prompt_data: {
-                                                type: Type.OBJECT,
-                                                properties: {
-                                                    Subject: { type: Type.STRING },
-                                                    Composition: { type: Type.STRING },
-                                                    Action: { type: Type.STRING },
-                                                    Location: { type: Type.STRING },
-                                                    Style: { type: Type.STRING },
-                                                    Editing_Instructions: { type: Type.STRING },
-                                                    Refining_Details: { type: Type.STRING },
-                                                    Reference_Instructions: { type: Type.STRING }
-                                                },
-                                                required: ["Subject", "Composition", "Action", "Location", "Style", "Editing_Instructions"]
-                                            }
-                                        },
-                                        required: ["type", "prompt_data"]
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-
-                const text = extractText(response);
-                if (text) {
-                    await logApiUsage('GEMINI_VISION_ANALYSIS');
-                    const result = safeParseJSON(text) as AnalysisResponse;
-                    if (!result) throw new Error("Invalid JSON from AI");
-                    return { success: true, data: result };
-                }
-                throw new Error("Empty response");
-            } catch (error: any) {
-                attempts++;
-                console.error(`Attempt ${attempts} failed:`, error.message);
-                if (attempts === maxRetries) throw error;
-            }
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+            return { success: false, error: "Configuration Error: Supabase URL/Key missing." };
         }
-        return { success: false, error: "Max retries reached" };
+
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-face`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image_base64: data,
+                mode: 'analyze' // Default
+            })
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Edge Function Error: ${errText}`);
+        }
+
+        const text = await response.json(); // analyze-face returns the text content directly in JSON response body from previous step? 
+        // Wait, analyze-face returns `new Response(analysis, ...)` which is text/string if analysis is string.
+        // Or if it returns JSON object? 
+        // In my previous edit of analyze-face, it returns: `return new Response(analysisText, ...)`
+        // `analysisText` is the raw text from Gemini, which is likely a JSON string block (```json ... ```).
+
+        // So `await response.text()` or `await response.json()` depending on if it's quoted.
+        // Safe bet:
+        let rawText = "";
+        if (typeof text === 'string') {
+            rawText = text;
+        } else {
+            // If it parsed as JSON automatically, it might be the analysis object itself?
+            // Let's assume it might be raw text since we sent it as `new Response(analysisText)`.
+            // Actually `fetch` `response.json()` will fail if it's just a raw markdown string not valid JSON.
+            // But if Gemini returns JSON, it's valid JSON.
+            rawText = JSON.stringify(text);
+        }
+
+        await logApiUsage('GEMINI_VISION_ANALYSIS');
+        const result = safeParseJSON(rawText) as AnalysisResponse;
+
+        if (!result) {
+            // Try parsing directly if it was already an object
+            if (typeof text === 'object') return { success: true, data: text as AnalysisResponse };
+            throw new Error("Invalid JSON from AI");
+        }
+        return { success: true, data: result };
+
     } catch (criticalError: any) {
-        console.error("[Gemini Analysis] Fatal Error Details:", JSON.stringify(criticalError, null, 2));
+        console.error("[Gemini Analysis] Fatal Error Details:", criticalError);
         return { success: false, error: `Error en Análisis: ${criticalError.message?.slice(0, 50)}` };
     }
 };
@@ -316,84 +243,47 @@ export const generateSmileVariation = async (
     aspectRatio: "1:1" | "3:4" | "4:3" | "9:16" | "16:9" = "1:1",
     userId: string = "anon"
 ): Promise<string> => {
-    console.log("[Gemini] generateSmileVariation STARTED");
-    console.log("[Gemini] Prompt Length:", variationPrompt.length);
-    console.log("[Gemini] Image Length:", inputImageBase64.length);
+    console.log("[Gemini] generateSmileVariation STARTED (Edge Function Delegate)");
 
     try {
-        const apiKey = process.env.API_KEY;
-        if (!apiKey) {
-            console.error("[Gemini] CRITICAL: API_KEY is missing in env");
-            throw new Error("Configuration Error: API Key missing.");
-        }
-
-        const ai = new GoogleGenAI({ apiKey });
-        const mimeType = getMimeType(inputImageBase64);
         const data = stripBase64Prefix(inputImageBase64);
 
-        // Use verified model
-        const model = "gemini-3-pro-image-preview";
-        console.log(`[Gemini] Using model: ${model}`);
+        const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-        // Direct call without retry loop for debugging
-        console.log("[Gemini] Calling ai.models.generateContent...");
-
-        try {
-            const response = await ai.models.generateContent({
-                model: model,
-                config: {
-                    safetySettings: [
-                        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-                        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-                        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-                        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-                        { category: HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY, threshold: HarmBlockThreshold.BLOCK_NONE }
-                    ]
-                },
-                contents: {
-                    parts: [
-                        { inlineData: { mimeType, data } },
-                        { text: variationPrompt }
-                    ]
-                }
-            });
-
-            console.log("[Gemini] API Response received.");
-
-            const candidates = response.candidates || [];
-            if (candidates.length === 0) {
-                console.error("[Gemini] No candidates returned. Safety block?", JSON.stringify(response));
-                throw new Error("AI returned no results. Possibly blocked by safety filters.");
-            }
-
-            for (const part of candidates[0].content?.parts || []) {
-                if (part.inlineData) {
-                    console.log("[Gemini] SUCCESS: Inline image data found.");
-                    await logApiUsage('NANO_BANANA_IMAGE');
-                    const outMime = part.inlineData.mimeType || "image/png";
-                    const base64Result = `data:${outMime};base64,${part.inlineData.data}`;
-
-                    // Upload to Supabase to prevent Payload Too Large (500) errors
-                    console.log("[Gemini] Uploading result to storage...");
-                    const publicUrl = await uploadGeneratedImage(base64Result, userId, "variation");
-                    console.log("[Gemini] Upload complete:", publicUrl);
-
-                    return publicUrl;
-                }
-            }
-
-            if (response.text) {
-                console.error("[Gemini] Model returned text instead of image:", response.text);
-                throw new Error(`AI generated text instead of image: ${response.text.slice(0, 100)}...`);
-            }
-
-            throw new Error("Response contained neither image nor text.");
-
-        } catch (apiError: any) {
-            console.error("[Gemini] API CALL FAILED:", apiError);
-            console.error("[Gemini] Error Details:", JSON.stringify(apiError, null, 2));
-            throw new Error(`Google AI Error: ${apiError.message || "Unknown API failure"}`);
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+            throw new Error("Configuration Error: Supabase URL/Key missing.");
         }
+
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-smile`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image_base64: data,
+                prompt_options: {
+                    variationPrompt,
+                    aspectRatio
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Edge Function Error: ${errText}`);
+        }
+
+        const result = await response.json();
+        console.log("[Gemini] Edge Function Response:", result);
+
+        if (result.success && result.public_url) {
+            return result.public_url;
+        }
+
+        if (result.error) throw new Error(result.error);
+        throw new Error("Failed to generate smile variation.");
 
     } catch (criticalGenError: any) {
         console.error("[Gemini] FATAL ERROR in generateSmileVariation:", criticalGenError);

@@ -323,7 +323,7 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
                         {generation ? (
                             <div className="relative w-full h-full flex items-center justify-center">
                                 <div className="relative h-full w-full p-4 flex items-center justify-center">
-                                    <div className="relative h-full w-full max-w-[500px] aspect-[9/16]">
+                                    <div className="relative h-auto max-h-full w-auto max-w-[360px] aspect-[9/16] shadow-2xl rounded-2xl overflow-hidden border border-white/10 bg-black">
                                         {generation.input_path && generation.input_path !== 'unknown' ? (
                                             <BeforeAfterSlider
                                                 beforeImage={generation.input_path}
@@ -353,8 +353,8 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
 
                         {/* Video Layer (Overlay if exists) */}
                         {videoGen && videoGen.status === 'completed' && (
-                            <div className="absolute inset-0 bg-zinc-950 z-20 flex items-center justify-center p-4">
-                                <div className="relative h-full w-full max-w-[500px] aspect-[9/16] rounded-xl overflow-hidden shadow-2xl border border-white/10">
+                            <div className="absolute inset-0 bg-zinc-950/90 z-20 flex items-center justify-center p-4">
+                                <div className="relative h-auto max-h-full w-auto max-w-[360px] aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black">
                                     <video
                                         key={videoGen.output_path}
                                         src={`${supabaseUrl}/storage/v1/object/public/generated/${videoGen.output_path}`}

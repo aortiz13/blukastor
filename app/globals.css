@@ -1,6 +1,76 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Editor's Note */
+@font-face {
+  font-family: 'Editors Note';
+  src: url('/fonts/Editor_sNote-Hairline.ttf') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Editors Note';
+  src: url('/fonts/Editor_sNote-Thin.ttf') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Editors Note';
+  src: url('/fonts/Editor_sNote-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Editors Note';
+  src: url('/fonts/Editor_sNote-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Editors Note';
+  src: url('/fonts/Editor_sNote-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Editors Note';
+  src: url('/fonts/Editor_sNote-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Colaborate */
+@font-face {
+  font-family: 'Colaborate';
+  src: url('/fonts/ColabThi.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Colaborate';
+  src: url('/fonts/ColabLig.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Colaborate';
+  src: url('/fonts/ColabReg.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Colaborate';
+  src: url('/fonts/ColabMed.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Colaborate';
+  src: url('/fonts/ColabBol.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -97,8 +167,8 @@
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --font-serif: var(--font-serif), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-sans: var(--font-inter), var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Editors Note", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: "Colaborate", ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-serif);
 }
 

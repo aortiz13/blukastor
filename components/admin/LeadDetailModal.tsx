@@ -319,24 +319,22 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
                     </div>
 
                     {/* Right Column: Visual Result */}
-                    <div className="col-span-12 md:col-span-7 bg-zinc-950 p-0 relative flex flex-col justify-center items-center overflow-hidden">
+                    <div className="col-span-12 md:col-span-7 bg-zinc-950 p-4 relative flex flex-col justify-center items-center overflow-hidden">
                         {generation ? (
                             <div className="relative w-full h-full flex items-center justify-center">
-                                <div className="relative h-full w-full p-4 flex items-center justify-center">
-                                    <div className="relative h-auto max-h-full w-auto max-w-[360px] aspect-[9/16] shadow-2xl rounded-2xl overflow-hidden border border-white/10 bg-black">
-                                        {generation.input_path && generation.input_path !== 'unknown' ? (
-                                            <BeforeAfterSlider
-                                                beforeImage={generation.input_path}
-                                                afterImage={generation.output_path}
-                                            />
-                                        ) : (
-                                            <img
-                                                src={generation.output_path}
-                                                alt="Generated Smile"
-                                                className="w-full h-full object-contain"
-                                            />
-                                        )}
-                                    </div>
+                                <div className="relative h-[90%] w-auto aspect-[9/16] shadow-2xl rounded-2xl overflow-hidden border border-white/10 bg-black">
+                                    {generation.input_path && generation.input_path !== 'unknown' ? (
+                                        <BeforeAfterSlider
+                                            beforeImage={generation.input_path}
+                                            afterImage={generation.output_path}
+                                        />
+                                    ) : (
+                                        <img
+                                            src={generation.output_path}
+                                            alt="Generated Smile"
+                                            className="w-full h-full object-contain"
+                                        />
+                                    )}
                                 </div>
                                 <div className="absolute bottom-6 right-6 flex gap-2 z-10">
                                     <Button size="icon" variant="secondary" className="rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md transition-all">
@@ -346,7 +344,7 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
                             </div>
                         ) : (
                             <div className="text-center text-muted-foreground p-8">
-                                <MonitorPlay className="w-16 h-16 mx-auto mb-4 opacity-20" />
+                                <MonitorPlay className="w-16 h-16 mx-auto mb-4 opacity-20" strokeWidth={1.5} />
                                 <p>Sin visualización disponible</p>
                             </div>
                         )}
@@ -354,11 +352,11 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
                         {/* Video Layer (Overlay if exists) */}
                         {videoGen && videoGen.status === 'completed' && (
                             <div className="absolute inset-0 bg-zinc-950/90 z-20 flex items-center justify-center p-4">
-                                <div className="relative h-auto max-h-full w-auto max-w-[360px] aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black">
+                                <div className="relative h-[90%] w-auto aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black">
                                     <video
                                         key={videoGen.output_path}
                                         src={`${supabaseUrl}/storage/v1/object/public/generated/${videoGen.output_path}`}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-contain"
                                         controls
                                         autoPlay
                                         muted

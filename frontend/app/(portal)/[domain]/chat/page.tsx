@@ -14,15 +14,23 @@ export default async function ChatPage({ params }: { params: Promise<{ domain: s
     }
 
     // Fetch contact_id for the user
-    const { data: contact } = await supabase
+    const { data: contact, error } = await supabase
         .schema('wa')
         .from('contacts')
         .select('id, company_id')
         .eq('user_id', user.id)
         .single()
 
-    if (!contact) {
-        return <div>Error: Contact not found for user. Please contact support.</div>
+    if (error || !contact) {
+        console.error('Chat access error:', error)
+        return (
+            <div className="p-8 text-red-500">
+                <h1 className="text-xl font-bold">Error: Contact not found</h1>
+                <p>User ID: {user.id}</p>
+                <p>Status: {error?.message || 'No record found'}</p>
+                <p className="mt-4 text-gray-600">Please refresh or contact support.</p>
+            </div>
+        )
     }
 
     return (

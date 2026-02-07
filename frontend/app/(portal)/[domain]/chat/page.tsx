@@ -10,7 +10,7 @@ export default async function ChatPage({ params }: { params: Promise<{ domain: s
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect(`/portal/${rawDomain}/login`)
+        redirect(`/login`)
     }
 
     // Fetch contact_id for the user

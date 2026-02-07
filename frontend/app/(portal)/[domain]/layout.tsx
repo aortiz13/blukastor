@@ -42,7 +42,7 @@ export default async function PortalLayout({
             <header className="border-b p-4 flex justify-between items-center bg-white sticky top-0 z-10 w-full"
                 style={{ borderColor: 'var(--primary, #e5e7eb)' }}
             >
-                <Link href={`/portal/${domain}`}>
+                <Link href="/">
                     {branding.logo_url ? (
                         <img src={branding.logo_url} alt={company?.name || 'Company Logo'} className="h-8 object-contain" />
                     ) : (
@@ -50,8 +50,8 @@ export default async function PortalLayout({
                     )}
                 </Link>
                 <nav className="flex gap-4">
-                    <Link href={`/portal/${domain}/chat`} className="text-sm font-medium hover:text-primary transition-colors">Chat</Link>
-                    <Link href={`/portal/${domain}/login`} className="text-sm font-medium hover:text-primary transition-colors">Login</Link>
+                    <Link href="/chat" className="text-sm font-medium hover:text-primary transition-colors">Chat</Link>
+                    <Link href="/login" className="text-sm font-medium hover:text-primary transition-colors">Login</Link>
                 </nav>
             </header>
             <main className="flex-1 bg-gray-50/50">

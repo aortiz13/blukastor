@@ -9,11 +9,13 @@ export const getCompanyByDomain = cache(async (domain: string) => {
     // 2. Try to find by subdomain (instance_name equivalent?)
     // For now, simpler approach: Query companies where frontend_config ->> 'domain' = domain
 
-    // Note: JSONB filtering syntax
-    const { data, error } = await supabase
-        .from('companies')
-        .select('*')
-        .filter('frontend_config->>domain', 'eq', domain)
+    // Use the RPC function to bypass RLS for public domain lookup
+    const { data, error } = await supabase.rpc('get_company_by_domain', {
+        domain_arg: domain
+    })
+
+        // RPC returns an array of rows or single if we handle it differently. 
+        // Since RETURNS TABLE returns rows, .single() should work if we expect one.
         .single()
 
     if (data) return data;

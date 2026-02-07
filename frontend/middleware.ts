@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
 
     // Rewrite for Admin/App Subdomain
     if (hostname === `admin.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}` || hostname === `app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`) {
-        rewriteUrl = new URL(`/app${path === '/' ? '/dashboard' : path}`, request.url)
+        rewriteUrl = new URL(`${path === '/' ? '/dashboard' : path}`, request.url)
     }
     // Rewrite for White Label Domains (Custom Domains or Subdomains)
     else if (hostname !== process.env.NEXT_PUBLIC_ROOT_DOMAIN) {

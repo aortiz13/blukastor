@@ -11,8 +11,7 @@ export default function LoginPage() {
     const rawDomain = params?.domain as string
     const domain = decodeURIComponent(rawDomain || '')
 
-    const [company, setCompany] = useState<any>(null)
-    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState('')
     const supabase = createClient()
@@ -23,7 +22,7 @@ export default function LoginPage() {
         }
     }, [domain, supabase])
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleMagicLink = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
         setMessage('')
@@ -43,6 +42,24 @@ export default function LoginPage() {
         }
     }
 
+    const handlePasswordLogin = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsLoading(true)
+        setMessage('')
+
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        })
+
+        setIsLoading(false)
+        if (error) {
+            setMessage('Error: ' + error.message)
+        } else {
+            window.location.href = '/'
+        }
+    }
+
     const branding = company?.frontend_config || {}
 
     return (
@@ -53,35 +70,51 @@ export default function LoginPage() {
                     <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
                         Sign in to {company?.name || 'Portal'}
                     </h2>
-                    <p className="mt-2 text-sm text-gray-500">
-                        Enter your email to receive a magic link.
-                    </p>
                 </div>
-                <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-                    <div>
-                        <label htmlFor="email" className="sr-only">Email address</label>
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            required
-                            className="relative block w-full rounded border-0 p-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-black sm:text-sm sm:leading-6"
-                            placeholder="Email address"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </div>
-                    <div>
+
+                <div className="mt-8 space-y-6">
+                    <form onSubmit={handlePasswordLogin} className="space-y-4">
+                        <div className="space-y-2">
+                            <input
+                                type="email"
+                                required
+                                className="block w-full rounded border p-2 text-sm focus:ring-2 focus:ring-black outline-none"
+                                placeholder="Email address"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            <input
+                                type="password"
+                                required
+                                className="block w-full rounded border p-2 text-sm focus:ring-2 focus:ring-black outline-none"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                        </div>
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="flex w-full justify-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+                            className="flex w-full justify-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
                             style={{ backgroundColor: branding.primary_color || '#000000' }}
                         >
-                            {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Sign in'}
+                            {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Login with Password'}
                         </button>
+                    </form>
+
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center"><span className="w-full border-t"></span></div>
+                        <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-gray-500">Or</span></div>
                     </div>
-                </form>
+
+                    <button
+                        onClick={handleMagicLink}
+                        disabled={isLoading}
+                        className="flex w-full justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+                    >
+                        Send Magic Link
+                    </button>
+                </div>
 
                 {message && (
                     <p className={`mt-4 text-center text-sm ${message.startsWith('Error') ? 'text-red-500' : 'text-green-600'}`}>

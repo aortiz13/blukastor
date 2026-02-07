@@ -26,9 +26,9 @@ export async function middleware(request: NextRequest) {
         rewriteUrl = new URL(`${path === '/' ? '/dashboard' : path}`, request.url)
     }
     // Rewrite for White Label Domains (Custom Domains or Subdomains)
-    // EXCEPTION: Allow /dashboard and /login to pass through to the (admin) route group even for tenants
-    // This allows accessing the Super Admin panel while the root / serves the tenant portal
-    else if (hostname !== process.env.NEXT_PUBLIC_ROOT_DOMAIN && !path.startsWith('/dashboard') && !path.startsWith('/login')) {
+    // EXCEPTION: Allow /dashboard, /login, and /auth to pass through to the (admin) or root route groups
+    // This ensures authentication callbacks and admin panel work correctly
+    else if (hostname !== process.env.NEXT_PUBLIC_ROOT_DOMAIN && !path.startsWith('/dashboard') && !path.startsWith('/login') && !path.startsWith('/auth')) {
         rewriteUrl = new URL(`/${hostname}${path}`, request.url)
     }
 

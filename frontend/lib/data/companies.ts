@@ -18,11 +18,7 @@ export const getCompanyByDomain = cache(async (domain: string) => {
         // Since RETURNS TABLE returns rows, .single() should work if we expect one.
         .single()
 
-    if (data) return data;
-
-    // Fallback: If it's a subdomain of our root domain, try to find by some other key?
-    // e.g. client.app.com -> check 'client' against a slug field?
-    // Let's assume for this MVP we match exact domain stored in config.
+    if (data) return data as any;
 
     return null
 })

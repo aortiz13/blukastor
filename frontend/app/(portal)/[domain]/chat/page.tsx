@@ -13,10 +13,9 @@ export default async function ChatPage({ params }: { params: Promise<{ domain: s
         redirect(`/login`)
     }
 
-    // Fetch contact_id for the user
+    // Fetch contact_id for the user using the public view to avoid schema restrictions
     const { data: contact, error } = await supabase
-        .schema('wa')
-        .from('contacts')
+        .from('wa_contacts_view')
         .select('id, company_id')
         .eq('user_id', user.id)
         .single()

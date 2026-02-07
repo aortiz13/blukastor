@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Blukastor - White Label Portal
 
-## Getting Started
+This is the frontend application for the Blukastor platform, built with **Next.js 14**, **Tailwind CSS**, and **Supabase**.
 
-First, run the development server:
+## Project Structure
+- `app/(admin)`: Admin Dashboard for managing tenants.
+- `app/(portal)`: Client Portal with white-label support (`[domain]`).
+- `lib/supabase`: Supabase Client/Server utilities.
+- `middleware.ts`: Handles Auth & Custom Domain routing.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Deployment on Vercel
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 1. Import Project
+- Connect your GitHub repository to Vercel.
+- Select the `blukastor` repo.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 2. Configure Settings
+- **Framework Preset**: Next.js
+- **Root Directory**: `frontend` (Important!)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Environment Variables
+Add these variables in the Vercel Project Settings:
 
-## Learn More
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase Project URL | `https://xyz.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Public Anon Key | `eyJ...` |
+| `NEXT_PUBLIC_ROOT_DOMAIN` | The main domain for rewriting | `portal.blukastor.com` |
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Deploy
+Click **Deploy**. Vercel will build the application and provide a URL.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Local Development
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Install dependencies:
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-## Deploy on Vercel
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Open [http://localhost:3000](http://localhost:3000).

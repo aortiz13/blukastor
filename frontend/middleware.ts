@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
     }
     // Rewrite for White Label Domains (Custom Domains or Subdomains)
     else if (hostname !== process.env.NEXT_PUBLIC_ROOT_DOMAIN) {
-        rewriteUrl = new URL(`/portal/${hostname}${path}`, request.url)
+        rewriteUrl = new URL(`/${hostname}${path}`, request.url)
     }
 
     // If a rewrite is needed, create the rewrite response but Preserve Supabase Cookies

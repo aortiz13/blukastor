@@ -19,9 +19,9 @@ export default function LoginPage() {
 
     useEffect(() => {
         if (domain) {
-            getCompanyByDomain(domain).then(setCompany)
+            getCompanyByDomain(supabase, domain).then(setCompany)
         }
-    }, [domain])
+    }, [domain, supabase])
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()

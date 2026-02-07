@@ -11,7 +11,8 @@ export default async function PortalLayout({
 }) {
     const { domain: rawDomain } = await params
     const domain = decodeURIComponent(rawDomain)
-    const company = await getCompanyByDomain(domain)
+    const supabase = await createClient()
+    const company = await getCompanyByDomain(supabase, domain)
 
     // If no company found for this domain, show a "Not Found" / "Setup" screen
     // This handles Vercel Preview URLs that are not in the database

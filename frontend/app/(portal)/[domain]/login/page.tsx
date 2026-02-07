@@ -11,6 +11,8 @@ export default function LoginPage() {
     const rawDomain = params?.domain as string
     const domain = decodeURIComponent(rawDomain || '')
 
+    const [company, setCompany] = useState<any>(null)
+    const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState('')

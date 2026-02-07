@@ -13,10 +13,20 @@ export default async function PortalLayout({
     const domain = decodeURIComponent(rawDomain)
     const company = await getCompanyByDomain(domain)
 
-    // If no company found for this domain, 404
+    // If no company found for this domain, show a "Not Found" / "Setup" screen
+    // This handles Vercel Preview URLs that are not in the database
     if (!company) {
-        // In dev, we might want to allow a loose match or show a debug page
-        // notFound()
+        return (
+            <div className="flex h-screen flex-col items-center justify-center space-y-4 bg-gray-50 text-gray-900">
+                <h1 className="text-4xl font-bold">Domain Not Configured</h1>
+                <p className="max-w-md text-center text-gray-600">
+                    The domain <code className="bg-gray-200 px-1 py-0.5 rounded text-sm">{domain}</code> is not mapped to any company in Blukastor.
+                </p>
+                <div className="text-sm text-gray-500">
+                    <p>If you are the admin, please add this domain to the `companies` table.</p>
+                </div>
+            </div>
+        )
     }
 
     const branding = company?.frontend_config as any || {}

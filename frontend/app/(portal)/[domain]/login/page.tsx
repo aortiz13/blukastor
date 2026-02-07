@@ -68,9 +68,9 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-gray-50">
             <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-md">
                 <div className="text-center">
-                    {branding.logo_url && <img src={branding.logo_url} alt="Logo" className="mx-auto h-12 w-auto" />}
-                    <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
-                        Sign in to {company?.name || 'Portal'}
+                    {branding.logo_url && <img src={branding.logo_url} alt="Logo" className="mx-auto h-12 w-auto mb-4" />}
+                    <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+                        Entrar a {company?.name || 'Portal'}
                     </h2>
                 </div>
 
@@ -100,7 +100,7 @@ export default function LoginPage() {
                             className="flex w-full justify-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
                             style={{ backgroundColor: branding.primary_color || '#000000' }}
                         >
-                            {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Login with Password'}
+                            {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Entrar con Contraseña'}
                         </button>
                     </form>
 
@@ -114,7 +114,7 @@ export default function LoginPage() {
                         disabled={isLoading}
                         className="flex w-full justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
                     >
-                        Send Magic Link
+                        Enviar Magic Link
                     </button>
                 </div>
 

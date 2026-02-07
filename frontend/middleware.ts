@@ -3,54 +3,75 @@ import { updateSession } from './lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
     // 1. Update Supabase Auth Session
-    // This returns a response with valid Set-Cookie headers for session refresh
     const supabaseResponse = await updateSession(request)
 
-    // 2. White Label Routing Logic
+    // 2. Path & Hostname Prep
     const url = request.nextUrl
-    let hostname = request.headers.get('host')!.replace('.localhost:3000', `.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`)
+    const path = url.pathname
+    const searchParams = url.searchParams.toString()
+    const fullPath = `${path}${searchParams.length > 0 ? `?${searchParams}` : ''}`
 
-    // Handle local development where host might not include the root domain correctly
-    if (process.env.NODE_ENV === 'development' && hostname === 'localhost:3000') {
-        hostname = 'app.localhost:3000'
+    // Ignore internal nextjs paths and static files
+    if (path.startsWith('/_next') || path.includes('.') || path.startsWith('/api') || path.startsWith('/auth')) {
+        return supabaseResponse
     }
 
-    const searchParams = request.nextUrl.searchParams.toString()
-    const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ''
-        }`
+    let hostname = request.headers.get('host') || ''
+    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'blukastor.vercel.app'
+
+    // Local Development Normalization
+    if (process.env.NODE_ENV === 'development') {
+        if (hostname.endsWith('.localhost:3000')) {
+            hostname = hostname.replace('.localhost:3000', `.${rootDomain}`)
+        } else if (hostname === 'localhost:3000') {
+            hostname = `${rootDomain}` // Default root
+        }
+    }
+
+    // 3. Prevent Infinite Loops
+    // If the path already starts with the target domain segment, it's an internal rewrite
+    if (path.startsWith(`/${hostname}`)) {
+        return supabaseResponse
+    }
 
     let rewriteUrl: URL | null = null;
 
-    // Rewrite for Admin/App Subdomain
-    if (hostname === `admin.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}` || hostname === `app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`) {
-        rewriteUrl = new URL(`${path === '/' ? '/dashboard' : path}`, request.url)
-    }
-    // Rewrite for White Label Domains (Custom Domains or Subdomains)
-    // EXCEPTION: Allow /dashboard, /login, and /auth to pass through to the (admin) or root route groups
-    // This ensures authentication callbacks and admin panel work correctly
-    else if (hostname !== process.env.NEXT_PUBLIC_ROOT_DOMAIN && !path.startsWith('/dashboard') && !path.startsWith('/login') && !path.startsWith('/auth')) {
-        rewriteUrl = new URL(`/${hostname}${path}`, request.url)
+    // A. Root/Main Domain Logic (Landing Page vs Admin)
+    if (hostname === rootDomain) {
+        // If they visit /dashboard or /login on the root domain, let them pass to (admin) group
+        if (path === '/dashboard' || path === '/login') {
+            return supabaseResponse
+        }
+        // Otherwise, everything else on root domain shows the Landing Page (app/page.tsx)
+        return supabaseResponse
     }
 
-    // If a rewrite is needed, create the rewrite response but Preserve Supabase Cookies
+    // B. Admin/App Subdomain Logic (admin.root.com or app.root.com)
+    if (hostname === `admin.${rootDomain}` || hostname === `app.${rootDomain}`) {
+        // Force /dashboard for the root of admin subdomain
+        rewriteUrl = new URL(`${path === '/' ? '/dashboard' : path}`, request.url)
+    }
+    // C. Tenant Logic (anything else)
+    else {
+        // Rewrite to the (portal) group -> app/[domain]/...
+        rewriteUrl = new URL(`/${hostname}${fullPath}`, request.url)
+    }
+
     if (rewriteUrl) {
         const rewriteResponse = NextResponse.rewrite(rewriteUrl, {
             request: {
                 headers: request.headers,
             }
         })
-
-        // Copy Set-Cookie headers from supabaseResponse (which might have refreshed session)
         supabaseResponse.headers.forEach((value, key) => {
             rewriteResponse.headers.set(key, value)
         })
-
         return rewriteResponse
     }
 
-    // Default: Return the Supabase response (which is just next() with cookies)
     return supabaseResponse
 }
+
 
 export const config = {
     matcher: [

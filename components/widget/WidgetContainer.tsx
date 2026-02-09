@@ -515,33 +515,33 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                 key="locked"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="h-full max-h-[100vh] flex flex-col p-4 md:p-6"
+                                className="h-full max-h-[100vh] flex flex-col p-4 md:p-6 overflow-hidden"
                             >
-                                <div className="max-w-5xl mx-auto w-full h-full flex flex-col justify-between items-center gap-3 md:gap-4">
+                                <div className="max-w-5xl mx-auto w-full h-full flex flex-col items-center gap-2 md:gap-4 overflow-hidden">
                                     {/* Title */}
-                                    <h2 className="text-xl md:text-3xl font-serif text-black dark:text-white text-center flex-shrink-0 mb-6 md:mb-8">Tu simulación Smile Forward</h2>
+                                    <h2 className="text-xl md:text-3xl font-serif text-black dark:text-white text-center flex-shrink-0 mb-1 md:mb-2 pt-2">Tu simulación Smile Forward</h2>
 
                                     {/* Main Content - Images + CTA */}
-                                    <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full items-center justify-center flex-1 min-h-0">
+                                    <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full items-center justify-center flex-1 min-h-0 overflow-hidden">
                                         {/* Images Comparison */}
-                                        <div className="flex-1 w-full max-w-xl h-full flex flex-col items-center gap-3">
-                                            <div className="grid grid-cols-2 gap-3 md:gap-6 w-full">
+                                        <div className="flex-1 w-full max-w-xl h-full flex flex-col items-center gap-2 min-h-0">
+                                            <div className="grid grid-cols-2 gap-3 md:gap-6 w-full flex-1 min-h-0">
                                                 {/* ANTES */}
-                                                <div className="space-y-2 flex flex-col">
-                                                    <div className="aspect-[9/16] max-h-[50vh] rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 shadow-lg relative flex-shrink">
+                                                <div className="space-y-1 flex flex-col h-full min-h-0">
+                                                    <div className="flex-1 relative rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 shadow-lg">
                                                         {image && (
-                                                            <img src={URL.createObjectURL(image)} alt="Antes" className="w-full h-full object-contain absolute inset-0" />
+                                                            <img src={URL.createObjectURL(image)} alt="Antes" className="w-full h-full object-cover" />
                                                         )}
                                                     </div>
                                                     <p className="text-center font-sans font-bold text-zinc-400 tracking-widest text-[10px] md:text-xs flex-shrink-0">ANTES</p>
                                                 </div>
 
                                                 {/* DESPUES */}
-                                                <div className="space-y-2 flex flex-col">
-                                                    <div className="relative aspect-[9/16] max-h-[50vh] rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl group flex-shrink">
+                                                <div className="space-y-1 flex flex-col h-full min-h-0">
+                                                    <div className="flex-1 relative rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl group">
                                                         {generatedImage ? (
                                                             <>
-                                                                <img src={generatedImage} alt="Despues" className="w-full h-full object-contain absolute inset-0" />
+                                                                <img src={generatedImage} alt="Despues" className="w-full h-full object-cover" />
                                                                 {/* Watermark */}
                                                                 <div className="absolute inset-0 flex items-center justify-center p-4 z-10 pointer-events-none opacity-60">
                                                                     <img
@@ -560,7 +560,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                             </div>
 
                                             {/* Footer Disclaimer - Centered below images */}
-                                            <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 text-center leading-relaxed">
+                                            <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 text-center leading-relaxed flex-shrink-0">
                                                 Simulación Orientativa. El resultado final depende de tu caso clínico
                                             </p>
                                         </div>

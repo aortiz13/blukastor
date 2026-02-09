@@ -492,7 +492,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                             >
                                 <div className="max-w-5xl mx-auto w-full h-full flex flex-col justify-between items-center gap-3 md:gap-4">
                                     {/* Title */}
-                                    <h2 className="text-xl md:text-3xl font-serif text-black dark:text-white text-center flex-shrink-0 mb-6 md:mb-8 pt-2 md:pt-4">Tu simulación Smile Forward</h2>
+                                    <h2 className="text-xl md:text-3xl font-serif text-black dark:text-white text-center flex-shrink-0 mb-6 md:mb-8 pt-1 md:pt-2">Tu simulación Smile Forward</h2>
 
                                     {/* Main Content - Images + CTA */}
                                     <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full items-center justify-center flex-1 min-h-0">

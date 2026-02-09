@@ -285,7 +285,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                         credentials: 'omit', // Ignore cookies to prevent auth conflicts
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lcWRnY2FsZGFjdGpqenFpZnN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMTk4NDIsImV4cCI6MjA4NDU5NTg0Mn0.a1agUC6eOyRs57odj_7w7wA0to_4cSuWfwWavh7_4aI'
+                            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
                         },
                         body: JSON.stringify({
                             email: data.email as string,

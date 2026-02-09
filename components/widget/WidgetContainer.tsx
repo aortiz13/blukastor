@@ -28,7 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { countries } from "./countries";
 
 // Combined step for auto-flow
-type Step = "UPLOAD" | "PROCESSING" | "LOCKED_RESULT" | "LEAD_FORM" | "RESULT" | "SURVEY" | "VERIFICATION";
+type Step = "UPLOAD" | "PROCESSING" | "LOCKED_RESULT" | "LEAD_FORM" | "RESULT" | "SURVEY" | "VERIFICATION" | "EMAIL_SENT";
 
 // Status steps for the progress UI
 type ProcessStatus = 'validating' | 'scanning' | 'analyzing' | 'designing' | 'complete';
@@ -55,6 +55,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
     const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
     const [userId, setUserId] = useState<string>("anon");
     const [leadId, setLeadId] = useState<string | null>(null);
+    const [userEmail, setUserEmail] = useState<string>('');
 
     // Process Status State
     const [processStatus, setProcessStatus] = useState<ProcessStatus>('validating');
@@ -247,11 +248,14 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
 
             toast.success("¡Información enviada con éxito!");
             setLeadId(leadId); // Persist ID for next step
+            setUserEmail(data.email as string); // Store email for confirmation view
 
             if (leadIntent === 'video') {
-                setStep("SURVEY");
+                // Redirect to external URL for video appointment
+                window.location.href = 'https://dentalcorbella.com/contacto/';
             } else {
-                setStep("RESULT");
+                // Show email confirmation view
+                setStep("EMAIL_SENT");
             }
         } catch (err) {
             console.error(err);
@@ -625,6 +629,46 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                             </div>
                                         </form>
                                     </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* EMAIL SENT CONFIRMATION */}
+                        {step === "EMAIL_SENT" && (
+                            <motion.div
+                                key="email-sent"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="h-full flex items-center justify-center p-4 md:p-8"
+                            >
+                                <div className="max-w-md w-full text-center space-y-6">
+                                    {/* Success Icon */}
+                                    <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                                        <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
+                                    </div>
+                                    
+                                    {/* Title */}
+                                    <h2 className="text-2xl md:text-3xl font-serif font-bold text-black dark:text-white">
+                                        Tu foto ha sido enviada vía correo electrónico
+                                    </h2>
+                                    
+                                    {/* Email Display */}
+                                    <p className="text-base text-zinc-600 dark:text-zinc-400">
+                                        al correo <span className="font-semibold text-black dark:text-white">{userEmail}</span>
+                                    </p>
+                                    
+                                    {/* Instructions */}
+                                    <p className="text-sm text-zinc-500">
+                                        Revisa tu correo ahora, si no la recibes escríbenos.
+                                    </p>
+                                    
+                                    {/* Contact Button */}
+                                    <Button
+                                        onClick={() => window.location.href = 'https://dentalcorbella.com/contacto/'}
+                                        className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-base font-medium tracking-wide shadow-lg"
+                                    >
+                                        Escríbenos
+                                    </Button>
                                 </div>
                             </motion.div>
                         )}

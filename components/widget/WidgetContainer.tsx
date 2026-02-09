@@ -492,7 +492,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                             >
                                 <div className="max-w-5xl mx-auto w-full h-full flex flex-col justify-between items-center gap-3 md:gap-4">
                                     {/* Title */}
-                                    <h2 className="text-xl md:text-3xl font-serif text-black dark:text-white text-center flex-shrink-0 mb-6 md:mb-8 pt-4 md:pt-8">Tu simulación Smile Forward</h2>
+                                    <h2 className="text-xl md:text-3xl font-serif text-black dark:text-white text-center flex-shrink-0 mb-6 md:mb-8 pt-2 md:pt-4">Tu simulación Smile Forward</h2>
 
                                     {/* Main Content - Images + CTA */}
                                     <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full items-center justify-center flex-1 min-h-0">
@@ -760,98 +760,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                         )}
 
                         {/* SURVEY STEP */}
-                        {step === "SURVEY" && (
-                            <motion.div
-                                key="survey"
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="h-full flex flex-col items-center justify-center p-4 overflow-y-auto"
-                            >
-                                <div className="w-full max-w-sm space-y-6 py-8 md:py-0">
-                                    <div className="text-center space-y-2">
-                                        <h2 className="text-2xl font-serif text-black dark:text-white">Personalizar</h2>
-                                        <p className="text-sm text-zinc-500">Ayúdanos a mejorar tu simulación.</p>
-                                    </div>
-                                    <form className="space-y-5" onSubmit={handleSurveySubmit}>
-                                        <div className="space-y-4">
-                                            <div className="space-y-1.5">
-                                                <Label className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Rango de Edad</Label>
-                                                <select name="ageRange" className="flex h-12 w-full items-center justify-between rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:opacity-50 appearance-none" required>
-                                                    <option value="">Selecciona una opción</option>
-                                                    <option value="18-30">Joven (18 - 30 años)</option>
-                                                    <option value="30-55">Mediana Edad (30 - 55 años)</option>
-                                                    <option value="55+">Senior (55 años en adelante)</option>
-                                                </select>
-                                            </div>
 
-                                            <div className="space-y-1.5">
-                                                <Label className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Objetivo</Label>
-                                                <select name="improvementGoal" className="flex h-12 w-full items-center justify-between rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:opacity-50 appearance-none" required>
-                                                    <option value="">Selecciona una opción</option>
-                                                    <option value="alignment">Alineación</option>
-                                                    <option value="veneers">Carillas</option>
-                                                    <option value="implants">Implantes</option>
-                                                    <option value="full_smile">Sonrisa Completa</option>
-                                                    <option value="whitening">Blanqueamiento</option>
-                                                </select>
-                                            </div>
-
-                                            <div className="space-y-1.5">
-                                                <Label className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Plazo</Label>
-                                                <select name="timeframe" className="flex h-12 w-full items-center justify-between rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:opacity-50 appearance-none" required>
-                                                    <option value="">Selecciona una opción</option>
-                                                    <option value="now">Ahora mismo</option>
-                                                    <option value="1-3_months">1 - 3 meses</option>
-                                                    <option value="later">Más adelante</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <Button type="submit" className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 text-base font-sans font-medium tracking-wide shadow-md mt-4">
-                                            Continuar
-                                        </Button>
-                                        <Button type="button" variant="ghost" size="sm" onClick={() => setStep("RESULT")} className="w-full rounded-full text-zinc-400 hover:text-black hover:bg-transparent">
-                                            Cancelar
-                                        </Button>
-                                    </form>
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {/* VERIFICATION STEP */}
-                        {step === "VERIFICATION" && (
-                            <motion.div
-                                key="verification"
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="h-full flex flex-col items-center justify-center p-6 space-y-8 py-10 md:py-0"
-                            >
-                                <div className="bg-zinc-50 p-6 rounded-full">
-                                    <Video className="w-10 h-10 text-zinc-800" strokeWidth={1} />
-                                </div>
-
-                                <div className="text-center space-y-4 max-w-sm">
-                                    <h2 className="text-2xl font-serif text-black dark:text-white">Vídeo Personalizado</h2>
-                                    <p className="text-sm text-zinc-500 leading-relaxed">
-                                        Para asegurar la calidad, generamos cada vídeo bajo demanda. Verifica tu solicitud en WhatsApp para comenzar.
-                                    </p>
-                                </div>
-
-                                <Button
-                                    className="w-full max-w-xs h-14 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white text-base font-bold shadow-lg flex items-center justify-center gap-3"
-                                    onClick={() => {
-                                        window.open(`https://wa.me/34600000000?text=${encodeURIComponent("Hola, me gustaría verificar mi solicitud de vídeo Smile Forward.")}`, '_blank');
-                                    }}
-                                >
-                                    <Share2 className="w-5 h-5" strokeWidth={1.5} />
-                                    Verificar en WhatsApp
-                                </Button>
-
-                                <Button variant="ghost" size="sm" onClick={() => setStep("RESULT")} className="text-zinc-400 hover:text-black">
-                                    Volver
-                                </Button>
-                            </motion.div>
-                        )}
                     </AnimatePresence>
                 )}
             </main>

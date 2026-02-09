@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
+import { SelfieCaptureFlow } from "@/components/selfie/SelfieCaptureFlow";
 import {
     Dialog,
     DialogContent,
@@ -28,7 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { countries } from "./countries";
 
 // Combined step for auto-flow
-type Step = "UPLOAD" | "PROCESSING" | "LOCKED_RESULT" | "LEAD_FORM" | "RESULT" | "SURVEY" | "VERIFICATION" | "EMAIL_SENT";
+type Step = "UPLOAD" | "SELFIE_CAPTURE" | "PROCESSING" | "LOCKED_RESULT" | "LEAD_FORM" | "RESULT" | "SURVEY" | "VERIFICATION" | "EMAIL_SENT";
 
 // Status steps for the progress UI
 type ProcessStatus = 'validating' | 'scanning' | 'analyzing' | 'designing' | 'complete';
@@ -147,6 +148,10 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
             };
             reader.onerror = reject;
         });
+    };
+
+    const handleSelfieCapture = async (file: File) => {
+        handleUpload(file);
     };
 
     const handleUpload = async (file: File) => {
@@ -431,10 +436,36 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                         <span className="flex items-center gap-2"><Check className="w-4 h-4 text-teal-500" strokeWidth={1.5} /> Resultados en segundos</span>
                                     </div>
                                     <div className="flex flex-col items-center gap-2 text-xs md:text-sm text-zinc-600 dark:text-zinc-400 font-sans transition-all">
+                                        <div className="flex gap-4 mb-4">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => setStep("SELFIE_CAPTURE")}
+                                                className="rounded-full border-zinc-200 hover:bg-zinc-100 hover:text-black dark:border-zinc-700 dark:hover:bg-zinc-800 dark:text-zinc-300"
+                                            >
+                                                <ScanFace className="w-4 h-4 mr-2" />
+                                                Tómate una selfie
+                                            </Button>
+                                        </div>
                                         <p>Tu imagen se utilizará únicamente para generar esta simulación.</p>
                                         <p>Debes ser mayor de edad para utilizar esta herramienta</p>
                                     </div>
                                 </div>
+                            </motion.div>
+                        )}
+
+                        {/* SELFIE CAPTURE STEP */}
+                        {step === "SELFIE_CAPTURE" && (
+                            <motion.div
+                                key="selfie"
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.98 }}
+                                className="h-full w-full flex flex-col"
+                            >
+                                <SelfieCaptureFlow
+                                    onCapture={handleSelfieCapture}
+                                    onCancel={() => setStep("UPLOAD")}
+                                />
                             </motion.div>
                         )}
 

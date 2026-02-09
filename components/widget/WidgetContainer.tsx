@@ -461,31 +461,33 @@ export default function WidgetContainer() {
                                 key="locked"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="h-full flex flex-col p-2 md:p-0 justify-center"
+                                className="h-full max-h-[100vh] flex flex-col p-4 md:p-6"
                             >
-                                <div className="max-w-5xl mx-auto w-full space-y-4 md:space-y-6 flex flex-col items-center">
-                                    <h2 className="text-xl md:text-3xl font-serif text-[#C44D4D] text-center">Tu simulación Smile Forward</h2>
+                                <div className="max-w-5xl mx-auto w-full h-full flex flex-col justify-between items-center gap-3 md:gap-4">
+                                    {/* Title */}
+                                    <h2 className="text-xl md:text-3xl font-serif text-[#C44D4D] text-center flex-shrink-0">Tu simulación Smile Forward</h2>
 
-                                    <div className="flex flex-col md:flex-row gap-6 md:gap-10 w-full items-center justify-center">
+                                    {/* Main Content - Images + CTA */}
+                                    <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full items-center justify-center flex-1 min-h-0">
                                         {/* Images Comparison */}
-                                        <div className="flex-1 w-full max-w-xl">
-                                            <div className="grid grid-cols-2 gap-3 md:gap-6">
+                                        <div className="flex-1 w-full max-w-xl h-full flex items-center">
+                                            <div className="grid grid-cols-2 gap-3 md:gap-6 w-full">
                                                 {/* ANTES */}
-                                                <div className="space-y-2">
-                                                    <div className="aspect-[9/16] rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 shadow-lg relative">
+                                                <div className="space-y-2 flex flex-col">
+                                                    <div className="aspect-[9/16] max-h-[50vh] rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 shadow-lg relative flex-shrink">
                                                         {image && (
-                                                            <img src={URL.createObjectURL(image)} alt="Antes" className="w-full h-full object-cover absolute inset-0" />
+                                                            <img src={URL.createObjectURL(image)} alt="Antes" className="w-full h-full object-contain absolute inset-0" />
                                                         )}
                                                     </div>
-                                                    <p className="text-center font-sans font-bold text-zinc-400 tracking-widest text-[10px] md:text-xs">ANTES</p>
+                                                    <p className="text-center font-sans font-bold text-zinc-400 tracking-widest text-[10px] md:text-xs flex-shrink-0">ANTES</p>
                                                 </div>
 
                                                 {/* DESPUES */}
-                                                <div className="space-y-2">
-                                                    <div className="relative aspect-[9/16] rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl group">
+                                                <div className="space-y-2 flex flex-col">
+                                                    <div className="relative aspect-[9/16] max-h-[50vh] rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl group flex-shrink">
                                                         {generatedImage ? (
                                                             <>
-                                                                <img src={generatedImage} alt="Despues" className="w-full h-full object-cover absolute inset-0" />
+                                                                <img src={generatedImage} alt="Despues" className="w-full h-full object-contain absolute inset-0" />
                                                                 {/* Watermark */}
                                                                 <div className="absolute inset-0 flex items-center justify-center p-4 z-10 pointer-events-none opacity-60">
                                                                     <img
@@ -499,13 +501,13 @@ export default function WidgetContainer() {
                                                             <div className="w-full h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-zinc-300" /></div>
                                                         )}
                                                     </div>
-                                                    <p className="text-center font-sans font-bold text-[#C44D4D] tracking-widest text-[10px] md:text-xs">DESPUÉS</p>
+                                                    <p className="text-center font-sans font-bold text-[#C44D4D] tracking-widest text-[10px] md:text-xs flex-shrink-0">DESPUÉS</p>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Sidebar CTA */}
-                                        <div className="w-full md:w-72 flex flex-col justify-center space-y-6 bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 self-center md:self-auto">
+                                        <div className="w-full md:w-72 flex flex-col justify-center space-y-4 bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 flex-shrink-0">
                                             <div className="space-y-1 text-center md:text-left">
                                                 <h3 className="text-2xl font-serif text-black dark:text-white">¿Te lo enviamos?</h3>
                                             </div>
@@ -521,7 +523,7 @@ export default function WidgetContainer() {
                                     </div>
 
                                     {/* Footer Disclaimer */}
-                                    <p className="text-[10px] text-zinc-400 text-center max-w-md mx-auto leading-relaxed pt-2">
+                                    <p className="text-[10px] text-zinc-400 text-center max-w-md mx-auto leading-relaxed flex-shrink-0">
                                         Simulación Orientativa. El resultado final depende de tu caso clínico
                                     </p>
                                 </div>

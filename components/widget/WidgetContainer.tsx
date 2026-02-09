@@ -466,12 +466,12 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                             >
                                 <div className="max-w-5xl mx-auto w-full h-full flex flex-col justify-between items-center gap-3 md:gap-4">
                                     {/* Title */}
-                                    <h2 className="text-xl md:text-3xl font-serif text-black dark:text-white text-center flex-shrink-0 mb-6 md:mb-8">Tu simulación Smile Forward</h2>
+                                    <h2 className="text-xl md:text-3xl font-serif text-black dark:text-white text-center flex-shrink-0 mb-6 md:mb-8 pt-4 md:pt-8">Tu simulación Smile Forward</h2>
 
                                     {/* Main Content - Images + CTA */}
                                     <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full items-center justify-center flex-1 min-h-0">
                                         {/* Images Comparison */}
-                                        <div className="flex-1 w-full max-w-xl h-full flex items-center">
+                                        <div className="flex-1 w-full max-w-xl h-full flex flex-col items-center gap-3">
                                             <div className="grid grid-cols-2 gap-3 md:gap-6 w-full">
                                                 {/* ANTES */}
                                                 <div className="space-y-2 flex flex-col">
@@ -502,9 +502,14 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                                             <div className="w-full h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-zinc-300" /></div>
                                                         )}
                                                     </div>
-                                                    <p className="text-center font-sans font-bold text-[#C44D4D] tracking-widest text-[10px] md:text-xs flex-shrink-0">DESPUÉS</p>
+                                                    <p className="text-center font-sans font-bold text-zinc-600 dark:text-zinc-400 tracking-widest text-[10px] md:text-xs flex-shrink-0">DESPUÉS</p>
                                                 </div>
                                             </div>
+
+                                            {/* Footer Disclaimer - Centered below images */}
+                                            <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 text-center leading-relaxed">
+                                                Simulación Orientativa. El resultado final depende de tu caso clínico
+                                            </p>
                                         </div>
 
                                         {/* Sidebar CTA */}
@@ -522,11 +527,6 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                             </Button>
                                         </div>
                                     </div>
-
-                                    {/* Footer Disclaimer */}
-                                    <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 text-center max-w-md mx-auto leading-relaxed flex-shrink-0">
-                                        Simulación Orientativa. El resultado final depende de tu caso clínico
-                                    </p>
                                 </div>
                             </motion.div>
                         )}

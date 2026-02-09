@@ -111,11 +111,11 @@ Deno.serve(async (req) => {
             REQUIRED VARIATIONS & GUIDELINES:
 
             1. original_bg (Scientific Natural Restoration):
-            - Subject: "A photorealistic vertical medium shot of the user, featuring a scientifically aligned smile restoration based on facial morphopsychology."
-            - Composition: "9:16 Vertical Portrait (Stories Format). Medium Shot. Full head and shoulders visible."
+            - Subject: "A photorealistic portrait of the user EXACTLY as seen in the input image. Maintain the EXACT framing, zoom level, camera angle, and background."
+            - Composition: "Identical to the input image. Do NOT change the zoom, crop, or aspect ratio. Ensure the Before and After images align perfectly."
             - Action: "The subject is smiling naturally, with a dentition aligned to their interpupillary horizon."
-            - Location: "Soft-focus professional studio or original background."
-            - Style: "High-End Aesthetic Dentistry Photography, 8K resolution."
+            - Location: "The original background from the input image. Do not change it."
+            - Style: "High-End Aesthetic Dentistry Photography, 8K resolution, Photorealistic."
             - Editing_Instructions: "APPLY CLINICAL LANDMARKS: \n1. HORIZON: Align the Incisal Plane to be strictly parallel with the Interpupillary Line (Eyes).\n2. MIDLINE & WIDTH: Align the dental midline with the Philtrum/Nose Tip. Use the alar base width (nose width) to guide the cusp tip position of the Canines.\n3. VERTICAL BALANCE: Assess the visual weight of the Hair and Eyebrows. If the upper face is dominant, increase the length of Central Incisors slightly to balance the face.\n4. PROPORTIONS: Enforce the esthetic dental proportion of 1.6:1:0.6 (Central:Lateral:Canine)."
             - Refining_Details: "Texture must be polychromatic natural ivory with realistic translucency at incisal edges. Ensure the smile arc follows the lower lip."
             - Reference_Instructions: "Use the user's original photo strictly for Facial Identity, Skin Tone, and Lip Shape. Completely replace the dental structure using the landmarks defined above."

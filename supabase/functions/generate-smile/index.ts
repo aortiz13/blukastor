@@ -33,11 +33,12 @@ Deno.serve(async (req) => {
 
         // Construct Prompt
         const finalPrompt = `
-      Subject: Close up portrait of the person.
+      Subject: ${prompt_options?.variationPrompt || "Portrait of the user with a perfect, natural smile."}
+      Important: Maintain the EXACT framing, zoom, angle, and background of the original image. Do NOT zoom in or out. Do NOT crop.
       Action: Smiling confidently with a perfect, natural smile.
       Style: Photorealistic, cinematic lighting, 8k resolution, spa dental aesthetic being extremely high quality.
-      Target: ${JSON.stringify(prompt_options || {})}
-      Editing Input: Replace the teeth with high quality veneers, keeping the face structure exactly the same.
+      Target Details: ${JSON.stringify(prompt_options || {})}
+      Editing Input: Replace only the teeth with high quality veneers, keeping the face structure, skin texture, and background exactly the same.
     `
 
         // Call Imaging API (Gemini/Imagen via Google AI Studio)

@@ -66,7 +66,7 @@ export function SelfieCaptureFlow({ onCapture, onCancel }: SelfieCaptureFlowProp
     }
 
     return (
-        <div className="relative w-full h-full flex flex-col bg-black overflow-hidden">
+        <div className="relative w-full h-full min-h-[500px] md:min-h-0 flex flex-col bg-black overflow-hidden rounded-xl">
             {/* Close Button implementation if needed, but Widget usually handles navigation. 
                 Adding an absolute close button just in case. */}
             <button

@@ -16,6 +16,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
 import { SelfieCaptureFlow } from "@/components/selfie/SelfieCaptureFlow";
+import QRCode from "react-qr-code"; // Import QRCode
+import { createSelfieSession } from "@/app/actions/selfie"; // Import server action
 import {
     Dialog,
     DialogContent,
@@ -61,6 +63,10 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
     // Process Status State
     const [processStatus, setProcessStatus] = useState<ProcessStatus>('validating');
     const [uploadedScanUrl, setUploadedScanUrl] = useState<string | null>(null);
+
+    // Cross-Device Session State
+    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [qrUrl, setQrUrl] = useState<string | null>(null);
 
     const [phraseIndex, setPhraseIndex] = useState(0);
     const phrases = [
@@ -153,6 +159,58 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
     const handleSelfieCapture = async (file: File) => {
         handleUpload(file);
     };
+
+    // Initialize Selfie Session when entering that step
+    useEffect(() => {
+        if (step === "SELFIE_CAPTURE" && !sessionId) {
+            const initSession = async () => {
+                const res = await createSelfieSession();
+                if (res.success && res.sessionId) {
+                    setSessionId(res.sessionId);
+                    setQrUrl(`${window.location.origin}/selfie?sid=${res.sessionId}`);
+                }
+            };
+            initSession();
+        }
+    }, [step, sessionId]);
+
+    // Listen for Selfie Session updates
+    useEffect(() => {
+        if (!sessionId || step !== "SELFIE_CAPTURE") return;
+
+        const supabase = createClient();
+        const channel = supabase
+            .channel(`selfie_session_${sessionId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'selfie_sessions',
+                    filter: `id=eq.${sessionId}`
+                },
+                async (payload) => {
+                    const newStatus = payload.new.status;
+                    const imageUrl = payload.new.image_url;
+
+                    if (newStatus === 'uploaded' && imageUrl) {
+                        try {
+                            const response = await fetch(imageUrl);
+                            const blob = await response.blob();
+                            const file = new File([blob], "mobile-selfie.jpg", { type: "image/jpeg" });
+                            handleUpload(file);
+                        } catch (err) {
+                            console.error("Error fetching mobile selfie:", err);
+                        }
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [sessionId, step]);
 
     const handleUpload = async (file: File) => {
         setImage(file);
@@ -453,19 +511,46 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                             </motion.div>
                         )}
 
-                        {/* SELFIE CAPTURE STEP */}
+                        {/* SELFIE CAPTURE STEP (Webcam + QR) */}
                         {step === "SELFIE_CAPTURE" && (
                             <motion.div
                                 key="selfie"
                                 initial={{ opacity: 0, scale: 0.98 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.98 }}
-                                className="h-full w-full flex flex-col"
+                                className="h-full w-full flex flex-col items-center justify-center p-4"
                             >
-                                <SelfieCaptureFlow
-                                    onCapture={handleSelfieCapture}
-                                    onCancel={() => setStep("UPLOAD")}
-                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl h-full max-h-[600px]">
+                                    {/* Column 1: Webcam */}
+                                    <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-black flex flex-col">
+                                        <SelfieCaptureFlow
+                                            onCapture={handleSelfieCapture}
+                                            onCancel={() => setStep("UPLOAD")}
+                                        />
+                                    </div>
+
+                                    {/* Column 2: QR Code */}
+                                    <div className="flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-8 border border-zinc-200 dark:border-zinc-800 text-center space-y-6">
+                                        <div className="space-y-2">
+                                            <h3 className="text-xl font-serif text-black dark:text-white">Usa tu móvil</h3>
+                                            <p className="text-sm text-zinc-500">Escanea este código para usar la cámara de tu teléfono.</p>
+                                        </div>
+
+                                        <div className="p-4 bg-white rounded-xl shadow-sm border border-zinc-100">
+                                            {qrUrl ? (
+                                                <QRCode value={qrUrl} size={180} />
+                                            ) : (
+                                                <div className="w-[180px] h-[180px] flex items-center justify-center">
+                                                    <Loader2 className="w-8 h-8 animate-spin text-zinc-300" />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <p className="text-xs text-zinc-400 px-4">
+                                            La foto se sincronizará automáticamente aquí una vez la tomes.
+                                        </p>
+                                    </div>
+                                </div>
                             </motion.div>
                         )}
 

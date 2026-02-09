@@ -1,15 +1,23 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect, Suspense } from "react";
 import Webcam from "react-webcam";
 import { CameraView } from "@/components/selfie/CameraView";
 import { FaceOverlay } from "@/components/selfie/FaceOverlay";
 import { useFaceDetection } from "@/hooks/selfie/useFaceDetection";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { RefreshCcw, Check, Aperture } from "lucide-react";
+import { RefreshCcw, Check, Aperture, Smartphone } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { updateSelfieSession } from "@/app/actions/selfie";
+import { uploadScan } from "@/app/services/storage";
 
-export default function SelfiePage() {
+function SelfiePageContent() {
+    const searchParams = useSearchParams();
+    const sessionId = searchParams.get("sid");
+    const [uploading, setUploading] = useState(false);
+    const [success, setSuccess] = useState(false);
+
     const webcamRef = useRef<Webcam>(null);
     const [imgSrc, setImgSrc] = useState<string | null>(null);
 
@@ -37,11 +45,67 @@ export default function SelfiePage() {
         setImgSrc(null);
     };
 
-    const confirmPhoto = () => {
-        // Logic to save/use the photo
-        console.log("Photo confirmed:", imgSrc);
-        // Proceed to next step...
+    const confirmPhoto = async () => {
+        if (!imgSrc) return;
+
+        // If we are in a cross-device session (sid present)
+        if (sessionId) {
+            try {
+                setUploading(true);
+                // 1. Convert base64 to Blob/File
+                const res = await fetch(imgSrc);
+                const blob = await res.blob();
+                const file = new File([blob], "mobile-selfie.jpg", { type: "image/jpeg" });
+
+                // 2. Upload to Storage
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('userId', 'mobile_upload'); // Or handle proper auth/anon ID
+
+                const uploadRes = await uploadScan(formData);
+
+                if (!uploadRes.success || !uploadRes.data) {
+                    throw new Error(uploadRes.error || "Upload failed");
+                }
+
+                // 3. Update Session
+                const sessionRes = await updateSelfieSession(sessionId, uploadRes.data);
+
+                if (!sessionRes.success) {
+                    throw new Error(sessionRes.error || "Session update failed");
+                }
+
+                setSuccess(true);
+
+            } catch (err) {
+                console.error("Error in mobile flow:", err);
+                alert("Hubo un error al subir la foto. Por favor intenta de nuevo.");
+            } finally {
+                setUploading(false);
+            }
+        } else {
+            // Logic to save/use the photo (Standalone mode - redundant now with capture flow logic?)
+            // Just log for now if standalone
+            console.log("Photo confirmed:", imgSrc);
+        }
     };
+
+    if (success) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-8 text-center font-sans">
+                <div className="w-24 h-24 rounded-full bg-emerald-500/20 flex items-center justify-center mb-6">
+                    <Check className="w-12 h-12 text-emerald-500" />
+                </div>
+                <h1 className="text-3xl font-serif mb-4">¡Foto Enviada!</h1>
+                <p className="text-zinc-400 mb-8 max-w-sm">
+                    Hemos recibido tu selfie correctamente. Ya puedes volver a tu ordenador para ver el resultado.
+                </p>
+                <div className="animate-pulse text-sm text-zinc-500">
+                    Puedes cerrar esta pestaña
+                </div>
+            </div>
+        );
+    }
 
     if (error) {
         return (
@@ -69,9 +133,14 @@ export default function SelfiePage() {
                             variant="default"
                             size="icon"
                             onClick={confirmPhoto}
-                            className="rounded-full h-16 w-16 bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 hover:scale-105 transition-all"
+                            disabled={uploading}
+                            className={`rounded-full h-16 w-16 bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 hover:scale-105 transition-all ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            <Check className="h-8 w-8" />
+                            {uploading ? (
+                                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                                <Check className="h-8 w-8" />
+                            )}
                         </Button>
                     </div>
                 </div>
@@ -120,5 +189,15 @@ export default function SelfiePage() {
                 </div>
             )}
         </div>
+    );
+}
+
+
+
+export default function SelfiePage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Cargando...</div>}>
+            <SelfiePageContent />
+        </Suspense>
     );
 }

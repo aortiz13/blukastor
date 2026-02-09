@@ -25,6 +25,8 @@ export const CameraView = forwardRef<Webcam, CameraViewProps>(
                     videoConstraints={videoConstraints}
                     onUserMedia={onUserMedia}
                     mirrored={true}
+                    playsInline={true}
+                    muted={true}
                 />
             </div>
         );

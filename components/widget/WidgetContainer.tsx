@@ -80,6 +80,28 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
         }
     }, [step]);
 
+    // Detect user's country based on geolocation
+    useEffect(() => {
+        const detectCountry = async () => {
+            try {
+                // Use a geolocation API to detect country
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                if (data.country_code) {
+                    // Check if the detected country is in our list
+                    const detectedCountry = countries.find(c => c.code === data.country_code);
+                    if (detectedCountry) {
+                        setSelectedCountry(data.country_code);
+                    }
+                }
+            } catch (error) {
+                // Fallback to Spain if geolocation fails
+                console.log('Geolocation detection failed, using default (ES)');
+            }
+        };
+        detectCountry();
+    }, []);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Scanning Animation Variants
@@ -594,7 +616,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                                             id="phoneNumber"
                                                             name="phoneNumber"
                                                             type="tel"
-                                                            placeholder={countries.find(c => c.code === selectedCountry)?.dial_code.replace('+', '') + ' 000 000'}
+                                                            placeholder="9 1234 5678"
                                                             required
                                                             className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all flex-1"
                                                         />
@@ -646,22 +668,22 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                     <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
                                         <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
                                     </div>
-                                    
+
                                     {/* Title */}
                                     <h2 className="text-2xl md:text-3xl font-serif font-bold text-black dark:text-white">
                                         Tu foto ha sido enviada vía correo electrónico
                                     </h2>
-                                    
+
                                     {/* Email Display */}
                                     <p className="text-base text-zinc-600 dark:text-zinc-400">
                                         al correo <span className="font-semibold text-black dark:text-white">{userEmail}</span>
                                     </p>
-                                    
+
                                     {/* Instructions */}
                                     <p className="text-sm text-zinc-500">
                                         Revisa tu correo ahora, si no la recibes escríbenos.
                                     </p>
-                                    
+
                                     {/* Contact Button */}
                                     <Button
                                         onClick={() => window.location.href = 'https://dentalcorbella.com/contacto/'}

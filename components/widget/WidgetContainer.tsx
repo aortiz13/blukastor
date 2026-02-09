@@ -537,89 +537,94 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                 key="form"
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="h-full flex flex-col items-center justify-center p-4 overflow-y-auto"
+                                className="h-full flex items-center justify-center p-4 md:p-8 overflow-y-auto"
                             >
-                                <div className="w-full max-w-md space-y-8 py-8 md:py-0">
-                                    <div className="text-center space-y-4">
-                                        <h2 className="text-2xl md:text-3xl font-serif text-black dark:text-white">¿Quieres que tu experiencia sea más real?</h2>
-                                        <p className="text-sm text-zinc-500 leading-relaxed px-4">
+                                <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+                                    {/* Left Column - Title & Subtitle */}
+                                    <div className="space-y-4 text-center md:text-left">
+                                        <h2 className="text-2xl md:text-4xl font-serif text-black dark:text-white">¿Quieres que tu experiencia sea más real?</h2>
+                                        <p className="text-sm md:text-base text-zinc-500 leading-relaxed">
                                             La imagen te da una idea. Pero donde realmente se entiende el cambio al verte hablar reir y expresarte: verte tú en situaciones reales con naturalidad
                                         </p>
                                     </div>
-                                    <form className="space-y-6" onSubmit={handleLeadSubmit}>
-                                        <div className="space-y-5">
-                                            <div className="space-y-1.5">
-                                                <Label htmlFor="name" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Nombre Completo</Label>
-                                                <Input id="name" name="name" placeholder="Tu nombre" required className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all" />
-                                            </div>
 
-                                            <div className="space-y-1.5">
-                                                <Label htmlFor="email" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Correo Electrónico</Label>
-                                                <Input id="email" name="email" type="email" placeholder="tu@email.com" required className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all" />
-                                            </div>
+                                    {/* Right Column - Form */}
+                                    <div className="w-full">
+                                        <form className="space-y-6" onSubmit={handleLeadSubmit}>
+                                            <div className="space-y-5">
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="name" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Nombre Completo</Label>
+                                                    <Input id="name" name="name" placeholder="Tu nombre" required className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all" />
+                                                </div>
 
-                                            <div className="space-y-1.5">
-                                                <Label htmlFor="phone" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">WhatsApp</Label>
-                                                <div className="flex gap-3">
-                                                    <div className="w-[110px] flex-shrink-0">
-                                                        <Select
-                                                            name="countryCode"
-                                                            defaultValue="ES"
-                                                            onValueChange={(value) => setSelectedCountry(value)}
-                                                        >
-                                                            <SelectTrigger className="h-12 rounded-full border-zinc-200 bg-zinc-50 focus:ring-0 focus:border-black">
-                                                                <SelectValue placeholder="+34" />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="max-h-[300px]">
-                                                                {countries.map((country) => (
-                                                                    <SelectItem key={country.code} value={country.code}>
-                                                                        <span className="flex items-center gap-2">
-                                                                            <span>{country.flag}</span>
-                                                                            <span className="text-zinc-500">{country.dial_code}</span>
-                                                                        </span>
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="email" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Correo Electrónico</Label>
+                                                    <Input id="email" name="email" type="email" placeholder="tu@email.com" required className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all" />
+                                                </div>
+
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="phone" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">WhatsApp</Label>
+                                                    <div className="flex gap-3">
+                                                        <div className="w-[110px] flex-shrink-0">
+                                                            <Select
+                                                                name="countryCode"
+                                                                defaultValue="ES"
+                                                                onValueChange={(value) => setSelectedCountry(value)}
+                                                            >
+                                                                <SelectTrigger className="h-12 rounded-full border-zinc-200 bg-zinc-50 focus:ring-0 focus:border-black">
+                                                                    <SelectValue placeholder="+34" />
+                                                                </SelectTrigger>
+                                                                <SelectContent className="max-h-[300px]">
+                                                                    {countries.map((country) => (
+                                                                        <SelectItem key={country.code} value={country.code}>
+                                                                            <span className="flex items-center gap-2">
+                                                                                <span>{country.flag}</span>
+                                                                                <span className="text-zinc-500">{country.dial_code}</span>
+                                                                            </span>
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                        <Input
+                                                            id="phoneNumber"
+                                                            name="phoneNumber"
+                                                            type="tel"
+                                                            placeholder={countries.find(c => c.code === selectedCountry)?.dial_code.replace('+', '') + ' 000 000'}
+                                                            required
+                                                            className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all flex-1"
+                                                        />
                                                     </div>
-                                                    <Input
-                                                        id="phoneNumber"
-                                                        name="phoneNumber"
-                                                        type="tel"
-                                                        placeholder={countries.find(c => c.code === selectedCountry)?.dial_code.replace('+', '') + ' 000 000'}
-                                                        required
-                                                        className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all flex-1"
-                                                    />
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div className="flex items-start space-x-3 px-2">
-                                            <Checkbox id="terms" required className="mt-1 rounded-full border-zinc-300 data-[state=checked]:bg-black data-[state=checked]:text-white" />
-                                            <Label htmlFor="terms" className="text-xs text-zinc-400 font-normal leading-tight">
-                                                Acepto recibir mi diseño y la política de privacidad.
-                                            </Label>
-                                        </div>
+                                            <div className="flex items-start space-x-3 px-2">
+                                                <Checkbox id="terms" required className="mt-1 rounded-full border-zinc-300 data-[state=checked]:bg-black data-[state=checked]:text-white" />
+                                                <Label htmlFor="terms" className="text-xs text-zinc-400 font-normal leading-tight">
+                                                    Acepto recibir mi diseño y la política de privacidad.
+                                                </Label>
+                                            </div>
 
-                                        <div className="space-y-3 pt-2">
-                                            <Button
-                                                type="submit"
-                                                onClick={() => setLeadIntent('video')}
-                                                className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-base font-sans font-medium tracking-wide shadow-lg"
-                                            >
-                                                Reservar cita y verme en video
-                                            </Button>
+                                            <div className="space-y-3 pt-2">
+                                                <Button
+                                                    type="submit"
+                                                    onClick={() => setLeadIntent('video')}
+                                                    className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-base font-sans font-medium tracking-wide shadow-lg"
+                                                >
+                                                    Reservar cita y verme en video
+                                                </Button>
 
-                                            <Button
-                                                type="submit"
-                                                onClick={() => setLeadIntent('image')}
-                                                variant="ghost"
-                                                className="w-full h-12 rounded-full text-zinc-400 hover:text-black hover:bg-transparent font-normal"
-                                            >
-                                                Enviar foto
-                                            </Button>
-                                        </div>
-                                    </form>
+                                                <Button
+                                                    type="submit"
+                                                    onClick={() => setLeadIntent('image')}
+                                                    variant="ghost"
+                                                    className="w-full h-12 rounded-full text-zinc-400 hover:text-black hover:bg-transparent font-normal"
+                                                >
+                                                    Enviar foto
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </motion.div>
                         )}

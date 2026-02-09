@@ -42,8 +42,8 @@ const fileToBase64 = (file: File): Promise<string> => {
     });
 };
 
-export default function WidgetContainer() {
-    const [step, setStep] = useState<Step>("UPLOAD");
+export default function WidgetContainer({ initialStep }: { initialStep?: Step } = {}) {
+    const [step, setStep] = useState<Step>(initialStep || "UPLOAD");
     const [isVerified, setIsVerified] = useState(false);
     const [image, setImage] = useState<File | null>(null);
     // State for generated image URL
@@ -51,6 +51,7 @@ export default function WidgetContainer() {
 
     // State for tracking user intent (image vs video/consultation)
     const [leadIntent, setLeadIntent] = useState<'image' | 'video'>('image');
+    const [selectedCountry, setSelectedCountry] = useState<string>('ES');
     const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
     const [userId, setUserId] = useState<string>("anon");
     const [leadId, setLeadId] = useState<string | null>(null);
@@ -561,7 +562,11 @@ export default function WidgetContainer() {
                                                 <Label htmlFor="phone" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">WhatsApp</Label>
                                                 <div className="flex gap-3">
                                                     <div className="w-[110px] flex-shrink-0">
-                                                        <Select name="countryCode" defaultValue="ES">
+                                                        <Select
+                                                            name="countryCode"
+                                                            defaultValue="ES"
+                                                            onValueChange={(value) => setSelectedCountry(value)}
+                                                        >
                                                             <SelectTrigger className="h-12 rounded-full border-zinc-200 bg-zinc-50 focus:ring-0 focus:border-black">
                                                                 <SelectValue placeholder="+34" />
                                                             </SelectTrigger>
@@ -581,7 +586,7 @@ export default function WidgetContainer() {
                                                         id="phoneNumber"
                                                         name="phoneNumber"
                                                         type="tel"
-                                                        placeholder="600 000 000"
+                                                        placeholder={countries.find(c => c.code === selectedCountry)?.dial_code.replace('+', '') + ' 000 000'}
                                                         required
                                                         className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all flex-1"
                                                     />

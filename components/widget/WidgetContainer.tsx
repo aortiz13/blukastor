@@ -466,7 +466,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                             >
                                 <div className="max-w-5xl mx-auto w-full h-full flex flex-col justify-between items-center gap-3 md:gap-4">
                                     {/* Title */}
-                                    <h2 className="text-xl md:text-3xl font-serif text-[#C44D4D] text-center flex-shrink-0">Tu simulación Smile Forward</h2>
+                                    <h2 className="text-xl md:text-3xl font-serif text-black dark:text-white text-center flex-shrink-0 mb-6 md:mb-8">Tu simulación Smile Forward</h2>
 
                                     {/* Main Content - Images + CTA */}
                                     <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full items-center justify-center flex-1 min-h-0">
@@ -510,7 +510,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                         {/* Sidebar CTA */}
                                         <div className="w-full md:w-72 flex flex-col justify-center space-y-4 bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 flex-shrink-0">
                                             <div className="space-y-1 text-center md:text-left">
-                                                <h3 className="text-2xl font-serif text-black dark:text-white">¿Te lo enviamos?</h3>
+                                                <h3 className="text-2xl font-serif text-black dark:text-white">Recibe tu foto en Full HD</h3>
                                             </div>
 
                                             <Button
@@ -518,13 +518,13 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                                 className="w-full h-12 md:h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm md:text-base font-sans font-medium tracking-wide shadow-xl gap-2 group"
                                                 size="lg"
                                             >
-                                                <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" strokeWidth={1.5} /> Continuar en WhatsApp
+                                                <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" strokeWidth={1.5} /> ¿Te lo enviamos?
                                             </Button>
                                         </div>
                                     </div>
 
                                     {/* Footer Disclaimer */}
-                                    <p className="text-[10px] text-zinc-400 text-center max-w-md mx-auto leading-relaxed flex-shrink-0">
+                                    <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 text-center max-w-md mx-auto leading-relaxed flex-shrink-0">
                                         Simulación Orientativa. El resultado final depende de tu caso clínico
                                     </p>
                                 </div>

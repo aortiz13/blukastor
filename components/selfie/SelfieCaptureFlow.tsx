@@ -29,7 +29,17 @@ export function SelfieCaptureFlow({ onCapture, onCancel }: SelfieCaptureFlowProp
     }, [webcamRef]);
 
     // Hook handles the logic
-    const { isAligned, isSmiling, faceDetected, multipleFacesDetected, isLoading, error } = useFaceDetection(videoRef);
+    const {
+        isAligned,
+        isSmiling,
+        faceDetected,
+        multipleFacesDetected,
+        isLowLight,
+        smileScore,
+        jawOpenScore,
+        isLoading,
+        error
+    } = useFaceDetection(videoRef);
 
     const capture = useCallback(() => {
         if (webcamRef.current) {
@@ -115,6 +125,9 @@ export function SelfieCaptureFlow({ onCapture, onCancel }: SelfieCaptureFlowProp
                                 isSmiling={isSmiling}
                                 faceDetected={faceDetected}
                                 multipleFacesDetected={multipleFacesDetected}
+                                isLowLight={isLowLight}
+                                smileScore={smileScore}
+                                jawOpenScore={jawOpenScore}
                             />
                         )}
                     </div>

@@ -10,6 +10,10 @@ export const useFaceDetection = (
     const [isSmiling, setIsSmiling] = useState(false);
     const [faceDetected, setFaceDetected] = useState(false);
     const [multipleFacesDetected, setMultipleFacesDetected] = useState(false);
+    const [isLowLight, setIsLowLight] = useState(false);
+    const [lastBrightnessCheck, setLastBrightnessCheck] = useState(0);
+    const [currentSmileScore, setCurrentSmileScore] = useState(0);
+    const [currentJawOpenScore, setCurrentJawOpenScore] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -62,6 +66,33 @@ export const useFaceDetection = (
         }
 
         const video = videoRef.current;
+        const now = performance.now();
+
+        // Check brightness every 500ms
+        if (now - lastBrightnessCheck > 500) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 50;
+            canvas.height = 50;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(video, 0, 0, 50, 50);
+                const imageData = ctx.getImageData(0, 0, 50, 50);
+                const data = imageData.data;
+                let r, g, b, avg;
+                let colorSum = 0;
+                for (let x = 0, len = data.length; x < len; x += 4) {
+                    r = data[x];
+                    g = data[x + 1];
+                    b = data[x + 2];
+                    avg = Math.floor((r + g + b) / 3);
+                    colorSum += avg;
+                }
+                const brightness = Math.floor(colorSum / (50 * 50));
+                setIsLowLight(brightness < 80); // Threshold for low light
+                setLastBrightnessCheck(now);
+            }
+        }
+
         const startTimeMs = performance.now();
         const result = faceLandmarkerRef.current.detectForVideo(video, startTimeMs);
 
@@ -87,12 +118,16 @@ export const useFaceDetection = (
                 const smileRight = blendshapes.categories.find(c => c.categoryName === "mouthSmileRight")?.score || 0;
                 jawOpenScore = blendshapes.categories.find(c => c.categoryName === "jawOpen")?.score || 0;
                 smileScore = (smileLeft + smileRight) / 2;
+
+                setCurrentSmileScore(smileScore);
+                setCurrentJawOpenScore(jawOpenScore);
             }
 
             // Require both a smile AND an open mouth (teeth visible)
+            // Require both a smile AND an open mouth (teeth visible)
             // jawOpen thresholds: 0 (closed) to 1 (fully open).
-            // Adjusted to 0.04 to be more sensitive (lightly open mouth)
-            const isSmilingDetected = smileScore > 0.3 && jawOpenScore > 0.04;
+            // Adjusted as requested: smile > 0.25, jaw > 0.03
+            const isSmilingDetected = smileScore > 0.25 && jawOpenScore > 0.03;
             setIsSmiling(isSmilingDetected);
 
             // Alignment Checks
@@ -105,8 +140,8 @@ export const useFaceDetection = (
                 noseTip.x > 0.4 && noseTip.x < 0.6 && noseTip.y > 0.3 && noseTip.y < 0.7;
             const isCorrectSize = faceWidth > 0.25 && faceWidth < 0.55;
 
-            // Face must be Centered + Correct Size + Smiling to be "Aligned" for capture
-            setIsAligned(isCentered && isCorrectSize && isSmilingDetected);
+            // Face must be Centered + Correct Size + Smiling + Good Light to be "Aligned"
+            setIsAligned(isCentered && isCorrectSize && isSmilingDetected && !isLowLight);
         } else {
             setFaceDetected(false);
             setMultipleFacesDetected(false);
@@ -124,5 +159,15 @@ export const useFaceDetection = (
         return () => cancelAnimationFrame(requestRef.current);
     }, [isLoading, error]);
 
-    return { isAligned, isSmiling, faceDetected, multipleFacesDetected, isLoading, error };
+    return {
+        isAligned,
+        isSmiling,
+        faceDetected,
+        multipleFacesDetected,
+        isLowLight,
+        smileScore: currentSmileScore,
+        jawOpenScore: currentJawOpenScore,
+        isLoading,
+        error
+    };
 };

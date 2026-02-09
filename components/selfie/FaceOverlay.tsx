@@ -7,6 +7,9 @@ interface FaceOverlayProps {
     isSmiling: boolean;
     faceDetected: boolean;
     multipleFacesDetected: boolean;
+    isLowLight: boolean;
+    smileScore: number;
+    jawOpenScore: number;
 }
 
 export const FaceOverlay: React.FC<FaceOverlayProps> = ({
@@ -14,6 +17,9 @@ export const FaceOverlay: React.FC<FaceOverlayProps> = ({
     isSmiling,
     faceDetected,
     multipleFacesDetected,
+    isLowLight,
+    smileScore,
+    jawOpenScore,
 }) => {
     // Determine stroke color and feedback text based on detailed state
     let strokeColor = "#ef4444"; // Default Red
@@ -27,16 +33,20 @@ export const FaceOverlay: React.FC<FaceOverlayProps> = ({
         strokeColor = "#ef4444";
         feedbackText = "Ubica tu cara en el óvalo";
     } else if (faceDetected && !isAligned) {
-        // Face detected but something is off (centering, size, or smile)
-        // We need to prioritize feedback. 
-        // If centered/sized but not smiling -> Smile prompt
-        // But we don't have isCentered/isCorrectSize passed individually here, just isAligned which is the combination.
-        // However, if faceDetected is true and isAligned is false, it means one of the conditions failed.
-        // If isSmiling is false, that's likely the remaining blocker if the user looks positioned. 
-        // For simplicity/robustness without passing all flags:
-        if (!isSmiling) {
-            strokeColor = "#eab308"; // Yellow warning
-            feedbackText = "¡Sonríe!";
+        // Face detected but something is off (centering, size, or smile, or light)
+
+        if (isLowLight) {
+            strokeColor = "#eab308";
+            feedbackText = "Necesitas más luz";
+        } else if (!isSmiling) {
+            // Check specific reasons for not smiling
+            if (smileScore > 0.25 && jawOpenScore <= 0.03) {
+                strokeColor = "#eab308";
+                feedbackText = "Abre un poco más la boca";
+            } else {
+                strokeColor = "#eab308"; // Yellow warning
+                feedbackText = "¡Sonríe!";
+            }
         } else {
             // Smiling but not aligned (position/size)
             strokeColor = "#ef4444";

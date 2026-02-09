@@ -542,9 +542,9 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                 <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
                                     {/* Left Column - Title & Subtitle */}
                                     <div className="space-y-4 text-center md:text-left">
-                                        <h2 className="text-2xl md:text-4xl font-serif text-black dark:text-white">¿Quieres que tu experiencia sea más real?</h2>
+                                        <h2 className="text-2xl md:text-4xl font-serif font-bold text-black dark:text-white">¿Quieres que tu experiencia sea más real?</h2>
                                         <p className="text-sm md:text-base text-zinc-500 leading-relaxed">
-                                            La imagen te da una idea. Pero donde realmente se entiende el cambio al verte hablar reir y expresarte: verte tú en situaciones reales con naturalidad
+                                            La imagen te da una idea. Pero donde realmente se entiende el cambio al verte hablar reir y expresarte: <span className="font-bold">verte tú</span> en situaciones reales con naturalidad
                                         </p>
                                     </div>
 
@@ -599,8 +599,8 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                             </div>
 
                                             <div className="flex items-start space-x-3 px-2">
-                                                <Checkbox id="terms" required className="mt-1 rounded-full border-zinc-300 data-[state=checked]:bg-black data-[state=checked]:text-white" />
-                                                <Label htmlFor="terms" className="text-xs text-zinc-400 font-normal leading-tight">
+                                                <Checkbox id="terms" required className="mt-1.5 rounded-full border-zinc-300 data-[state=checked]:bg-black data-[state=checked]:text-white w-5 h-5" />
+                                                <Label htmlFor="terms" className="text-sm text-zinc-500 font-normal leading-relaxed cursor-pointer">
                                                     Acepto recibir mi diseño y la política de privacidad.
                                                 </Label>
                                             </div>
@@ -617,8 +617,8 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                                 <Button
                                                     type="submit"
                                                     onClick={() => setLeadIntent('image')}
-                                                    variant="ghost"
-                                                    className="w-full h-12 rounded-full text-zinc-400 hover:text-black hover:bg-transparent font-normal"
+                                                    variant="outline"
+                                                    className="w-full h-12 rounded-full border-zinc-300 text-zinc-600 hover:text-black hover:bg-zinc-50 font-normal"
                                                 >
                                                     Enviar foto
                                                 </Button>

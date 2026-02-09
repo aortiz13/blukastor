@@ -90,8 +90,9 @@ export const useFaceDetection = (
             }
 
             // Require both a smile AND an open mouth (teeth visible)
-            // jawOpen thresholds: 0 (closed) to 1 (fully open). ~0.1 - 0.2 usually indicates speaking/smiling with teeth.
-            const isSmilingDetected = smileScore > 0.4 && jawOpenScore > 0.08;
+            // jawOpen thresholds: 0 (closed) to 1 (fully open).
+            // Adjusted to 0.04 to be more sensitive (lightly open mouth)
+            const isSmilingDetected = smileScore > 0.3 && jawOpenScore > 0.04;
             setIsSmiling(isSmilingDetected);
 
             // Alignment Checks

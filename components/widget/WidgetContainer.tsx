@@ -25,6 +25,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { countries } from "./countries";
 
 // Combined step for auto-flow
 type Step = "UPLOAD" | "PROCESSING" | "LOCKED_RESULT" | "LEAD_FORM" | "RESULT" | "SURVEY" | "VERIFICATION";
@@ -215,9 +216,10 @@ export default function WidgetContainer() {
 
             // 1. Insert Lead
             // Combine country code and phone number if available
-            const countryCode = (data.countryCode as string) || '';
+            const selectedCountryIso = (data.countryCode as string) || 'ES';
+            const countryDialCode = countries.find(c => c.code === selectedCountryIso)?.dial_code || '+34';
             const phoneNumber = (data.phoneNumber as string) || (data.phone as string) || '';
-            const fullPhone = countryCode ? `${countryCode} ${phoneNumber}` : phoneNumber;
+            const fullPhone = `${countryDialCode} ${phoneNumber}`;
 
             const { error: leadError } = await supabase.from('leads').insert({
                 id: leadId,
@@ -557,18 +559,19 @@ export default function WidgetContainer() {
                                                 <Label htmlFor="phone" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">WhatsApp</Label>
                                                 <div className="flex gap-3">
                                                     <div className="w-[110px] flex-shrink-0">
-                                                        <Select name="countryCode" defaultValue="+34">
+                                                        <Select name="countryCode" defaultValue="ES">
                                                             <SelectTrigger className="h-12 rounded-full border-zinc-200 bg-zinc-50 focus:ring-0 focus:border-black">
                                                                 <SelectValue placeholder="+34" />
                                                             </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value="+34">🇪🇸 +34</SelectItem>
-                                                                <SelectItem value="+1">🇺🇸 +1</SelectItem>
-                                                                <SelectItem value="+52">🇲🇽 +52</SelectItem>
-                                                                <SelectItem value="+57">🇨🇴 +57</SelectItem>
-                                                                <SelectItem value="+54">🇦🇷 +54</SelectItem>
-                                                                <SelectItem value="+56">🇨🇱 +56</SelectItem>
-                                                                <SelectItem value="+51">🇵🇪 +51</SelectItem>
+                                                            <SelectContent className="max-h-[300px]">
+                                                                {countries.map((country) => (
+                                                                    <SelectItem key={country.code} value={country.code}>
+                                                                        <span className="flex items-center gap-2">
+                                                                            <span>{country.flag}</span>
+                                                                            <span className="text-zinc-500">{country.dial_code}</span>
+                                                                        </span>
+                                                                    </SelectItem>
+                                                                ))}
                                                             </SelectContent>
                                                         </Select>
                                                     </div>

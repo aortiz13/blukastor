@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { encodeBase64 } from "https://deno.land/std@0.224.0/encoding/base64.ts";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -35,8 +36,9 @@ Deno.serve(async (req) => {
         }
 
         // Convert image to base64 for email attachment
+        // Convert image to base64 for email attachment
         const arrayBuffer = await imageData.arrayBuffer()
-        const base64Image = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+        const base64Image = encodeBase64(arrayBuffer)
 
         // Send email using Resend
         const resendApiKey = Deno.env.get('RESEND_API_KEY')
@@ -51,7 +53,7 @@ Deno.serve(async (req) => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                from: 'Smile Forward <noreply@dentalcorbella.com>',
+                from: 'Smile Forward <noreply@brandboost-ai.com>',
                 to: [email],
                 subject: 'Tu Simulación Smile Forward está lista ✨',
                 html: `

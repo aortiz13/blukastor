@@ -277,19 +277,27 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                 window.location.href = 'https://dentalcorbella.com/contacto/';
             } else {
                 // Call email function
+                // Call email function
                 try {
-                    const { error: emailError } = await supabase.functions.invoke('send-photo-email', {
-                        body: {
+                    const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-photo-email`;
+                    const response = await fetch(functionUrl, {
+                        method: 'POST',
+                        credentials: 'omit', // Ignore cookies to prevent auth conflicts
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lcWRnY2FsZGFjdGpqenFpZnN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMTk4NDIsImV4cCI6MjA4NDU5NTg0Mn0.a1agUC6eOyRs57odj_7w7wA0to_4cSuWfwWavh7_4aI'
+                        },
+                        body: JSON.stringify({
                             email: data.email as string,
                             name: data.name as string,
                             imageUrl: generatedImage,
                             leadId: leadId
-                        }
+                        })
                     });
 
-                    if (emailError) {
-                        console.error('Email error:', emailError);
-                        // We don't block the flow if email fails, but log it
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error('Email error:', errorData);
                     }
                 } catch (emailErr) {
                     console.error('Email invoke error:', emailErr);

@@ -276,6 +276,25 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                 // Redirect to external URL for video appointment
                 window.location.href = 'https://dentalcorbella.com/contacto/';
             } else {
+                // Call email function
+                try {
+                    const { error: emailError } = await supabase.functions.invoke('send-photo-email', {
+                        body: {
+                            email: data.email as string,
+                            name: data.name as string,
+                            imageUrl: generatedImage,
+                            leadId: leadId
+                        }
+                    });
+
+                    if (emailError) {
+                        console.error('Email error:', emailError);
+                        // We don't block the flow if email fails, but log it
+                    }
+                } catch (emailErr) {
+                    console.error('Email invoke error:', emailErr);
+                }
+
                 // Show email confirmation view
                 setStep("EMAIL_SENT");
             }

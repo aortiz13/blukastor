@@ -33,7 +33,7 @@ export default function LoginPage() {
             }
 
             toast.success("¡Bienvenido de vuelta!");
-            router.push("/admin/dashboard");
+            router.push("/administracion/dashboard");
             router.refresh(); // Refresh to update middleware/session state
         } catch (error: any) {
             console.error(error);

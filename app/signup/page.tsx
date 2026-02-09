@@ -37,7 +37,7 @@ export default function SignupPage() {
 
             if (data.session) {
                 toast.success("¡Cuenta creada exitosamente!");
-                router.push("/admin/dashboard");
+                router.push("/administracion/dashboard");
             } else {
                 // Email confirmation might be required
                 toast.success("¡Cuenta creada! Por favor revisa tu correo para confirmar.");

@@ -6,7 +6,7 @@ export async function GET(request: Request) {
     const requestUrl = new URL(request.url);
     const code = requestUrl.searchParams.get("code");
     // if "next" is in param, use it as the redirect URL
-    const next = requestUrl.searchParams.get("next") ?? "/admin/dashboard";
+    const next = requestUrl.searchParams.get("next") ?? "/administracion/dashboard";
 
     // Detect correct origin (handling Easypanel/Docker proxies)
     const host = request.headers.get("x-forwarded-host") || request.headers.get("host");

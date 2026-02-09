@@ -78,15 +78,20 @@ export const useFaceDetection = (
             const blendshapes = result.faceBlendshapes[0]; // Access blendshapes for the first face
 
             // Smile detection
-            // categoryName: "mouthSmileLeft", "mouthSmileRight"
+            // categoryName: "mouthSmileLeft", "mouthSmileRight", "jawOpen"
             let smileScore = 0;
+            let jawOpenScore = 0;
+
             if (blendshapes && blendshapes.categories) {
                 const smileLeft = blendshapes.categories.find(c => c.categoryName === "mouthSmileLeft")?.score || 0;
                 const smileRight = blendshapes.categories.find(c => c.categoryName === "mouthSmileRight")?.score || 0;
+                jawOpenScore = blendshapes.categories.find(c => c.categoryName === "jawOpen")?.score || 0;
                 smileScore = (smileLeft + smileRight) / 2;
             }
 
-            const isSmilingDetected = smileScore > 0.4; // Threshold for smile
+            // Require both a smile AND an open mouth (teeth visible)
+            // jawOpen thresholds: 0 (closed) to 1 (fully open). ~0.1 - 0.2 usually indicates speaking/smiling with teeth.
+            const isSmilingDetected = smileScore > 0.4 && jawOpenScore > 0.08;
             setIsSmiling(isSmilingDetected);
 
             // Alignment Checks

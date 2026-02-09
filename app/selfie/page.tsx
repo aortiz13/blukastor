@@ -21,6 +21,13 @@ function SelfiePageContent() {
     const webcamRef = useRef<Webcam>(null);
     const [imgSrc, setImgSrc] = useState<string | null>(null);
 
+    // Initial connection signal
+    useEffect(() => {
+        if (sessionId) {
+            updateSelfieSession(sessionId, 'mobile_connected').catch(console.error);
+        }
+    }, [sessionId]);
+
     // Create a ref for the video element that useFaceDetection can key off of
     const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -69,7 +76,7 @@ function SelfiePageContent() {
                 }
 
                 // 3. Update Session
-                const sessionRes = await updateSelfieSession(sessionId, uploadRes.data);
+                const sessionRes = await updateSelfieSession(sessionId, 'uploaded', uploadRes.data);
 
                 if (!sessionRes.success) {
                     throw new Error(sessionRes.error || "Session update failed");

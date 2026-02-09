@@ -23,15 +23,18 @@ export async function createSelfieSession() {
     }
 }
 
-export async function updateSelfieSession(sessionId: string, imageUrl: string) {
+export async function updateSelfieSession(sessionId: string, status: string, imageUrl?: string) {
     try {
         const supabase = await createClient();
+
+        const updateData: any = { status };
+        if (imageUrl) {
+            updateData.image_url = imageUrl;
+        }
+
         const { error } = await supabase
             .from('selfie_sessions')
-            .update({
-                status: 'uploaded',
-                image_url: imageUrl
-            })
+            .update(updateData)
             .eq('id', sessionId);
 
         if (error) {

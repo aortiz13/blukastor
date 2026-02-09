@@ -67,6 +67,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
     // Cross-Device Session State
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [qrUrl, setQrUrl] = useState<string | null>(null);
+    const [mobileConnected, setMobileConnected] = useState(false);
 
     const [phraseIndex, setPhraseIndex] = useState(0);
     const phrases = [
@@ -190,8 +191,14 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                     filter: `id=eq.${sessionId}`
                 },
                 async (payload) => {
+                    console.log("Realtime update received:", payload);
                     const newStatus = payload.new.status;
                     const imageUrl = payload.new.image_url;
+
+                    if (newStatus === 'mobile_connected') {
+                        setMobileConnected(true);
+                        toast.success("Móvil conectado. Tómate la foto.");
+                    }
 
                     if (newStatus === 'uploaded' && imageUrl) {
                         try {
@@ -201,11 +208,14 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                             handleUpload(file);
                         } catch (err) {
                             console.error("Error fetching mobile selfie:", err);
+                            toast.error("Error recuperando la foto del móvil.");
                         }
                     }
                 }
             )
-            .subscribe();
+            .subscribe((status) => {
+                console.log("Subscription status:", status);
+            });
 
         return () => {
             supabase.removeChannel(channel);
@@ -547,7 +557,9 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                         </div>
 
                                         <p className="text-xs text-zinc-400 px-4">
-                                            La foto se sincronizará automáticamente aquí una vez la tomes.
+                                            {mobileConnected
+                                                ? "¡Dispositivo conectado! Tómate la foto en tu móvil."
+                                                : "La foto se sincronizará automáticamente aquí una vez la tomes."}
                                         </p>
                                     </div>
                                 </div>

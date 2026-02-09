@@ -65,42 +65,18 @@ export default function SignupPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleSignup} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Correo Electrónico</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="nombre@ejemplo.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                className="h-11"
-                            />
+                    <CardContent>
+                        <div className="text-center py-6">
+                            <p className="text-muted-foreground">
+                                El registro de nuevas cuentas está deshabilitado.
+                                <br />
+                                Solo los administradores pueden enviar invitaciones.
+                            </p>
+                            <Button asChild className="mt-6 w-full">
+                                <Link href="/login">Ir al Login</Link>
+                            </Button>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password">Contraseña</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                className="h-11"
-                                minLength={6}
-                            />
-                            <p className="text-xs text-muted-foreground">Mínimo 6 caracteres</p>
-                        </div>
-                        <Button type="submit" className="w-full h-11 font-bold" disabled={loading}>
-                            {loading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Registrando...
-                                </>
-                            ) : (
-                                "Crear Cuenta"
-                            )}
-                        </Button>
-                    </form>
+                    </CardContent>
                 </CardContent>
             </Card>
         </div>

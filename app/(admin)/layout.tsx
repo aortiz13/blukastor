@@ -7,7 +7,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AdminLayout({
     children,
@@ -18,6 +18,22 @@ export default function AdminLayout({
     const pathname = usePathname();
     const supabase = createClient();
     const [open, setOpen] = useState(false);
+    const [role, setRole] = useState<'admin' | 'basic' | null>(null);
+
+    useEffect(() => {
+        const fetchRole = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data } = await supabase
+                    .from('user_roles')
+                    .select('role')
+                    .eq('user_id', user.id)
+                    .single();
+                setRole(data?.role as 'admin' | 'basic' | null);
+            }
+        };
+        fetchRole();
+    }, []);
 
     const handleLogout = async () => {
         const { error } = await supabase.auth.signOut();
@@ -37,30 +53,39 @@ export default function AdminLayout({
             </div>
 
             <nav className="flex-1 p-4 space-y-2">
+                {/* Dashboard: Admin Only */}
+                {role === 'admin' && (
+                    <Link
+                        href="/administracion/dashboard"
+                        onClick={() => setOpen(false)}
+                        className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${pathname === '/administracion/dashboard' ? 'bg-secondary text-primary font-medium' : 'hover:bg-secondary/50 text-foreground'}`}
+                    >
+                        <LayoutDashboard size={20} strokeWidth={1.5} />
+                        <span>Dashboard</span>
+                    </Link>
+                )}
+
+                {/* Leads: Admin and Basic */}
                 <Link
-                    href="/admin/dashboard"
+                    href="/administracion/leads"
                     onClick={() => setOpen(false)}
-                    className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${pathname === '/admin/dashboard' ? 'bg-secondary text-primary font-medium' : 'hover:bg-secondary/50 text-foreground'}`}
-                >
-                    <LayoutDashboard size={20} strokeWidth={1.5} />
-                    <span>Dashboard</span>
-                </Link>
-                <Link
-                    href="/admin/leads"
-                    onClick={() => setOpen(false)}
-                    className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${pathname === '/admin/leads' ? 'bg-secondary text-primary font-medium' : 'hover:bg-secondary/50 text-foreground'}`}
+                    className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${pathname === '/administracion/leads' ? 'bg-secondary text-primary font-medium' : 'hover:bg-secondary/50 text-foreground'}`}
                 >
                     <Users size={20} strokeWidth={1.5} />
                     <span>Leads</span>
                 </Link>
-                <Link
-                    href="/admin/settings"
-                    onClick={() => setOpen(false)}
-                    className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${pathname === '/admin/settings' ? 'bg-secondary text-primary font-medium' : 'hover:bg-secondary/50 text-foreground'}`}
-                >
-                    <Settings size={20} strokeWidth={1.5} />
-                    <span>Configuración</span>
-                </Link>
+
+                {/* Settings: Admin Only */}
+                {role === 'admin' && (
+                    <Link
+                        href="/administracion/settings"
+                        onClick={() => setOpen(false)}
+                        className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${pathname === '/administracion/settings' ? 'bg-secondary text-primary font-medium' : 'hover:bg-secondary/50 text-foreground'}`}
+                    >
+                        <Settings size={20} strokeWidth={1.5} />
+                        <span>Configuración</span>
+                    </Link>
+                )}
             </nav>
 
             <div className="p-4 border-t border-border">

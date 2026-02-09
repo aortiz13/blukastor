@@ -646,7 +646,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                                     variant="outline"
                                                     className="w-full h-12 rounded-full border-zinc-300 text-zinc-600 hover:text-black hover:bg-zinc-50 font-normal"
                                                 >
-                                                    Enviar foto
+                                                    Sólo quiero mi foto
                                                 </Button>
                                             </div>
                                         </form>

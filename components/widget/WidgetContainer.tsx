@@ -53,6 +53,25 @@ export default function WidgetContainer() {
     const [processStatus, setProcessStatus] = useState<ProcessStatus>('validating');
     const [uploadedScanUrl, setUploadedScanUrl] = useState<string | null>(null);
 
+    const [phraseIndex, setPhraseIndex] = useState(0);
+    const phrases = [
+        "Estás a un paso de tu mejor versión",
+        "Estamos afinando tu nueva sonrisa",
+        "Ya casi está lista",
+        "Preparando tu simulación Smile Forward"
+    ];
+
+    useEffect(() => {
+        if (step === "PROCESSING") {
+            const interval = setInterval(() => {
+                setPhraseIndex((prev) => (prev + 1) % phrases.length);
+            }, 3000);
+            return () => clearInterval(interval);
+        } else {
+            setPhraseIndex(0);
+        }
+    }, [step]);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Scanning Animation Variants
@@ -374,7 +393,19 @@ export default function WidgetContainer() {
 
                                 {/* Right: Progress List - Clean Typography */}
                                 <div className="w-full max-w-sm space-y-4 px-4 md:px-0">
-                                    <h3 className="text-2xl font-serif text-black dark:text-white mb-6 text-center md:text-left">Analizando...</h3>
+                                    <div className="h-16 mb-6 flex items-center justify-center md:justify-start">
+                                        <AnimatePresence mode="wait">
+                                            <motion.h3
+                                                key={phraseIndex}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                                className="text-2xl font-serif text-black dark:text-white text-center md:text-left"
+                                            >
+                                                {phrases[phraseIndex]}
+                                            </motion.h3>
+                                        </AnimatePresence>
+                                    </div>
                                     <StatusItem
                                         label="Validación Biométrica"
                                         icon={ScanFace}

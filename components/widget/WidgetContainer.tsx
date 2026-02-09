@@ -24,6 +24,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Combined step for auto-flow
 type Step = "UPLOAD" | "PROCESSING" | "LOCKED_RESULT" | "LEAD_FORM" | "RESULT" | "SURVEY" | "VERIFICATION";
@@ -44,7 +45,11 @@ export default function WidgetContainer() {
     const [step, setStep] = useState<Step>("UPLOAD");
     const [isVerified, setIsVerified] = useState(false);
     const [image, setImage] = useState<File | null>(null);
+    // State for generated image URL
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+
+    // State for tracking user intent (image vs video/consultation)
+    const [leadIntent, setLeadIntent] = useState<'image' | 'video'>('image');
     const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
     const [userId, setUserId] = useState<string>("anon");
     const [leadId, setLeadId] = useState<string | null>(null);
@@ -209,11 +214,16 @@ export default function WidgetContainer() {
             const leadId = crypto.randomUUID(); // Client-side ID generation
 
             // 1. Insert Lead
+            // Combine country code and phone number if available
+            const countryCode = (data.countryCode as string) || '';
+            const phoneNumber = (data.phoneNumber as string) || (data.phone as string) || '';
+            const fullPhone = countryCode ? `${countryCode} ${phoneNumber}` : phoneNumber;
+
             const { error: leadError } = await supabase.from('leads').insert({
                 id: leadId,
-                name: data.name,
-                email: data.email,
-                phone: data.phone,
+                name: (data.name as string),
+                email: (data.email as string),
+                phone: fullPhone.trim(),
                 status: 'pending'
             });
 
@@ -234,7 +244,12 @@ export default function WidgetContainer() {
 
             toast.success("¡Información enviada con éxito!");
             setLeadId(leadId); // Persist ID for next step
-            setStep("RESULT");
+
+            if (leadIntent === 'video') {
+                setStep("SURVEY");
+            } else {
+                setStep("RESULT");
+            }
         } catch (err) {
             console.error(err);
             toast.error("Error guardando datos. Intenta de nuevo.");
@@ -374,62 +389,66 @@ export default function WidgetContainer() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="h-full flex flex-col md:flex-row gap-10 items-center justify-center py-8 md:py-0"
+                                className="h-full flex flex-col items-center justify-center py-4 md:py-0 space-y-8"
                             >
-                                {/* Left: Visual Scanner - Minimal */}
-                                <div className="relative w-full max-w-[240px] md:max-w-[280px] aspect-[3/4] rounded-[2rem] overflow-hidden shadow-2xl border border-zinc-100 dark:border-zinc-800 bg-zinc-900 flex-shrink-0">
-                                    {image ? (
-                                        <img src={URL.createObjectURL(image)} alt="Analyzing" className="w-full h-full object-cover opacity-80" />
-                                    ) : (
-                                        <div className="w-full h-full bg-zinc-800" />
-                                    )}
-                                    <motion.div
-                                        variants={scanVariants}
-                                        initial="initial"
-                                        animate="animate"
-                                        className="absolute left-0 right-0 h-[1px] bg-white/50 shadow-[0_0_20px_2px_rgba(255,255,255,0.5)] z-10"
-                                    />
+                                {/* Animated Header - Centered Top */}
+                                <div className="h-16 flex items-center justify-center w-full px-4">
+                                    <AnimatePresence mode="wait">
+                                        <motion.h3
+                                            key={phraseIndex}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            className="text-2xl md:text-3xl font-serif text-black dark:text-white text-center"
+                                        >
+                                            {phrases[phraseIndex]}
+                                        </motion.h3>
+                                    </AnimatePresence>
                                 </div>
 
-                                {/* Right: Progress List - Clean Typography */}
-                                <div className="w-full max-w-sm space-y-4 px-4 md:px-0">
-                                    <div className="h-16 mb-6 flex items-center justify-center md:justify-start">
-                                        <AnimatePresence mode="wait">
-                                            <motion.h3
-                                                key={phraseIndex}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -10 }}
-                                                className="text-2xl font-serif text-black dark:text-white text-center md:text-left"
-                                            >
-                                                {phrases[phraseIndex]}
-                                            </motion.h3>
-                                        </AnimatePresence>
+                                <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center justify-center w-full">
+                                    {/* Left: Visual Scanner - Minimal */}
+                                    <div className="relative w-full max-w-[200px] md:max-w-[240px] aspect-[3/4] rounded-[2rem] overflow-hidden shadow-2xl border border-zinc-100 dark:border-zinc-800 bg-zinc-900 flex-shrink-0">
+                                        {image ? (
+                                            <img src={URL.createObjectURL(image)} alt="Analyzing" className="w-full h-full object-cover opacity-80" />
+                                        ) : (
+                                            <div className="w-full h-full bg-zinc-800" />
+                                        )}
+                                        <motion.div
+                                            variants={scanVariants}
+                                            initial="initial"
+                                            animate="animate"
+                                            className="absolute left-0 right-0 h-[1px] bg-white/50 shadow-[0_0_20px_2px_rgba(255,255,255,0.5)] z-10"
+                                        />
                                     </div>
-                                    <StatusItem
-                                        label="Validación Biométrica"
-                                        icon={ScanFace}
-                                        active={processStatus === 'validating'}
-                                        completed={['scanning', 'analyzing', 'designing', 'complete'].includes(processStatus)}
-                                    />
-                                    <StatusItem
-                                        label="Escaneo Facial 3D"
-                                        icon={FileSearch}
-                                        active={processStatus === 'scanning'}
-                                        completed={['analyzing', 'designing', 'complete'].includes(processStatus)}
-                                    />
-                                    <StatusItem
-                                        label="Análisis Morfológico"
-                                        icon={Sparkles}
-                                        active={processStatus === 'analyzing'}
-                                        completed={['designing', 'complete'].includes(processStatus)}
-                                    />
-                                    <StatusItem
-                                        label="Diseño Generativo"
-                                        icon={Wand2}
-                                        active={processStatus === 'designing'}
-                                        completed={['complete'].includes(processStatus)}
-                                    />
+
+                                    {/* Right: Progress List - Clean Typography */}
+                                    <div className="w-full max-w-xs space-y-3 px-4 md:px-0">
+                                        <StatusItem
+                                            label="Validación Biométrica"
+                                            icon={ScanFace}
+                                            active={processStatus === 'validating'}
+                                            completed={['scanning', 'analyzing', 'designing', 'complete'].includes(processStatus)}
+                                        />
+                                        <StatusItem
+                                            label="Escaneo Facial 3D"
+                                            icon={FileSearch}
+                                            active={processStatus === 'scanning'}
+                                            completed={['analyzing', 'designing', 'complete'].includes(processStatus)}
+                                        />
+                                        <StatusItem
+                                            label="Análisis Morfológico"
+                                            icon={Sparkles}
+                                            active={processStatus === 'analyzing'}
+                                            completed={['designing', 'complete'].includes(processStatus)}
+                                        />
+                                        <StatusItem
+                                            label="Diseño Generativo"
+                                            icon={Wand2}
+                                            active={processStatus === 'designing'}
+                                            completed={['complete'].includes(processStatus)}
+                                        />
+                                    </div>
                                 </div>
                             </motion.div>
                         )}
@@ -440,31 +459,31 @@ export default function WidgetContainer() {
                                 key="locked"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="h-full flex flex-col p-4 md:p-0"
+                                className="h-full flex flex-col p-2 md:p-0 justify-center"
                             >
-                                <div className="max-w-5xl mx-auto w-full space-y-8 flex flex-col items-center">
-                                    <h2 className="text-2xl md:text-4xl font-serif text-[#C44D4D] text-center">Tu simulación Smile Forward</h2>
+                                <div className="max-w-5xl mx-auto w-full space-y-4 md:space-y-6 flex flex-col items-center">
+                                    <h2 className="text-xl md:text-3xl font-serif text-[#C44D4D] text-center">Tu simulación Smile Forward</h2>
 
-                                    <div className="flex flex-col md:flex-row gap-10 w-full items-start justify-center">
+                                    <div className="flex flex-col md:flex-row gap-6 md:gap-10 w-full items-center justify-center">
                                         {/* Images Comparison */}
-                                        <div className="flex-1 w-full max-w-2xl">
-                                            <div className="grid grid-cols-2 gap-4 md:gap-6">
+                                        <div className="flex-1 w-full max-w-xl">
+                                            <div className="grid grid-cols-2 gap-3 md:gap-6">
                                                 {/* ANTES */}
-                                                <div className="space-y-3">
-                                                    <div className="aspect-[9/16] rounded-2xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 shadow-lg">
+                                                <div className="space-y-2">
+                                                    <div className="aspect-[9/16] rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 shadow-lg relative">
                                                         {image && (
-                                                            <img src={URL.createObjectURL(image)} alt="Antes" className="w-full h-full object-cover" />
+                                                            <img src={URL.createObjectURL(image)} alt="Antes" className="w-full h-full object-cover absolute inset-0" />
                                                         )}
                                                     </div>
-                                                    <p className="text-center font-sans font-bold text-zinc-400 tracking-widest text-xs md:text-sm">ANTES</p>
+                                                    <p className="text-center font-sans font-bold text-zinc-400 tracking-widest text-[10px] md:text-xs">ANTES</p>
                                                 </div>
 
                                                 {/* DESPUES */}
-                                                <div className="space-y-3">
-                                                    <div className="relative aspect-[9/16] rounded-2xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl group">
+                                                <div className="space-y-2">
+                                                    <div className="relative aspect-[9/16] rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl group">
                                                         {generatedImage ? (
                                                             <>
-                                                                <img src={generatedImage} alt="Despues" className="w-full h-full object-cover" />
+                                                                <img src={generatedImage} alt="Despues" className="w-full h-full object-cover absolute inset-0" />
                                                                 {/* Watermark */}
                                                                 <div className="absolute inset-0 flex items-center justify-center p-4 z-10 pointer-events-none opacity-60">
                                                                     <img
@@ -478,21 +497,20 @@ export default function WidgetContainer() {
                                                             <div className="w-full h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-zinc-300" /></div>
                                                         )}
                                                     </div>
-                                                    <p className="text-center font-sans font-bold text-[#C44D4D] tracking-widest text-xs md:text-sm">DESPUÉS</p>
+                                                    <p className="text-center font-sans font-bold text-[#C44D4D] tracking-widest text-[10px] md:text-xs">DESPUÉS</p>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Sidebar CTA */}
-                                        <div className="w-full md:w-80 flex flex-col justify-center space-y-8 bg-zinc-50 dark:bg-zinc-900/50 p-8 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 self-center md:self-auto">
-                                            <div className="space-y-2">
-                                                <p className="text-sm font-sans text-zinc-400 uppercase tracking-widest">Guardar esta simulación</p>
-                                                <h3 className="text-3xl font-serif text-black dark:text-white">¿Te lo enviamos?</h3>
+                                        <div className="w-full md:w-72 flex flex-col justify-center space-y-6 bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 self-center md:self-auto">
+                                            <div className="space-y-1 text-center md:text-left">
+                                                <h3 className="text-2xl font-serif text-black dark:text-white">¿Te lo enviamos?</h3>
                                             </div>
 
                                             <Button
                                                 onClick={() => setStep("LEAD_FORM")}
-                                                className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-base font-sans font-medium tracking-wide shadow-xl gap-2 group"
+                                                className="w-full h-12 md:h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-sm md:text-base font-sans font-medium tracking-wide shadow-xl gap-2 group"
                                                 size="lg"
                                             >
                                                 <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" strokeWidth={1.5} /> Continuar en WhatsApp
@@ -501,7 +519,7 @@ export default function WidgetContainer() {
                                     </div>
 
                                     {/* Footer Disclaimer */}
-                                    <p className="text-[10px] md:text-xs text-zinc-400 text-center max-w-md mx-auto leading-relaxed pt-4">
+                                    <p className="text-[10px] text-zinc-400 text-center max-w-md mx-auto leading-relaxed pt-2">
                                         Simulación Orientativa. El resultado final depende de tu caso clínico
                                     </p>
                                 </div>
@@ -516,13 +534,15 @@ export default function WidgetContainer() {
                                 animate={{ opacity: 1, x: 0 }}
                                 className="h-full flex flex-col items-center justify-center p-4 overflow-y-auto"
                             >
-                                <div className="w-full max-w-sm space-y-8 py-8 md:py-0">
-                                    <div className="text-center space-y-2">
-                                        <h2 className="text-3xl font-serif text-black dark:text-white">Casi listo</h2>
-                                        <p className="text-sm text-zinc-500">Completa tus datos para recibir tu diseño.</p>
+                                <div className="w-full max-w-md space-y-8 py-8 md:py-0">
+                                    <div className="text-center space-y-4">
+                                        <h2 className="text-2xl md:text-3xl font-serif text-black dark:text-white">¿Quieres que tu experiencia sea más real?</h2>
+                                        <p className="text-sm text-zinc-500 leading-relaxed px-4">
+                                            La imagen te da una idea. Pero donde realmente se entiende el cambio al verte hablar reir y expresarte: verte tú en situaciones reales con naturalidad
+                                        </p>
                                     </div>
-                                    <form className="space-y-5" onSubmit={handleLeadSubmit}>
-                                        <div className="space-y-4">
+                                    <form className="space-y-6" onSubmit={handleLeadSubmit}>
+                                        <div className="space-y-5">
                                             <div className="space-y-1.5">
                                                 <Label htmlFor="name" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">Nombre Completo</Label>
                                                 <Input id="name" name="name" placeholder="Tu nombre" required className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all" />
@@ -535,14 +555,32 @@ export default function WidgetContainer() {
 
                                             <div className="space-y-1.5">
                                                 <Label htmlFor="phone" className="text-xs uppercase tracking-wider text-zinc-400 pl-4">WhatsApp</Label>
-                                                <Input
-                                                    id="phone"
-                                                    name="phone"
-                                                    type="tel"
-                                                    placeholder="+34"
-                                                    required
-                                                    className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all"
-                                                />
+                                                <div className="flex gap-3">
+                                                    <div className="w-[110px] flex-shrink-0">
+                                                        <Select name="countryCode" defaultValue="+34">
+                                                            <SelectTrigger className="h-12 rounded-full border-zinc-200 bg-zinc-50 focus:ring-0 focus:border-black">
+                                                                <SelectValue placeholder="+34" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="+34">🇪🇸 +34</SelectItem>
+                                                                <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                                                                <SelectItem value="+52">🇲🇽 +52</SelectItem>
+                                                                <SelectItem value="+57">🇨🇴 +57</SelectItem>
+                                                                <SelectItem value="+54">🇦🇷 +54</SelectItem>
+                                                                <SelectItem value="+56">🇨🇱 +56</SelectItem>
+                                                                <SelectItem value="+51">🇵🇪 +51</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <Input
+                                                        id="phoneNumber"
+                                                        name="phoneNumber"
+                                                        type="tel"
+                                                        placeholder="600 000 000"
+                                                        required
+                                                        className="h-12 border-zinc-200 bg-zinc-50 rounded-full px-6 focus:ring-0 focus:border-black transition-all flex-1"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
 
@@ -553,12 +591,24 @@ export default function WidgetContainer() {
                                             </Label>
                                         </div>
 
-                                        <Button type="submit" className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-base font-sans font-medium tracking-wide shadow-md mt-4">
-                                            Ver mi Resultado
-                                        </Button>
-                                        <Button type="button" variant="ghost" size="sm" onClick={() => setStep("LOCKED_RESULT")} className="w-full rounded-full text-zinc-400 hover:text-black hover:bg-transparent">
-                                            Volver
-                                        </Button>
+                                        <div className="space-y-3 pt-2">
+                                            <Button
+                                                type="submit"
+                                                onClick={() => setLeadIntent('video')}
+                                                className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-base font-sans font-medium tracking-wide shadow-lg"
+                                            >
+                                                Reservar cita y verme en video
+                                            </Button>
+
+                                            <Button
+                                                type="submit"
+                                                onClick={() => setLeadIntent('image')}
+                                                variant="ghost"
+                                                className="w-full h-12 rounded-full text-zinc-400 hover:text-black hover:bg-transparent font-normal"
+                                            >
+                                                Enviar foto
+                                            </Button>
+                                        </div>
                                     </form>
                                 </div>
                             </motion.div>

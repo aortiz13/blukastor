@@ -528,7 +528,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                             <div className="grid grid-cols-2 gap-3 md:gap-6 w-full flex-1 min-h-0">
                                                 {/* ANTES */}
                                                 <div className="space-y-1 flex flex-col h-full min-h-0">
-                                                    <div className="flex-1 relative rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 shadow-lg">
+                                                    <div className="flex-1 relative aspect-[9/16] md:aspect-auto rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 shadow-lg">
                                                         {image && (
                                                             <img src={URL.createObjectURL(image)} alt="Antes" className="w-full h-full object-cover" />
                                                         )}
@@ -538,7 +538,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
 
                                                 {/* DESPUES */}
                                                 <div className="space-y-1 flex flex-col h-full min-h-0">
-                                                    <div className="flex-1 relative rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl group">
+                                                    <div className="flex-1 relative aspect-[9/16] md:aspect-auto rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl group">
                                                         {generatedImage ? (
                                                             <>
                                                                 <img src={generatedImage} alt="Despues" className="w-full h-full object-cover" />

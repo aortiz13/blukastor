@@ -528,7 +528,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                 initial={{ opacity: 0, scale: 0.98 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.98 }}
-                                className="h-full w-full flex flex-col items-center justify-center p-4"
+                                className="h-full w-full flex flex-col items-center justify-center p-0 md:p-4"
                             >
                                 {mobileConnected ? (
                                     <div className="flex flex-col items-center justify-center space-y-8 animate-in fade-in zoom-in duration-500 text-center max-w-lg">
@@ -549,15 +549,15 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl h-full max-h-[600px]">
                                         {/* Column 1: Webcam */}
-                                        <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-black flex flex-col">
+                                        <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-black flex flex-col h-full w-full">
                                             <SelfieCaptureFlow
                                                 onCapture={handleSelfieCapture}
                                                 onCancel={() => setStep("UPLOAD")}
                                             />
                                         </div>
 
-                                        {/* Column 2: QR Code */}
-                                        <div className="flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-8 border border-zinc-200 dark:border-zinc-800 text-center space-y-6">
+                                        {/* Column 2: QR Code - Hidden on mobile */}
+                                        <div className="hidden md:flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-8 border border-zinc-200 dark:border-zinc-800 text-center space-y-6">
                                             <div className="space-y-2">
                                                 <h3 className="text-xl font-serif text-black dark:text-white">Usa tu móvil</h3>
                                                 <p className="text-sm text-zinc-500">Escanea este código para usar la cámara de tu teléfono.</p>

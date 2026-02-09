@@ -335,9 +335,15 @@ export default function WidgetContainer() {
                                         onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
                                     />
                                 </div>
-                                <div className="flex flex-wrap justify-center gap-6 text-xs text-zinc-400 font-sans tracking-wide uppercase">
-                                    <span className="flex items-center gap-2"><Check className="w-4 h-4 text-teal-500" strokeWidth={1.5} /> 100% Privado</span>
-                                    <span className="flex items-center gap-2"><Check className="w-4 h-4 text-teal-500" strokeWidth={1.5} /> Resultados en segundos</span>
+                                <div className="space-y-4">
+                                    <div className="flex flex-wrap justify-center gap-6 text-xs text-zinc-400 font-sans tracking-wide uppercase">
+                                        <span className="flex items-center gap-2"><Check className="w-4 h-4 text-teal-500" strokeWidth={1.5} /> 100% Privado</span>
+                                        <span className="flex items-center gap-2"><Check className="w-4 h-4 text-teal-500" strokeWidth={1.5} /> Resultados en segundos</span>
+                                    </div>
+                                    <div className="flex flex-col items-center gap-1 text-[10px] text-zinc-400 font-sans">
+                                        <p>"Tu imagen se utilizará únicamente para generar esta simulación."</p>
+                                        <p>"Debes ser mayor de edad para utilizar esta herramienta"</p>
+                                    </div>
                                 </div>
                             </motion.div>
                         )}

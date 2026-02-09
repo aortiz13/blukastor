@@ -359,9 +359,9 @@ export default function WidgetContainer() {
                                         <span className="flex items-center gap-2"><Check className="w-4 h-4 text-teal-500" strokeWidth={1.5} /> 100% Privado</span>
                                         <span className="flex items-center gap-2"><Check className="w-4 h-4 text-teal-500" strokeWidth={1.5} /> Resultados en segundos</span>
                                     </div>
-                                    <div className="flex flex-col items-center gap-1 text-[10px] text-zinc-400 font-sans">
-                                        <p>"Tu imagen se utilizará únicamente para generar esta simulación."</p>
-                                        <p>"Debes ser mayor de edad para utilizar esta herramienta"</p>
+                                    <div className="flex flex-col items-center gap-2 text-xs md:text-sm text-zinc-600 dark:text-zinc-400 font-sans transition-all">
+                                        <p>Tu imagen se utilizará únicamente para generar esta simulación.</p>
+                                        <p>Debes ser mayor de edad para utilizar esta herramienta</p>
                                     </div>
                                 </div>
                             </motion.div>
@@ -434,43 +434,76 @@ export default function WidgetContainer() {
                             </motion.div>
                         )}
 
-                        {/* LOCKED RESULT (Watermarked Preview) */}
+                        {/* LOCKED RESULT (Watermarked Preview Redesigned) */}
                         {step === "LOCKED_RESULT" && (
                             <motion.div
                                 key="locked"
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="h-full flex flex-col items-center justify-center space-y-8 py-8 md:py-0"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="h-full flex flex-col p-4 md:p-0"
                             >
-                                <div className="relative w-full max-w-[320px] md:max-w-[380px] aspect-[9/16] bg-zinc-100 dark:bg-zinc-900 rounded-[2rem] overflow-hidden shadow-2xl group">
-                                    {generatedImage ? (
-                                        <>
-                                            <img src={generatedImage} alt="Preview" className="w-full h-full object-cover" />
-                                            {/* Watermark Overlay */}
-                                            <div className="absolute inset-0 flex items-center justify-center p-6 z-10 pointer-events-none opacity-80">
-                                                <img
-                                                    src="https://dentalcorbella.com/wp-content/uploads/2023/07/logo-white-trans2.png"
-                                                    alt="Watermark"
-                                                    className="w-full opacity-60 drop-shadow-md rotate-[-20deg]"
-                                                />
-                                            </div>
-                                        </>
-                                    ) : null}
-                                </div>
+                                <div className="max-w-5xl mx-auto w-full space-y-8 flex flex-col items-center">
+                                    <h2 className="text-2xl md:text-4xl font-serif text-[#C44D4D] text-center">Tu simulación Smile Forward</h2>
 
-                                <div className="text-center space-y-6 max-w-sm px-4 md:px-0">
-                                    <div>
-                                        <h3 className="font-serif text-2xl text-black dark:text-white mb-2">Tu sonrisa, rediseñada.</h3>
-                                        <p className="text-sm text-zinc-500 leading-relaxed">Recibe la imagen en alta calidad y descubre cómo lograr este resultado.</p>
+                                    <div className="flex flex-col md:flex-row gap-10 w-full items-start justify-center">
+                                        {/* Images Comparison */}
+                                        <div className="flex-1 w-full max-w-2xl">
+                                            <div className="grid grid-cols-2 gap-4 md:gap-6">
+                                                {/* ANTES */}
+                                                <div className="space-y-3">
+                                                    <div className="aspect-[9/16] rounded-2xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 shadow-lg">
+                                                        {image && (
+                                                            <img src={URL.createObjectURL(image)} alt="Antes" className="w-full h-full object-cover" />
+                                                        )}
+                                                    </div>
+                                                    <p className="text-center font-sans font-bold text-zinc-400 tracking-widest text-xs md:text-sm">ANTES</p>
+                                                </div>
+
+                                                {/* DESPUES */}
+                                                <div className="space-y-3">
+                                                    <div className="relative aspect-[9/16] rounded-2xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl group">
+                                                        {generatedImage ? (
+                                                            <>
+                                                                <img src={generatedImage} alt="Despues" className="w-full h-full object-cover" />
+                                                                {/* Watermark */}
+                                                                <div className="absolute inset-0 flex items-center justify-center p-4 z-10 pointer-events-none opacity-60">
+                                                                    <img
+                                                                        src="https://dentalcorbella.com/wp-content/uploads/2023/07/logo-white-trans2.png"
+                                                                        alt="Watermark"
+                                                                        className="w-full opacity-40 drop-shadow-md rotate-[-20deg]"
+                                                                    />
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-zinc-300" /></div>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-center font-sans font-bold text-[#C44D4D] tracking-widest text-xs md:text-sm">DESPUÉS</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Sidebar CTA */}
+                                        <div className="w-full md:w-80 flex flex-col justify-center space-y-8 bg-zinc-50 dark:bg-zinc-900/50 p-8 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 self-center md:self-auto">
+                                            <div className="space-y-2">
+                                                <p className="text-sm font-sans text-zinc-400 uppercase tracking-widest">Guardar esta simulación</p>
+                                                <h3 className="text-3xl font-serif text-black dark:text-white">¿Te lo enviamos?</h3>
+                                            </div>
+
+                                            <Button
+                                                onClick={() => setStep("LEAD_FORM")}
+                                                className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-base font-sans font-medium tracking-wide shadow-xl gap-2 group"
+                                                size="lg"
+                                            >
+                                                <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" strokeWidth={1.5} /> Continuar en WhatsApp
+                                            </Button>
+                                        </div>
                                     </div>
 
-                                    <Button
-                                        onClick={() => setStep("LEAD_FORM")}
-                                        className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-base font-sans font-medium tracking-wide shadow-lg gap-2"
-                                        size="lg"
-                                    >
-                                        <MessageCircle className="w-5 h-5" strokeWidth={1.5} /> Continuar en WhatsApp
-                                    </Button>
+                                    {/* Footer Disclaimer */}
+                                    <p className="text-[10px] md:text-xs text-zinc-400 text-center max-w-md mx-auto leading-relaxed pt-4">
+                                        Simulación Orientativa. El resultado final depende de tu caso clínico
+                                    </p>
                                 </div>
                             </motion.div>
                         )}
@@ -531,41 +564,66 @@ export default function WidgetContainer() {
                             </motion.div>
                         )}
 
-                        {/* RESULT */}
+                        {/* RESULT (Final Redesign) */}
                         {step === "RESULT" && (
                             <motion.div
                                 key="result"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="h-full flex flex-col items-center gap-6 pt-4 pb-8"
+                                className="h-full flex flex-col p-4 md:p-0"
                             >
-                                <div className="relative w-full max-w-[320px] aspect-[9/16] rounded-[2rem] overflow-hidden shadow-2xl border border-zinc-100 bg-zinc-900">
-                                    {generatedImage && image ? (
-                                        <BeforeAfterSlider
-                                            beforeImage={URL.createObjectURL(image)}
-                                            afterImage={generatedImage}
-                                            className="h-full w-full"
-                                        />
-                                    ) : (
-                                        <div className="flex items-center justify-center w-full h-full text-zinc-400">Error</div>
-                                    )}
-                                </div>
+                                <div className="max-w-5xl mx-auto w-full space-y-8 flex flex-col items-center">
+                                    <h2 className="text-2xl md:text-4xl font-serif text-[#C44D4D] text-center">Tu simulación Smile Forward</h2>
 
-                                <div className="w-full max-w-[320px] px-4 md:px-0">
-                                    <Dialog open={isVideoDialogOpen} onOpenChange={setIsVideoDialogOpen}>
-                                        <DialogTrigger asChild>
+                                    <div className="flex flex-col md:flex-row gap-10 w-full items-start justify-center">
+                                        {/* Images Comparison */}
+                                        <div className="flex-1 w-full max-w-2xl">
+                                            <div className="grid grid-cols-2 gap-4 md:gap-6">
+                                                {/* ANTES */}
+                                                <div className="space-y-3">
+                                                    <div className="aspect-[9/16] rounded-2xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 shadow-lg">
+                                                        {image && (
+                                                            <img src={URL.createObjectURL(image)} alt="Antes" className="w-full h-full object-cover" />
+                                                        )}
+                                                    </div>
+                                                    <p className="text-center font-sans font-bold text-zinc-400 tracking-widest text-xs md:text-sm">ANTES</p>
+                                                </div>
+
+                                                {/* DESPUES */}
+                                                <div className="space-y-3">
+                                                    <div className="relative aspect-[9/16] rounded-2xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl group">
+                                                        {generatedImage ? (
+                                                            <img src={generatedImage} alt="Despues" className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-zinc-300" /></div>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-center font-sans font-bold text-[#C44D4D] tracking-widest text-xs md:text-sm">DESPUÉS</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Sidebar CTA */}
+                                        <div className="w-full md:w-80 flex flex-col justify-center space-y-6 bg-zinc-50 dark:bg-zinc-900/50 p-8 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 self-center md:self-auto">
+                                            <div className="space-y-2">
+                                                <h3 className="text-2xl font-serif text-black dark:text-white">Simulación lista</h3>
+                                                <p className="text-sm text-zinc-500">Ahora puedes generar un vídeo personalizado para ver el cambio en movimiento.</p>
+                                            </div>
+
                                             <Button
-                                                variant="outline"
-                                                className="w-full h-12 rounded-full border-zinc-200 text-zinc-600 hover:border-black hover:text-black transition-all font-sans"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    setStep("SURVEY");
-                                                }}
+                                                onClick={() => setStep("SURVEY")}
+                                                className="w-full h-14 rounded-full bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-base font-sans font-medium tracking-wide shadow-xl gap-2 group"
+                                                size="lg"
                                             >
-                                                <Video className="w-4 h-4 mr-2" strokeWidth={1.5} /> Generar Video Simulación
+                                                <Video className="w-5 h-5 group-hover:scale-110 transition-transform" strokeWidth={1.5} /> Generar Video Simulación
                                             </Button>
-                                        </DialogTrigger>
-                                    </Dialog>
+                                        </div>
+                                    </div>
+
+                                    {/* Footer Disclaimer */}
+                                    <p className="text-[10px] md:text-xs text-zinc-400 text-center max-w-md mx-auto leading-relaxed pt-4">
+                                        Simulación Orientativa. El resultado final depende de tu caso clínico
+                                    </p>
                                 </div>
                             </motion.div>
                         )}

@@ -88,7 +88,7 @@ export const useFaceDetection = (
                     colorSum += avg;
                 }
                 const brightness = Math.floor(colorSum / (50 * 50));
-                setIsLowLight(brightness < 80); // Threshold for low light
+                setIsLowLight(brightness < 100); // Threshold for low light
                 setLastBrightnessCheck(now);
             }
         }

@@ -112,7 +112,7 @@ export const FaceOverlay: React.FC<FaceOverlayProps> = ({
                 />
             </svg>
 
-            <div className="absolute top-1/2 mt-32 text-center w-full">
+            <div className="absolute top-1/2 mt-16 text-center w-full">
                 <p className={`text-2xl font-light tracking-wide ${isAligned ? 'text-green-400' : 'text-white'}`} style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
                     {feedbackText}
                 </p>

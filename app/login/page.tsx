@@ -100,8 +100,7 @@ export default function LoginPage() {
                     </form>
                 </CardContent>
                 <CardFooter className="flex justify-center text-sm text-muted-foreground gap-1">
-                    ¿No tienes cuenta?
-                    <Link href="/signup" className="text-primary hover:underline font-medium">Registrarse</Link>
+                    {/* Public registration disabled */}
                 </CardFooter>
             </Card>
         </div>

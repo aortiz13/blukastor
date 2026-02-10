@@ -36,16 +36,13 @@ export async function inviteUser(formData: FormData) {
     const existingUser = users.find(u => u.email === email)
 
     if (existingUser) {
-        // If user exists but hasn't confirmed email (pending invite), delete to "reset" the invite
-        if (!existingUser.email_confirmed_at) {
-            await supabaseAdmin.auth.admin.deleteUser(existingUser.id)
-        } else {
-            // User exists and is confirmed. We just generate a new link (magic link for login/update)
-            // or we could error. But the user asked to "resend".
-            // We'll proceed to generate link, which works for existing users too.
-            // But we should warn or handle this? 
-            // The prompt says "delete previous invitation", which applies mostly to pending.
-            // For active users, we'll just update their role and send a new link.
+        // User exists. The admin wants to "resend" (re-invite), implying a reset.
+        // We delete the existing user to allow a fresh invitation link to be generated.
+        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(existingUser.id)
+
+        if (deleteError) {
+            console.error('Error deleting existing user:', deleteError)
+            return { error: 'Error al eliminar el usuario existente para re-invitar: ' + deleteError.message }
         }
     }
 

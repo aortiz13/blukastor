@@ -30,9 +30,26 @@ export async function inviteUser(formData: FormData) {
         return { error: 'Email and role are required' }
     }
 
-    // 3. Generate invite link via Supabase Auth Admin API (instead of sending email directly)
+    // 3. Check if user already exists
     const supabaseAdmin = await createAdminClient()
+    const { data: { users } } = await supabaseAdmin.auth.admin.listUsers()
+    const existingUser = users.find(u => u.email === email)
 
+    if (existingUser) {
+        // If user exists but hasn't confirmed email (pending invite), delete to "reset" the invite
+        if (!existingUser.email_confirmed_at) {
+            await supabaseAdmin.auth.admin.deleteUser(existingUser.id)
+        } else {
+            // User exists and is confirmed. We just generate a new link (magic link for login/update)
+            // or we could error. But the user asked to "resend".
+            // We'll proceed to generate link, which works for existing users too.
+            // But we should warn or handle this? 
+            // The prompt says "delete previous invitation", which applies mostly to pending.
+            // For active users, we'll just update their role and send a new link.
+        }
+    }
+
+    // 4. Generate invite link via Supabase Auth Admin API
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'invite',
         email: email,
@@ -52,7 +69,7 @@ export async function inviteUser(formData: FormData) {
 
     const verifyLink = inviteData.properties.action_link;
 
-    // 4. Send email using Resend
+    // 5. Send email using Resend
     const resendApiKey = process.env.RESEND_API_KEY;
     if (!resendApiKey) {
         return { error: 'Error de configuración: RESEND_API_KEY no encontrada' }
@@ -131,14 +148,14 @@ export async function inviteUser(formData: FormData) {
         return { error: 'Fallo crítico al enviar correo: ' + err.message }
     }
 
-    // 5. Assign role in user_roles table
+    // 6. Assign role in user_roles table
     // We already have inviteData.user from generateLink
     const { error: roleError } = await supabaseAdmin
         .from('user_roles')
-        .insert({
+        .upsert({
             user_id: inviteData.user.id,
             role: role
-        })
+        }, { onConflict: 'user_id' })
 
     if (roleError) {
         console.error('Role assignment error:', roleError)

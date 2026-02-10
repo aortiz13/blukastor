@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 
 export async function inviteUser(formData: FormData) {
     const supabase = await createClient()

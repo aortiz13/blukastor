@@ -161,11 +161,10 @@ export async function inviteUser(formData: FormData) {
     }
 
     // 6. Assign role in user_roles table
-    // We already have inviteData.user from generateLink
     const { error: roleError } = await supabaseAdmin
         .from('user_roles')
         .upsert({
-            user_id: inviteData.user.id,
+            user_id: userData.user.id,
             role: role
         }, { onConflict: 'user_id' })
 

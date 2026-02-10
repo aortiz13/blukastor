@@ -47,14 +47,26 @@ export async function inviteUser(formData: FormData) {
         }
     }
 
-    // 4. Generate invite link via Supabase Auth Admin API
-    const origin = (await headers()).get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    // 4. Create the user first with a temporary password, then send recovery link
+    const tempPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
 
+    const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email: email,
+        password: tempPassword,
+        email_confirm: true, // Auto-confirm the email
+    });
+
+    if (createError) {
+        console.error('Create user error:', createError);
+        return { error: 'Error al crear el usuario: ' + createError.message };
+    }
+
+    // Now generate a recovery/password reset link
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.generateLink({
-        type: 'invite',
+        type: 'recovery',
         email: email,
         options: {
-            redirectTo: `${origin}/invite`
+            redirectTo: `${origin}/administracion/update-password`
         }
     })
 
@@ -82,7 +94,7 @@ export async function inviteUser(formData: FormData) {
         const { error: emailError } = await resend.emails.send({
             from: 'Dental Corbella <no-reply@brandboost-ai.com>', // Or your verified domain
             to: [email],
-            subject: 'Tu invitación a Smile Forward',
+            subject: 'Configura tu contraseña - Smile Forward',
             html: `<!DOCTYPE html>
 <html>
 <head>

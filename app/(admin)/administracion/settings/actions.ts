@@ -47,11 +47,13 @@ export async function inviteUser(formData: FormData) {
     }
 
     // 4. Generate invite link via Supabase Auth Admin API
+    const origin = (await headers()).get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'invite',
         email: email,
         options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback?next=/administracion/update-password`
+            redirectTo: `${origin}/auth/callback?next=/administracion/update-password`
         }
     })
 

@@ -61,6 +61,9 @@ export async function inviteUser(formData: FormData) {
         return { error: 'Error al crear el usuario: ' + createError.message };
     }
 
+    // Get origin for redirect URL
+    const origin = (await headers()).get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
     // Now generate a recovery/password reset link
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'recovery',

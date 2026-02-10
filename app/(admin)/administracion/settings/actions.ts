@@ -54,7 +54,7 @@ export async function inviteUser(formData: FormData) {
         type: 'invite',
         email: email,
         options: {
-            redirectTo: `${origin}/auth/callback?next=/administracion/update-password`
+            redirectTo: `${origin}/invite`
         }
     })
 

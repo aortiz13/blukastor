@@ -77,7 +77,7 @@ export async function inviteUser(formData: FormData) {
         const resend = new Resend(resendApiKey);
 
         const { error: emailError } = await resend.emails.send({
-            from: 'Dental Corbella <no-reply@dentalcorbella.com>', // Or your verified domain
+            from: 'Dental Corbella <no-reply@brandboost-ai.com>', // Or your verified domain
             to: [email],
             subject: 'Tu invitación a Smile Forward',
             html: `<!DOCTYPE html>

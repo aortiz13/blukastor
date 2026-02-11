@@ -78,33 +78,28 @@ Deno.serve(async (req) => {
             
             SCIENTIFIC ANALYSIS PARAMETERS (The "Secret Sauce"):
 
-            1.  **Facial Phenotype & VITA Shade Mapping:**
-                - Analyze the user's skin tone (Fitzpatrick Scale) and undertone (Warm/Cool).
-                - **RULE:** Assign a VITA Shade that complements the skin tone to look natural, NOT fake white.
-                - *Mapping:* 
-                    - Dark/Warm Skin -> VITA A2 or A3 (Warm/Natural). AVERAGE VALUE.
-                    - Light/Cool Skin -> VITA A1 or B2 (Natural Brightness).
-                    - Olive/Neutral -> VITA A2.
-                - **CRITICAL:** Do NOT select OM1, OM2, or OM3 unless the user looks like a celebrity model. Favor NATURAL DENTIN tones.
-                - Output the selected shade in the response.
+            1.  **Existing Dentition Inventory (Partial Restoration Strategy):**
+                - **Analyze:** Identify which teeth are PRESENT and which are MISSING/BROKEN.
+                - **RULE:** Do NOT replace valid biological structure if it's healthy. The goal is INTEGRATION.
+                - **Gap Assessment:** Specifically target edentulous spaces (missing teeth) for generation.
 
-            2.  **Dental Proportions (Golden Proportion & W/L Ratio):**
-                - **Central Incisors:** Must have a Width-to-Length ratio of **75-80%**. They are the dominant key of the smile.
-                - **Golden Progression (RED Proportion):** The visible width of the Lateral Incisor must be **62% (0.618)** of the Central Incisor. The Canine must be **62%** of the Lateral.
-                - **Axis:** The long axis of the teeth must incline slightly distally toward the apical.
+            2.  **Color Matching & VITA Shade (Natural Integration):**
+                - **Sample:** Detect the average color of the user's *existing* teeth (even if lower arch is visible).
+                - **RULE:** The restoration MUST match the natural chroma/hue of the patient's existing biology. 
+                - **Selection:** If the user has teeth, pick a VITA shade that represents a realistic improvement (e.g., if natural is A3, go to A2 or A1. Do NOT jump to OM1/Bleach).
+                - **Skin Tone Check:** Ensure the shade respects the Fitzpatrick skin scale (Dark skin -> High Value/Contrast is risky, stick to natural A1/B1; Light skin -> Can handle higher value).
 
-            3.  **Gingival Architecture (Pink Esthetics):**
-                - **Zenith Points:** The highest point of the gingival margin (Zenith) for Centrals and Canines should be at the same height. The Lateral Incisor zenith should be 0.5mm-1mm *lower* (more coronal).
-                - **Texture:** Render healthy, stippled (orange-peel) pink gingiva. No inflammation.
-                - **Papillae:** Pointed and filling the interdental embrasures (no black triangles).
+            3.  **Dental Proportions (Golden Proportion & W/L Ratio):**
+                - **Central Incisors:** Must have a Width-to-Length ratio of **75-80%**. 
+                - **Golden Progression:** Visible width of Lateral must be 62% of Central.
+                - **Axis:** Long axis must incline slightly distally.
 
-            4.  **Smile Arc & Consonance (The "Youthful" Curve):**
-                - **CRITICAL RULE:** The curve formed by the incisal edges of the maxillary teeth MUST be convex and strictly **parallel** to the superior border of the lower lip.
-                - **Buccal Corridors:** Ensure triangular dark spaces at the corners of the mouth are present but minimal (broad arch, but physically realistic).
+            4.  **Gingival Architecture (Pink Esthetics):**
+                - **Zenith Points:** High-scalloped, class II (distal) zeniths.
+                - **Texture:** Stippled pink gingiva. Pointed papillae filling embrasures.
 
-            5.  **Facial Integration:**
-                - **Midline:** Align dental midline to the facial midline (Philtrum).
-                - **Interpupillary Line:** The incisal plane must be parallel to the eyes.
+            5.  **Smile Arc & Consonance:**
+                - **CRITICAL RULE:** The incisal edges must form a convex curve parallel to the lower lip.
 
             OUTPUT FORMAT: Strictly JSON.
             Structure:
@@ -121,7 +116,7 @@ Deno.serve(async (req) => {
                             "Editing_Instructions": string, 
                             "Refining_Details": string, 
                             "Reference_Instructions": string,
-                            "Clinical_Justification": string // NEW: Explain why this shade/shape was chosen
+                            "Clinical_Justification": string 
                         } 
                     }
                 ]
@@ -132,25 +127,25 @@ Deno.serve(async (req) => {
             1. original_bg (Scientific Natural Restoration):
             - Subject: "A photorealistic clinical portrait of the user with a biologically integrated smile restoration."
             - Composition: "Identical to the input image. MAIN FOCUS: The DSmile."
-            - Action: "Smiling naturally with a Consonant Smile Arc following the lower lip."
+            - Action: "Smiling naturally."
             - Location: "Original background."
             - Style: "Macro Dental Photography, 8K, Twin-Flash Lighting."
-            - Editing_Instructions: "Replace existing dentition. \n1. VITA SHADE: [Insert Selected Shade] with gradation (darker cervical, lighter incisal). \n2. TEXTURE: Mamelons and perikymata MUST be visible. \n3. FORM: Apply 80% W/L ratio to Centrals. \n4. GINGIVA: High-scalloped, stippled pink gingiva."
-            - Refining_Details: "CRITICAL: The teeth must NOT look like white plastic. They must have TRANSPARENCY at the edges (blue/gray halo). Add surface irregularities and light reflection."
-            - Reference_Instructions: "Maintain facial identity strictly. Only upgrade the smile."
-            - Clinical_Justification: "Selected biologically appropriate VITA [Shade] to contrast with [SkinTone] and avoid the 'fake veneer' look."
+            - Editing_Instructions: "Restoration Strategy: INTEGATION. \n1. MISSING TEETH: Generate photorealistic implants/pontics in spaces [List Missing Teeth]. \n2. EXISTING TEETH: Refine shape but PRESERVE natural position if aligned. \n3. COLOR: Use VITA [Insert Shade] (Matched to existing enamel + 1 shade brightness). \n4. GINGIVA: Restore pink esthetics only where missing."
+            - Refining_Details: "Texture must match the user's natural enamel (perikymata, translucency). NO OPAQUE WHITE. The goal is invisible restoration."
+            - Reference_Instructions: "Maintain facial identity strictly. Detect and match the user's natural tooth shade."
+            - Clinical_Justification: "Detected natural shade [Shade]. Preserved existing dentition structure. Restored missing units in harmony with facial midline."
 
             2. lifestyle_social:
             - Subject: "The user in a high-end social context."
             - Action: "Laughing candidly."
             - Style: "Candid Event Photography, Flash."
-            - Editing_Instructions: "Same dental anatomy as variation 1, but exposed in a dynamic laugh."
+            - Editing_Instructions: "Same integrated smile, exposed in a dynamic laugh."
             
             3. lifestyle_outdoor:
             - Subject: "The user in natural lighting."
             - Action: "Confident smile."
             - Style: "Golden Hour Portrait."
-            - Editing_Instructions: "Same dental anatomy, natural light reflection on enamel."
+            - Editing_Instructions: "Same integrated smile, natural light reflection."
             `;
             }
 

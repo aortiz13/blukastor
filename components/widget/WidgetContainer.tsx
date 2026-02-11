@@ -225,16 +225,17 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
     }, [sessionId, step]);
 
     const handleUpload = async (file: File) => {
-        setImage(file);
-        setStep("PROCESSING");
-        setProcessStatus('validating');
-
         try {
-            // 1. Strict Validation (MediaPipe)
+            // 1. Strict Validation (MediaPipe) - DO THIS FIRST before any state changes
             const validation = await validateStaticImage(file);
             if (!validation.isValid) {
                 throw new Error(validation.reason || "Imagen no válida");
             }
+
+            // ONLY IF VALID, we move to processing state
+            setImage(file);
+            setStep("PROCESSING");
+            setProcessStatus('validating');
 
             const base64 = await compressImage(file);
             setProcessStatus('scanning');
@@ -305,7 +306,14 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
         } catch (err: any) {
             console.error("WidgetContainer Error:", err);
             toast.error(err.message || "Ocurrió un error.");
-            setStep("UPLOAD");
+
+            // Only reset to UPLOAD if we were already in PROCESSING
+            // If validation failed, IMAGE is still null and STEP is still UPLOAD/SELFIE_CAPTURE,
+            // so this just ensures we don't end up on a broken screen.
+            setStep((prev) => {
+                if (prev === "PROCESSING") return "UPLOAD";
+                return prev;
+            });
             setImage(null);
         }
     };

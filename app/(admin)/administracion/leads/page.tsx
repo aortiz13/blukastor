@@ -116,7 +116,7 @@ export default function LeadsPage() {
                 <input
                     type="text"
                     placeholder="Buscar por nombre, email o teléfono..."
-                    className="w-full pl-10 pr-4 py-2 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-white"
+                    className="w-full pl-10 pr-4 py-2 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-black"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />

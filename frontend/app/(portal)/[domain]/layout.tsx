@@ -2,6 +2,7 @@ import { getCompanyByDomain } from '@/lib/data/companies'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+// Sidebar removed - moved to (dashboard)/layout.tsx
 
 export default async function PortalLayout({
     children,
@@ -36,29 +37,12 @@ export default async function PortalLayout({
 
     return (
         <div
-            className="min-h-screen bg-white"
+            className="min-h-screen bg-gray-50/30"
             style={{
                 ['--primary' as any]: primaryColor,
             } as any}
         >
-            <header className="border-b p-4 flex justify-between items-center bg-white sticky top-0 z-10 w-full"
-                style={{ borderColor: 'var(--primary, #e5e7eb)' }}
-            >
-                <Link href="/">
-                    {branding.logo_url ? (
-                        <img src={branding.logo_url} alt={company?.name || 'Company Logo'} className="h-8 object-contain" />
-                    ) : (
-                        <span className="font-bold text-xl text-primary">{company?.name || 'Portal'}</span>
-                    )}
-                </Link>
-                <nav className="flex gap-4">
-                    <Link href="/chat" className="text-sm font-medium hover:text-primary transition-colors">Chat</Link>
-                    <Link href="/login" className="text-sm font-medium hover:text-primary transition-colors">Login</Link>
-                </nav>
-            </header>
-            <main className="flex-1 bg-gray-50/50">
-                {children}
-            </main>
+            {children}
         </div>
     )
 }

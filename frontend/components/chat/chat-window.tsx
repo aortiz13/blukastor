@@ -2,7 +2,8 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState, useRef } from 'react'
-import { Send, Loader2 } from 'lucide-react'
+import { Send, Loader2, PlusCircle } from 'lucide-react'
+import { processAIChatMessage } from '@/lib/actions/chat'
 
 interface Message {
     id: string
@@ -23,7 +24,7 @@ export function ChatWindow({ contactId, companyId }: { contactId: string, compan
     useEffect(() => {
         const fetchMessages = async () => {
             const { data, error } = await supabase
-                .schema('wa')
+                //.schema('wa') // Use public view instead to avoid 406 Not Acceptable
                 .from('wa_consolidated')
                 .select('*')
                 .eq('contact_id', contactId)
@@ -64,50 +65,92 @@ export function ChatWindow({ contactId, companyId }: { contactId: string, compan
 
     const sendMessage = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!input.trim()) return
+        if (!input.trim() || isLoading) return
 
         const content = input.trim()
         setInput('')
-        // Optimistic update? No, let's wait for subscription or distinct logic.
-        // Actually, wa_consolidated is populated by Trigger? Or do I insert into wa_consolidated?
-        // I insert into wa_incoming. Trigger/Workflow populates wa_consolidated.
-        // So I won't see my message immediately unless I optimistically add it.
+        setIsLoading(true)
 
-        // Optimistic:
-        const optimisticMsg = {
+        // Optimistic update
+        const userMsg: Message = {
             id: 'temp-' + Date.now(),
             content,
-            role: 'user' as const,
+            role: 'user',
             created_at: new Date().toISOString()
         }
-        setMessages((prev) => [...prev, optimisticMsg])
+        setMessages((prev) => [...prev, userMsg])
 
-        const { error } = await supabase
-            .schema('wa')
-            .from('wa_incoming')
-            .insert({
-                contact_id: contactId,
-                company_id: companyId,
-                content,
-                processed: false,
-                // manual_ai_intent: 'general' // or specific agent
-            })
+        try {
+            // Call native AI processing agent
+            console.log('Calling processAIChatMessage with:', { contactId, companyId, content })
+            const result = await processAIChatMessage(contactId, companyId, content)
+            console.log('AI Response Result:', result)
 
-        if (error) {
+            if (!result.success) {
+                console.error('AI Error:', result.error)
+            } else {
+                // Optimistic update for AI response
+                const aiMsg: Message = {
+                    id: 'temp-ai-' + Date.now(),
+                    content: result.data.assistant_reply,
+                    role: 'assistant',
+                    created_at: new Date().toISOString(),
+                    agent_type: 'general'
+                }
+                setMessages((prev) => [...prev, aiMsg])
+            }
+        } catch (error) {
             console.error('Error sending message:', error)
-            // Rollback optimistic update implementation needed here ideally
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const resetChat = async () => {
+        if (!confirm('¿Estás seguro de que quieres iniciar una nueva conversación? Se borrará el historial actual.')) return
+
+        setIsLoading(true)
+        try {
+            // We'll call a hypothetical clear action or just do it here via supabase for now
+            // For a simple implementation, we can delete from wa_consolidated and ai_chat_memory
+            // But let's just clear the local state first and then the DB
+            const { error } = await supabase.from('wa_consolidated').delete().eq('contact_id', contactId)
+            if (error) throw error
+
+            // Also clear AI memory to reset episodic context
+            await supabase.from('ai_chat_memory').delete().eq('contact_id', contactId)
+
+            setMessages([])
+        } catch (error) {
+            console.error('Error resetting chat:', error)
+            alert('Error al reiniciar el chat')
+        } finally {
+            setIsLoading(false)
         }
     }
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full bg-gray-50">
+            {/* Header */}
+            <div className="border-b p-4 bg-white flex justify-between items-center">
+                <h2 className="font-semibold text-gray-700">Chat con Nova</h2>
+                <button
+                    onClick={resetChat}
+                    className="text-xs flex items-center gap-1 text-gray-400 hover:text-red-500 transition-colors"
+                    title="Nueva Conversación"
+                >
+                    <PlusCircle size={14} />
+                    <span>Nueva conversación</span>
+                </button>
+            </div>
+
             {/* Messages Area */}
             <div ref={scrollRef} className="flex-1 p-4 overflow-y-auto space-y-4">
                 {messages.map((msg) => (
                     <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`rounded-lg p-3 max-w-[80%] ${msg.role === 'user'
-                                ? 'bg-blue-600 text-white rounded-br-none'
-                                : 'bg-gray-200 text-gray-800 rounded-bl-none'
+                            ? 'bg-blue-600 text-white rounded-br-none'
+                            : 'bg-gray-200 text-gray-800 rounded-bl-none'
                             }`}>
                             {msg.content}
                             <div className={`text-[10px] mt-1 ${msg.role === 'user' ? 'text-blue-200' : 'text-gray-500'}`}>
@@ -119,6 +162,14 @@ export function ChatWindow({ contactId, companyId }: { contactId: string, compan
                 {messages.length === 0 && (
                     <div className="text-center text-gray-400 mt-10">
                         Start a conversation with our AI agents.
+                    </div>
+                )}
+                {isLoading && (
+                    <div className="flex justify-start">
+                        <div className="bg-gray-200 text-gray-500 rounded-lg p-3 rounded-bl-none flex items-center gap-2">
+                            <Loader2 size={16} className="animate-spin" />
+                            <span>Nova está escribiendo...</span>
+                        </div>
                     </div>
                 )}
             </div>

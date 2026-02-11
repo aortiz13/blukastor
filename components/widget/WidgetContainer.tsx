@@ -575,6 +575,17 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                         {/* Column 2: QR Code - Hidden on mobile */}
                                         <div className="hidden md:flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-8 border border-zinc-200 dark:border-zinc-800 text-center space-y-6">
                                             <div className="space-y-2">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => setStep("UPLOAD")}
+                                                        className="text-zinc-500 hover:text-black dark:hover:text-white"
+                                                    >
+                                                        <Share2 className="w-4 h-4 mr-2 rotate-180" />
+                                                        Volver
+                                                    </Button>
+                                                </div>
                                                 <h3 className="text-xl font-serif text-black dark:text-white">Usa tu móvil</h3>
                                                 <p className="text-sm text-zinc-500">Escanea este código para usar la cámara de tu teléfono.</p>
                                             </div>
@@ -679,7 +690,24 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                             >
                                 <div className="max-w-5xl mx-auto w-full h-full flex flex-col items-center gap-2 md:gap-4 overflow-hidden">
                                     {/* Title */}
-                                    <h2 className="text-xl md:text-3xl font-serif text-black dark:text-white text-center flex-shrink-0 mb-1 md:mb-2 pt-2">Tu simulación Smile Forward</h2>
+                                    {/* Navigation Header */}
+                                    <div className="w-full flex justify-between items-center px-4 flex-shrink-0">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => {
+                                                setStep("UPLOAD");
+                                                setImage(null);
+                                                setGeneratedImage(null);
+                                            }}
+                                            className="text-zinc-500 hover:text-black dark:hover:text-white"
+                                        >
+                                            <Share2 className="w-4 h-4 mr-2 rotate-180" />
+                                            Volver a empezar
+                                        </Button>
+                                        <h2 className="text-xl md:text-3xl font-serif text-black dark:text-white text-center flex-1">Tu simulación Smile Forward</h2>
+                                        <div className="w-20" /> {/* Spacer for centering */}
+                                    </div>
 
                                     {/* Main Content - Images + CTA */}
                                     <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full items-center justify-center flex-1 min-h-0 overflow-hidden">
@@ -766,6 +794,15 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
                                 <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
                                     {/* Left Column - Title & Subtitle */}
                                     <div className="space-y-4 text-center md:text-left">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setStep("LOCKED_RESULT")}
+                                            className="text-zinc-500 hover:text-black dark:hover:text-white mb-4"
+                                        >
+                                            <Share2 className="w-4 h-4 mr-2 rotate-180" />
+                                            Volver al resultado
+                                        </Button>
                                         <h2 className="text-2xl md:text-4xl font-serif font-bold text-black dark:text-white">¿Quieres que tu experiencia sea más real?</h2>
                                         <p className="text-sm md:text-base text-zinc-500 leading-relaxed">
                                             La imagen te da una idea. Pero donde realmente se entiende el cambio al verte hablar reir y expresarte: <span className="font-bold">verte tú</span> en situaciones reales con naturalidad

@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { encodeBase64 } from "https://deno.land/std@0.224.0/encoding/base64.ts";
+import { Buffer } from "node:buffer";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -36,9 +37,55 @@ Deno.serve(async (req) => {
         }
 
         // Convert image to base64 for email attachment
-        // Convert image to base64 for email attachment
         const arrayBuffer = await imageData.arrayBuffer()
-        const base64Image = encodeBase64(arrayBuffer)
+        const uint8Array = new Uint8Array(arrayBuffer)
+
+        // Add Watermark using Jimp
+        let processedBase64 = encodeBase64(arrayBuffer);
+        try {
+            console.log('Adding watermark...')
+            const Jimp = (await import("https://esm.sh/jimp@0.22.12")).default;
+
+            // Read the original image
+            const image = await Jimp.read(Buffer.from(uint8Array));
+
+            // Fetch the logo
+            const logoUrl = 'https://dentalcorbella.com/wp-content/uploads/2023/07/logo-white-trans2.png';
+            const logoResponse = await fetch(logoUrl);
+            if (logoResponse.ok) {
+                const logoBuffer = await logoResponse.arrayBuffer();
+                const logo = await Jimp.read(Buffer.from(new Uint8Array(logoBuffer)));
+
+                // Resize logo to be ~30% of image width
+                const targetLogoWidth = image.bitmap.width * 0.3;
+                logo.resize(targetLogoWidth, Jimp.AUTO);
+
+                // Set opacity (0 to 1)
+                logo.opacity(0.4);
+
+                // Composite logo at bottom-right with margin
+                const margin = 40;
+                const x = image.bitmap.width - logo.bitmap.width - margin;
+                const y = image.bitmap.height - logo.bitmap.height - margin;
+
+                image.composite(logo, x, y);
+
+                // Or also add a center watermark for extra protection
+                const centerLogo = logo.clone();
+                centerLogo.resize(image.bitmap.width * 0.6, Jimp.AUTO);
+                centerLogo.opacity(0.15);
+                const cx = (image.bitmap.width / 2) - (centerLogo.bitmap.width / 2);
+                const cy = (image.bitmap.height / 2) - (centerLogo.bitmap.height / 2);
+                // image.composite(centerLogo, cx, cy); // User asked for watermark, usually one is enough, but center is better for protection
+
+                const processedBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+                processedBase64 = encodeBase64(processedBuffer);
+                console.log('Watermark added successfully');
+            }
+        } catch (jimpError) {
+            console.error('Error adding watermark, sending original:', jimpError);
+            // Fallback to original image if Jimp fails
+        }
 
         // Send email using Resend
         const resendApiKey = Deno.env.get('RESEND_API_KEY')
@@ -165,7 +212,7 @@ Deno.serve(async (req) => {
                 attachments: [
                     {
                         filename: 'smile-forward-simulation.jpg',
-                        content: base64Image,
+                        content: processedBase64,
                     }
                 ]
             })

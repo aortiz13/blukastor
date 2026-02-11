@@ -2,9 +2,25 @@ import { createClient } from "@/utils/supabase/server";
 import { Users, Sparkles, Video } from "lucide-react";
 import { ExportGenerationsButton } from "@/components/admin/ExportGenerationsButton";
 import { DashboardCharts } from "@/components/admin/DashboardCharts";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
+
+    // 1. Verify Authentication & Role
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) redirect("/login");
+
+    const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+    // Both admin and basic can access dashboard
+    if (roleData?.role !== 'admin' && roleData?.role !== 'basic') {
+        redirect("/login");
+    }
 
     // Fetch Stats
     const { count: totalLeads } = await supabase

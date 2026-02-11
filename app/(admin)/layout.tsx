@@ -53,8 +53,8 @@ export default function AdminLayout({
             </div>
 
             <nav className="flex-1 p-4 space-y-2">
-                {/* Dashboard: Admin Only */}
-                {role === 'admin' && (
+                {/* Dashboard: Admin and Basic */}
+                {(role === 'admin' || role === 'basic') && (
                     <Link
                         href="/administracion/dashboard"
                         onClick={() => setOpen(false)}

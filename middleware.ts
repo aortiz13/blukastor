@@ -76,13 +76,7 @@ export async function middleware(request: NextRequest) {
 
     // Role-based access control for Basic users
     if (request.nextUrl.pathname.startsWith("/administracion") && user) {
-        // We need to check the role. Since we can't easily query the DB here without potential cost/latency,
-        // we might defer this to the page/layout OR do a quick check if we have the role in metadata.
-        // For now, let's allow access and let specific pages/layout handle the fine-grained UI hiding,
-        // BUT strict security should be here.
-        // However, reading the DB in middleware is possible with createServerClient.
-
-        // Let's implement a quick check for sensitive routes like /administracion/settings
+        // Quick check for sensitive routes like /administracion/settings
         if (request.nextUrl.pathname.startsWith("/administracion/settings")) {
             const { data: roleData } = await supabase
                 .from('user_roles')

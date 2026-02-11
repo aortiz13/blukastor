@@ -1,7 +1,26 @@
 import EmbedConfigurator from "@/components/admin/embed/EmbedConfigurator";
 import { UserInviteForm } from "./UserInviteForm";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+    const supabase = await createClient();
+
+    // 1. Verify Authentication & Role
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) redirect("/login");
+
+    const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+    // Only admin can access settings
+    if (roleData?.role !== 'admin') {
+        redirect("/administracion/leads"); // Redirect basic users to leads
+    }
+
     return (
         <div className="p-4 md:p-8 space-y-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

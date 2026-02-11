@@ -8,9 +8,23 @@ export async function middleware(request: NextRequest) {
         },
     });
 
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+        console.error("Middleware Supabase Init Failed: Missing URL or Key");
+        console.error("URL Found:", !!supabaseUrl);
+        console.error("Key Found:", !!supabaseKey);
+        // We might want to allow the request to proceed if it's not a protected route,
+        // or just crash/error out. For now, let's let createServerClient throw its own error
+        // or return a dummy client that will fail on use, but best to throw here if critical.
+        // However, existing behavior was to crash inside createServerClient.
+        // Let's proceed but likely it will fail.
+    }
+
     const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        supabaseUrl!,
+        supabaseKey!,
         {
             cookies: {
                 getAll() {

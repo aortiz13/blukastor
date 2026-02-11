@@ -33,7 +33,6 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
     const [pollingCount, setPollingCount] = useState(0);
 
     const scenarios = [
-        { id: 'automatic', label: 'IA (Auto)', icon: Sparkles, description: 'Selección automática por edad' },
         { id: 'park', label: 'Parque', icon: Trees, description: 'Exterior natural, luz de día' },
         { id: 'home', label: 'Hogar', icon: Home, description: 'Interior cálido, entorno familiar' },
         { id: 'office', label: 'Oficina', icon: Briefcase, description: 'Profesional, ambiente de trabajo' },

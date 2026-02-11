@@ -14,6 +14,11 @@ export async function GET(request: Request) {
     const origin = `${protocol}://${host}`;
 
     const redirectUrl = new URL(next, origin);
+    const loginUrl = new URL("/login", origin);
+    loginUrl.searchParams.set("next", next);
+
+    // Create the response object FIRST so we can set cookies on it
+    const response = NextResponse.redirect(redirectUrl.toString());
 
     if (code || token_hash) {
         const cookieStore = await cookies();
@@ -27,9 +32,12 @@ export async function GET(request: Request) {
                     },
                     setAll(cookiesToSet) {
                         try {
-                            cookiesToSet.forEach(({ name, value, options }) =>
-                                cookieStore.set(name, value, options)
-                            );
+                            cookiesToSet.forEach(({ name, value, options }) => {
+                                // Set on cookieStore for server-side persistence in current request
+                                cookieStore.set(name, value, options);
+                                // Set on response for browser persistence
+                                response.cookies.set(name, value, options);
+                            });
                         } catch {
                             // The `setAll` method was called from a Server Component.
                         }
@@ -39,6 +47,7 @@ export async function GET(request: Request) {
         );
 
         let error = null;
+        console.log("[AuthCallback] Attempting to verify token/code...");
 
         if (code) {
             const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
@@ -53,24 +62,14 @@ export async function GET(request: Request) {
         }
 
         if (!error) {
-            // IMPORTANT: In Next.js GET handlers, we MUST use a NextResponse object 
-            // and set cookies on IT if we want them to persist through the redirect.
-            // The cookies().set() call above might not be enough for some browser/Next.js versions.
-            const response = NextResponse.redirect(redirectUrl.toString());
-
-            // Forward cookies from cookieStore to response
-            cookieStore.getAll().forEach((cookie) => {
-                response.cookies.set(cookie.name, cookie.value);
-            });
-
+            console.log("[AuthCallback] Success! Redirecting to target with session cookies.");
             return response;
         }
 
         console.error("[AuthCallback] Auth error:", error.message);
     }
 
-    // Default fallback to login
-    const loginUrl = new URL("/login", origin);
-    loginUrl.searchParams.set("next", next);
+    // Default fallback to login if error or no tokens
+    console.log("[AuthCallback] No valid session, falling back to login.");
     return NextResponse.redirect(loginUrl.toString());
 }

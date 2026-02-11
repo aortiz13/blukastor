@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { Loader2, UploadCloud, Lock, Check, Video, PlayCircle, Sparkles, ScanFace, FileSearch, Wand2, Share2, MessageCircle, Send, Smartphone } from "lucide-react";
 import { toast } from "sonner";
-import { validateImageStrict, analyzeImageAndGeneratePrompts, generateSmileVariation } from "@/app/services/gemini";
+import { analyzeImageAndGeneratePrompts, generateSmileVariation } from "@/app/services/gemini";
+import { validateStaticImage } from "@/utils/faceValidation";
 import { uploadScan } from "@/app/services/storage";
 import { VariationType } from "@/types/gemini";
 import { Button } from "@/components/ui/button";
@@ -228,16 +229,13 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
         setProcessStatus('validating');
 
         try {
-            const base64 = await compressImage(file);
+            // 1. Strict Validation (MediaPipe)
+            const validation = await validateStaticImage(file);
+            if (!validation.isValid) {
+                throw new Error(validation.reason || "Imagen no válida");
+            }
 
-            // 1. Strict Validation
-            const validationResponse = await validateImageStrict(base64);
-            if (!validationResponse.success) {
-                throw new Error(validationResponse.error || "Error de validación");
-            }
-            if (!validationResponse.data?.isValid) {
-                throw new Error(validationResponse.data?.reason || "Imagen no válida");
-            }
+            const base64 = await compressImage(file);
             setProcessStatus('scanning');
 
             // 2. Upload to Storage

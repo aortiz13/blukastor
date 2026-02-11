@@ -22,17 +22,23 @@ export default function LoginPage() {
 
     // Auto-redirect if already logged in (handles fragment cases)
     useEffect(() => {
-        const handleRedirect = (session: any) => {
+        const handleRedirect = (session: any, event?: string) => {
             if (!session) return;
 
-            console.log("[LoginPage] Session detected, handling redirect...");
+            console.log(`[LoginPage] Session detected (Event: ${event}), handling redirect...`);
             const hash = window.location.hash;
             const searchParams = new URLSearchParams(window.location.search);
             const nextParam = searchParams.get("next");
 
             // If we came from an invite/recovery, we want to go specifically to update-password
-            if (hash.includes('type=recovery') || hash.includes('type=invite') || hash.includes('type=signup')) {
-                console.log("[LoginPage] Auth fragment detected, enforcing password update route");
+            const isRecoveryFlow = event === 'PASSWORD_RECOVERY' ||
+                hash.includes('type=recovery') ||
+                hash.includes('type=invite') ||
+                hash.includes('type=signup') ||
+                nextParam?.includes('update-password');
+
+            if (isRecoveryFlow) {
+                console.log("[LoginPage] Auth flow detected, enforcing password update route");
                 window.location.href = "/administracion/update-password";
             } else if (nextParam) {
                 console.log("[LoginPage] Next param detected:", nextParam);
@@ -44,14 +50,15 @@ export default function LoginPage() {
         };
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-                handleRedirect(session);
+            console.log("[LoginPage] Auth state change:", event);
+            if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED')) {
+                handleRedirect(session, event);
             }
         });
 
         // Also check immediately on mount
         supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) handleRedirect(session);
+            if (session) handleRedirect(session, 'INITIAL_SESSION');
         });
 
         return () => subscription.unsubscribe();

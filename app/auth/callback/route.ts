@@ -3,17 +3,19 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-    const requestUrl = new URL(request.url);
-    const code = requestUrl.searchParams.get("code");
-    // if "next" is in param, use it as the redirect URL
-    const next = requestUrl.searchParams.get("next") ?? "/administracion/dashboard";
+    const { searchParams } = new URL(request.url);
+    const code = searchParams.get("code");
+    const token_hash = searchParams.get("token_hash");
+    const type = searchParams.get("type");
+    const next = searchParams.get("next") ?? "/administracion/dashboard";
 
-    // Detect correct origin (handling Easypanel/Docker proxies)
     const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
     const protocol = request.headers.get("x-forwarded-proto") || "https";
     const origin = `${protocol}://${host}`;
 
-    if (code) {
+    const redirectUrl = new URL(next, origin);
+
+    if (code || token_hash) {
         const cookieStore = await cookies();
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,25 +32,45 @@ export async function GET(request: Request) {
                             );
                         } catch {
                             // The `setAll` method was called from a Server Component.
-                            // This can be ignored if you have middleware refreshing
-                            // user sessions.
                         }
                     },
                 },
             }
         );
 
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!error) {
-            return NextResponse.redirect(`${origin}${next}`);
+        let error = null;
+
+        if (code) {
+            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            error = exchangeError;
+        } else if (token_hash && type) {
+            // @ts-ignore
+            const { error: verifyError } = await supabase.auth.verifyOtp({
+                token_hash,
+                type: type as any,
+            });
+            error = verifyError;
         }
-        console.error("[AuthCallback] Exchange error:", error.message);
+
+        if (!error) {
+            // IMPORTANT: In Next.js GET handlers, we MUST use a NextResponse object 
+            // and set cookies on IT if we want them to persist through the redirect.
+            // The cookies().set() call above might not be enough for some browser/Next.js versions.
+            const response = NextResponse.redirect(redirectUrl.toString());
+
+            // Forward cookies from cookieStore to response
+            cookieStore.getAll().forEach((cookie) => {
+                response.cookies.set(cookie.name, cookie.value);
+            });
+
+            return response;
+        }
+
+        console.error("[AuthCallback] Auth error:", error.message);
     }
 
-    // If no code, we might have a fragment (implicit flow)
-    // We redirect to /login with the 'next' parameter, so the LoginPage can handle the fragment
-    const loginUrl = new URL(`${origin}/login`);
+    // Default fallback to login
+    const loginUrl = new URL("/login", origin);
     loginUrl.searchParams.set("next", next);
-
     return NextResponse.redirect(loginUrl.toString());
 }

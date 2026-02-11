@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import Link from "next/link";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -17,6 +18,24 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const supabase = createClient();
+
+    // Auto-redirect if already logged in (handles fragment cases)
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                console.log("[LoginPage] Session detected via event:", event);
+                // If the URL has #type=recovery, we might want to go to update-password
+                const hash = window.location.hash;
+                if (hash.includes('type=recovery') || hash.includes('type=invite')) {
+                    router.push("/administracion/update-password");
+                } else {
+                    router.push("/administracion/dashboard");
+                }
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [supabase, router]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();

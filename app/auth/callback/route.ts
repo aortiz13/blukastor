@@ -42,8 +42,10 @@ export async function GET(request: Request) {
         if (!error) {
             return NextResponse.redirect(`${origin}${next}`);
         }
+        console.error("[AuthCallback] Exchange error:", error.message);
     }
 
-    // return the user to an error page with instructions
-    return NextResponse.redirect(`${origin}/login?error=Invalid%20Auth%20Code`);
+    // If no code, we might have a fragment (implicit flow)
+    // We redirect to the 'next' destination anyway, so the client-side lib can try to parse the fragment
+    return NextResponse.redirect(`${origin}${next}`);
 }

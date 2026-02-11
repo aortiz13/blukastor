@@ -82,7 +82,7 @@ export async function inviteUser(formData: FormData) {
         type: 'recovery',
         email: email,
         options: {
-            redirectTo: `${origin}/administracion/update-password`
+            redirectTo: `${origin}/auth/callback?next=/administracion/update-password`
         }
     })
 

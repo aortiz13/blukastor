@@ -121,6 +121,10 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
     const handleGenerateVideo = async () => {
         if (!lead.id) return;
         setGeneratingVideo(true);
+        toast.info("Iniciando generación de vídeo...", {
+            description: "Estamos procesando tu solicitud. Recibirás una notificación cuando el vídeo esté listo."
+        });
+
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("No hay sesión activa");
@@ -138,11 +142,11 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
             if (error) throw error;
 
             console.log("[LeadDetailModal] Video generation initiated:", data);
-            setVideoGen({ id: data.generation_id, status: 'processing' });
-            toast.info("Generación de vídeo iniciada...", { description: "Esto puede tardar hasta 1 minuto." });
+            setVideoGen({ id: data.generation_id, status: 'initializing' });
         } catch (error: any) {
             setGeneratingVideo(false);
             toast.error("Error al iniciar generación: " + error.message);
+            console.error(error);
         }
     };
 

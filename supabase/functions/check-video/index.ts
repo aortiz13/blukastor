@@ -28,10 +28,16 @@ Deno.serve(async (req) => {
             .single()
 
         if (genError || !gen) throw new Error('Generation record not found')
+
+        // If already completed, return data
         if (gen.status === 'completed') return new Response(JSON.stringify(gen), { headers: corsHeaders })
 
         const operationName = gen.metadata?.operation_name
-        if (!operationName) throw new Error('Operation name missing in metadata')
+
+        // If still initializing or missing operation name, it's still "pending" from the client perspective
+        if (gen.status === 'initializing' || !operationName) {
+            return new Response(JSON.stringify({ status: 'pending', id: generation_id, message: 'Initializing generation...' }), { headers: corsHeaders })
+        }
 
         // 2. Check Operation Status with Google
         const apiKey = Deno.env.get('GOOGLE_API_KEY')

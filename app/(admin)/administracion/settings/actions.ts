@@ -46,7 +46,16 @@ export async function inviteUser(formData: FormData) {
 
     // 3. Check if user already exists
     const supabaseAdmin = await createAdminClient()
-    const { data: { user: existingUser }, error: getError } = await supabaseAdmin.auth.admin.getUserByEmail(email)
+    // List users with a higher limit to ensure we find them for re-invitation
+    const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+        perPage: 1000
+    })
+
+    if (listError) {
+        console.error('Error listing users:', listError)
+    }
+
+    const existingUser = users?.find(u => u.email === email)
 
     if (existingUser) {
         // User exists. The admin wants to "resend" (re-invite), implying a reset.

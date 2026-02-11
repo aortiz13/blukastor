@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Phone, Calendar, User, ImageIcon, MonitorPlay, Download, Share2, CheckCircle2, Loader2, Archive } from "lucide-react";
+import { Mail, Phone, Calendar, User, ImageIcon, MonitorPlay, Download, Share2, CheckCircle2, Loader2, Archive, Trees, Home, Briefcase, Wine, Palmtree, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { BeforeAfterSlider } from "@/components/widget/BeforeAfterSlider";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,17 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
     const [generatingVideo, setGeneratingVideo] = useState(false);
     const [videoGen, setVideoGen] = useState<any>(null);
     const [viewMode, setViewMode] = useState<'video' | 'images'>('images');
+    const [selectedScenario, setSelectedScenario] = useState<string>('automatic');
     const [pollingCount, setPollingCount] = useState(0);
+
+    const scenarios = [
+        { id: 'automatic', label: 'IA (Auto)', icon: Sparkles, description: 'Selección automática por edad' },
+        { id: 'park', label: 'Parque', icon: Trees, description: 'Exterior natural, luz de día' },
+        { id: 'home', label: 'Hogar', icon: Home, description: 'Interior cálido, entorno familiar' },
+        { id: 'office', label: 'Oficina', icon: Briefcase, description: 'Profesional, ambiente de trabajo' },
+        { id: 'dinner', label: 'Cena', icon: Wine, description: 'Social, noche, alta gama' },
+        { id: 'beach', label: 'Playa', icon: Palmtree, description: 'Vacaciones, sol y mar' },
+    ];
 
     const supabase = createClient();
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -103,7 +113,10 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
             if (!session) throw new Error("No hay sesión activa");
 
             const { data, error } = await supabase.functions.invoke('generate-video', {
-                body: { lead_id: lead.id },
+                body: {
+                    lead_id: lead.id,
+                    scenario_id: selectedScenario === 'automatic' ? null : selectedScenario
+                },
                 headers: {
                     Authorization: `Bearer ${session.access_token}`
                 }
@@ -286,29 +299,51 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
                                 </Button>
 
                                 {generation && (
-                                    <Button
-                                        className="w-full bg-primary font-bold"
-                                        size="lg"
-                                        onClick={handleGenerateVideo}
-                                        disabled={generatingVideo || (videoGen && videoGen.status === 'completed')}
-                                    >
-                                        {generatingVideo ? (
-                                            <>
-                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                Generando Vídeo...
-                                            </>
-                                        ) : videoGen && videoGen.status === 'completed' ? (
-                                            <>
-                                                <CheckCircle2 className="w-4 h-4 mr-2" />
-                                                Vídeo Generado
-                                            </>
-                                        ) : (
-                                            <>
-                                                <MonitorPlay className="w-4 h-4 mr-2" />
-                                                Generar Vídeo Smile
-                                            </>
-                                        )}
-                                    </Button>
+                                    <div className="space-y-4 pt-2">
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold px-1">Escenario del Vídeo</p>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {scenarios.map((s) => (
+                                                    <button
+                                                        key={s.id}
+                                                        onClick={() => setSelectedScenario(s.id)}
+                                                        disabled={generatingVideo || (videoGen && videoGen.status === 'completed')}
+                                                        className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${selectedScenario === s.id
+                                                            ? 'bg-primary/10 border-primary text-primary shadow-sm'
+                                                            : 'bg-card border-muted hover:border-primary/50 text-muted-foreground'
+                                                            } ${(generatingVideo || (videoGen && videoGen.status === 'completed')) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                                    >
+                                                        <s.icon className={`w-5 h-5 mb-1 ${selectedScenario === s.id ? 'text-primary' : 'text-muted-foreground'}`} />
+                                                        <span className="text-[10px] font-bold truncate w-full text-center">{s.label}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <Button
+                                            className="w-full bg-primary font-bold"
+                                            size="lg"
+                                            onClick={handleGenerateVideo}
+                                            disabled={generatingVideo || (videoGen && videoGen.status === 'completed')}
+                                        >
+                                            {generatingVideo ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                    Generando Vídeo...
+                                                </>
+                                            ) : videoGen && videoGen.status === 'completed' ? (
+                                                <>
+                                                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                                                    Vídeo Generado
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <MonitorPlay className="w-4 h-4 mr-2" />
+                                                    Generar Vídeo Smile
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
                                 )}
 
                                 <div className="grid grid-cols-2 gap-3">
@@ -330,85 +365,84 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
                             </div>
                         </div>
 
-                    </div>
+                        {/* Right Column: Visual Result */}
+                        <div className="col-span-12 md:col-span-7 bg-zinc-950 p-4 relative flex flex-col items-center overflow-hidden">
 
-                    {/* Right Column: Visual Result */}
-                    <div className="col-span-12 md:col-span-7 bg-zinc-950 p-4 relative flex flex-col items-center overflow-hidden">
-
-                        {/* Selector de Vista (Toggle) */}
-                        {videoGen && videoGen.status === 'completed' && (
-                            <div className="absolute top-6 left-6 z-30 flex bg-white/10 backdrop-blur-md p-1 rounded-full border border-white/10">
-                                <button
-                                    onClick={() => setViewMode('images')}
-                                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${viewMode === 'images' ? 'bg-white text-black shadow-lg' : 'text-white/70 hover:text-white'}`}
-                                >
-                                    <ImageIcon className="w-3.5 h-3.5 inline mr-1.5" /> Imágenes
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('video')}
-                                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${viewMode === 'video' ? 'bg-white text-black shadow-lg' : 'text-white/70 hover:text-white'}`}
-                                >
-                                    <MonitorPlay className="w-3.5 h-3.5 inline mr-1.5" /> Video
-                                </button>
-                            </div>
-                        )}
-
-                        <div className="w-full h-full flex items-center justify-center pt-8">
-                            {viewMode === 'images' ? (
-                                generation ? (
-                                    <div className="relative w-full h-full flex items-center justify-center">
-                                        <div className="relative h-[90%] w-auto aspect-[9/16] shadow-2xl rounded-2xl overflow-hidden border border-white/10 bg-black">
-                                            {generation.input_path && generation.input_path !== 'unknown' ? (
-                                                <BeforeAfterSlider
-                                                    beforeImage={generation.input_path}
-                                                    afterImage={generation.output_path}
-                                                />
-                                            ) : (
-                                                <img
-                                                    src={generation.output_path}
-                                                    alt="Generated Smile"
-                                                    className="w-full h-full object-contain"
-                                                />
-                                            )}
-                                        </div>
-                                        <div className="absolute bottom-6 right-6 flex gap-2 z-10">
-                                            <Button size="icon" variant="secondary" className="rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md transition-all">
-                                                <Download className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="text-center text-muted-foreground p-8">
-                                        <ImageIcon className="w-16 h-16 mx-auto mb-4 opacity-20" strokeWidth={1.5} />
-                                        <p>Sin imágenes disponibles</p>
-                                    </div>
-                                )
-                            ) : (
-                                videoGen && videoGen.status === 'completed' && (
-                                    <div className="relative h-[90%] w-auto aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black">
-                                        <video
-                                            key={videoGen.output_path}
-                                            src={`${supabaseUrl}/storage/v1/object/public/generated/${videoGen.output_path}`}
-                                            className="w-full h-full object-contain"
-                                            controls
-                                            autoPlay
-                                            muted
-                                            playsInline
-                                            loop
-                                        />
-                                        <div className="absolute top-4 right-4 z-30">
-                                            <Button
-                                                size="sm"
-                                                variant="secondary"
-                                                className="h-8 rounded-full bg-black/50 backdrop-blur-md border-white/10 text-xs"
-                                                onClick={() => setViewMode('images')}
-                                            >
-                                                Cerrar Video
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )
+                            {/* Selector de Vista (Toggle) */}
+                            {videoGen && videoGen.status === 'completed' && (
+                                <div className="absolute top-6 left-6 z-30 flex bg-white/10 backdrop-blur-md p-1 rounded-full border border-white/10">
+                                    <button
+                                        onClick={() => setViewMode('images')}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${viewMode === 'images' ? 'bg-white text-black shadow-lg' : 'text-white/70 hover:text-white'}`}
+                                    >
+                                        <ImageIcon className="w-3.5 h-3.5 inline mr-1.5" /> Imágenes
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('video')}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${viewMode === 'video' ? 'bg-white text-black shadow-lg' : 'text-white/70 hover:text-white'}`}
+                                    >
+                                        <MonitorPlay className="w-3.5 h-3.5 inline mr-1.5" /> Video
+                                    </button>
+                                </div>
                             )}
+
+                            <div className="w-full h-full flex items-center justify-center pt-8">
+                                {viewMode === 'images' ? (
+                                    generation ? (
+                                        <div className="relative w-full h-full flex items-center justify-center">
+                                            <div className="relative h-[90%] w-auto aspect-[9/16] shadow-2xl rounded-2xl overflow-hidden border border-white/10 bg-black">
+                                                {generation.input_path && generation.input_path !== 'unknown' ? (
+                                                    <BeforeAfterSlider
+                                                        beforeImage={generation.input_path}
+                                                        afterImage={generation.output_path}
+                                                    />
+                                                ) : (
+                                                    <img
+                                                        src={generation.output_path}
+                                                        alt="Generated Smile"
+                                                        className="w-full h-full object-contain"
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="absolute bottom-6 right-6 flex gap-2 z-10">
+                                                <Button size="icon" variant="secondary" className="rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md transition-all">
+                                                    <Download className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center text-muted-foreground p-8">
+                                            <ImageIcon className="w-16 h-16 mx-auto mb-4 opacity-20" strokeWidth={1.5} />
+                                            <p>Sin imágenes disponibles</p>
+                                        </div>
+                                    )
+                                ) : (
+                                    videoGen && videoGen.status === 'completed' && (
+                                        <div className="relative h-[90%] w-auto aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black">
+                                            <video
+                                                key={videoGen.output_path}
+                                                src={`${supabaseUrl}/storage/v1/object/public/generated/${videoGen.output_path}`}
+                                                className="w-full h-full object-contain"
+                                                controls
+                                                autoPlay
+                                                muted
+                                                playsInline
+                                                loop
+                                            />
+                                            <div className="absolute top-4 right-4 z-30">
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    className="h-8 rounded-full bg-black/50 backdrop-blur-md border-white/10 text-xs"
+                                                    onClick={() => setViewMode('images')}
+                                                >
+                                                    Cerrar Video
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

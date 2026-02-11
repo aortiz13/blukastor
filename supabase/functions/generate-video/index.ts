@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
     }
 
     try {
-        const { lead_id } = await req.json()
+        const { lead_id, scenario_id } = await req.json()
         if (!lead_id) throw new Error('Lead ID is required')
 
         // Initialize Supabase
@@ -34,7 +34,57 @@ Deno.serve(async (req) => {
         const surveyData = lead.survey_data || {}
         const ageRange = surveyData.ageRange || '30-55'
 
-        // 2. Fetch Smile Image Generation (SOURCE)
+        // 2. Determine Scenario Details
+        let scenarioDetails = "";
+        let sceneDescription = "";
+        let finalScenario = scenario_id || "automatic";
+
+        const scenarios: Record<string, { description: string, details: string }> = {
+            park: {
+                description: "Professional outdoor portrait in a vibrant green park with natural daylight.",
+                details: "- Location: \"Vibrant green park. Natural daylight. Green background.\"\n- Action: \"Laughing naturally and warmly. Gentle head tilting in joy.\""
+            },
+            home: {
+                description: "Warm, cozy portrait in a family dining room with indoor lighting.",
+                details: "- Location: \"Warm family dining room. Indoor lighting.\"\n- Action: \"Smiling warmly or laughing gently. Continuous gentle movement.\""
+            },
+            office: {
+                description: "Professional office environment with bright corporative lighting.",
+                details: "- Location: \"Modern professional office. Bright windows. Corporate setting.\"\n- Action: \"Smiling professionally and confidently. Natural business interaction vibe.\""
+            },
+            dinner: {
+                description: "Stylish portrait during a social dinner at a high-end restaurant with ambient lighting.",
+                details: "- Location: \"Elegant restaurant. Warm ambient lighting. Blurred social background.\"\n- Action: \"Holding a toast glass and laughing joyfully. High-end social aesthetic.\""
+            },
+            beach: {
+                description: "Sunny portrait on a beautiful beach during vacation with golden-hour lighting.",
+                details: "- Location: \"Tropical beach. Ocean background. Golden hour sun.\"\n- Action: \"Smiling happily and relaxed. Vacation vibe. Wind gently in hair.\""
+            }
+        };
+
+        if (scenarios[scenario_id]) {
+            sceneDescription = scenarios[scenario_id].description;
+            scenarioDetails = scenarios[scenario_id].details;
+        } else {
+            // Fallback to age-based logic if scenario_id is missing or 'automatic'
+            if (ageRange === '18-30') {
+                sceneDescription = scenarios.park.description;
+                scenarioDetails = scenarios.park.details;
+                finalScenario = "automatic_park";
+            } else if (ageRange === '55+') {
+                sceneDescription = scenarios.home.description;
+                scenarioDetails = scenarios.home.details;
+                finalScenario = "automatic_home";
+            } else {
+                // Rooftop for 30-55
+                sceneDescription = "Stylish portrait on an urban rooftop terrace with a city sunset background.";
+                scenarioDetails = "- Location: \"Stylish urban rooftop terrace. City sunset background.\"\n- Action: \"Holding a drink and laughing or smiling naturally. High-end social aesthetic.\"";
+                finalScenario = "automatic_rooftop";
+            }
+        }
+
+
+        // 3. Fetch Smile Image Generation (SOURCE)
         const { data: generation, error: genError } = await supabase
             .from('generations')
             .select('output_path')
@@ -62,7 +112,7 @@ Deno.serve(async (req) => {
             .from('generated')
             .createSignedUrl(storagePath, 60);
 
-        if (signError || !signedUrlData) throw new Error(`Failed to create signed URL`);
+        if (signError || !signedUrlData) throw new Error("Failed to create signed URL");
 
         const imgResponse = await fetch(signedUrlData.signedUrl);
         if (!imgResponse.ok) throw new Error("Failed to fetch source image");
@@ -72,39 +122,18 @@ Deno.serve(async (req) => {
         const mimeType = imgBlob.type || 'image/jpeg';
 
 
-        // 3. DETERMINE SCENARIO (Moved up)
-        let scenarioDetails = "";
-        let sceneDescription = "";
-        if (ageRange === '18-30') {
-            sceneDescription = "Professional outdoor portrait in a vibrant green park with natural daylight.";
-            scenarioDetails = `- Location: "Vibrant green park. Natural daylight. Green background."\n- Action: "Laughing naturally and warmly. Gentle head tilting in joy."`;
-        } else if (ageRange === '55+') {
-            sceneDescription = "Warm, cozy portrait in a family dining room with indoor lighting.";
-            scenarioDetails = `- Location: "Warm family dining room. Indoor lighting."\n- Action: "Smiling warmly or laughing gently. Continuous gentle movement."`;
-        } else {
-            sceneDescription = "Stylish portrait on an urban rooftop terrace with a city sunset background.";
-            scenarioDetails = `- Location: "Stylish urban rooftop terrace. City sunset background."\n- Action: "Holding a drink and laughing or smiling naturally. High-end social aesthetic."`;
-        }
-
-
         // STEP 1: GENERATE SCENE IMAGE (Image-to-Image)
-        console.log(`Generating SCENE IMAGE for ${lead.name} (${ageRange})...`);
+        console.log("Generating SCENE IMAGE for " + lead.name + " (Scenario: " + finalScenario + ")...");
 
         // Default to original image if generation fails
         let sceneImgBase64 = imgBase64;
         let sceneImgMimeType = mimeType;
         let generatedScenePath = generation.output_path;
 
-        const sceneGenerationPrompt = `
-      Subject: The person in the input image.
-      Action: ${ageRange === '18-30' ? 'Laughing naturally' : ageRange === '55+' ? 'Smiling warmly' : 'Smiling casually'}.
-      Location: ${sceneDescription}
-      Style: Photorealistic, cinematic lighting, 8k resolution, High Quality.
-      Editing Input: Change the background to match the Location description. Keep the person's face, hair, and smile EXACTLY the same. Seamlessly blend the lighting.
-    `;
+        const sceneGenerationPrompt = "Subject: The person in the input image.\nAction: " + (ageRange === '18-30' ? 'Laughing naturally' : ageRange === '55+' ? 'Smiling warmly' : 'Smiling casually') + ".\nLocation: " + sceneDescription + "\nStyle: Photorealistic, cinematic lighting, 8k resolution, High Quality.\nEditing Input: Change the background to match the Location description. Keep the person's face, hair, and smile EXACTLY the same. Seamlessly blend the lighting.";
 
         // EXACT PATTERN FROM generate-smile
-        const visionEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${apiKey}`;
+        const visionEndpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=" + apiKey;
 
         try {
             const sceneResponse = await fetch(visionEndpoint, {
@@ -113,7 +142,7 @@ Deno.serve(async (req) => {
                 body: JSON.stringify({
                     contents: [{
                         parts: [
-                            { text: `Generate a photorealistic image based on: ${sceneGenerationPrompt}` },
+                            { text: "Generate a photorealistic image based on: " + sceneGenerationPrompt },
                             { inline_data: { mime_type: mimeType, data: imgBase64 } }
                         ]
                     }]
@@ -123,7 +152,6 @@ Deno.serve(async (req) => {
             if (!sceneResponse.ok) {
                 const errText = await sceneResponse.text();
                 console.warn("Scene Generation API Failed:", errText);
-                // We don't throw here to allow fallback to original image
             } else {
                 const result = await sceneResponse.json();
                 const candidates = result.candidates;
@@ -133,7 +161,6 @@ Deno.serve(async (req) => {
 
                 if (candidates && candidates[0]?.content?.parts) {
                     for (const part of candidates[0].content.parts) {
-                        // Check for inline_data (snake_case) or inlineData (camelCase)
                         const inlineData = part.inline_data || part.inlineData;
                         if (inlineData) {
                             foundBase64 = inlineData.data;
@@ -148,25 +175,23 @@ Deno.serve(async (req) => {
                     sceneImgBase64 = foundBase64;
                     sceneImgMimeType = foundMime;
 
-                    // Upload this new "Scene Image" to Storage
-                    const sceneFileName = `${lead_id}_scene_${ageRange}_${Date.now()}.png`;
+                    const sceneFileName = lead_id + "_scene_" + ageRange + "_" + Date.now() + ".png";
                     const sceneBuffer = Buffer.from(sceneImgBase64, 'base64');
 
                     const { data: uploadData, error: uploadError } = await supabase
                         .storage
                         .from('generated')
-                        .upload(`${lead_id}/${sceneFileName}`, sceneBuffer, {
+                        .upload(lead_id + "/" + sceneFileName, sceneBuffer, {
                             contentType: sceneImgMimeType,
                             upsert: true
                         });
 
                     if (!uploadError && uploadData) {
                         generatedScenePath = uploadData.path;
-                        console.log(`Scene Image uploaded to: ${generatedScenePath}`);
+                        console.log("Scene Image uploaded to: " + generatedScenePath);
                     }
                 } else {
                     console.warn("Gemini successful but NO IMAGE found in response Parts.");
-                    console.log("Response dump:", JSON.stringify(result));
                 }
             }
         } catch (err) {
@@ -177,13 +202,9 @@ Deno.serve(async (req) => {
         // STEP 2: GENERATE VIDEO (Veo)
         console.log("Starting VEO Generation with Scene Image...");
 
-        const baseInstructions = `
-        - Subject: "The person from the input image."
-        - Composition: "9:16 Vertical Portrait. FIXED CAMERA. NO ROTATION."
-        - IMPORTANT: "The subject is smiling or laughing. The smile must be prominent and STABLE. The subject must NOT move their lips to form words or speak. Maintain identical dental structure."
-        `;
+        const baseInstructions = "- Subject: \"The person from the input image.\"\n- Composition: \"9:16 Vertical Portrait. FIXED CAMERA. NO ROTATION.\"\n- IMPORTANT: \"The subject is smiling or laughing. The smile must be prominent and STABLE. The subject must NOT move their lips to form words or speak. Maintain identical dental structure.\"";
 
-        const scenarioPrompt = `${baseInstructions}\n${scenarioDetails}\n- Style: "Cinematic, Photorealistic, 4k High Quality."\n- NOTE: The video must start INSTANTLY in the target location (${ageRange === '18-30' ? 'Park' : 'Room/Roof'}). Do NOT fade in from the input image background.`;
+        const scenarioPrompt = baseInstructions + "\n" + scenarioDetails + "\n- Style: \"Cinematic, Photorealistic, 4k High Quality.\"\n- NOTE: The video must start INSTANTLY in the target location. Do NOT fade in from the input image background.";
 
         console.log("--- SECURE GENERATE VIDEO PROMPT ---");
         console.log(scenarioPrompt);
@@ -191,8 +212,7 @@ Deno.serve(async (req) => {
 
         const negativePrompt = "talking, speech, mouth moving to speak, articulating words, conversation, morphing face, changing teeth, closing mouth, distortion, cartoon, low quality, glitchy motion, flashing lights, extra limbs, blurry face, flickering teeth, floating objects, static start, frozen face, camera rotation, spinning camera, zoom out";
 
-        // Endpoint for Veo 3.1
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning?key=${apiKey}`;
+        const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning?key=" + apiKey;
 
         const aiResponse = await fetch(endpoint, {
             method: 'POST',
@@ -202,7 +222,7 @@ Deno.serve(async (req) => {
                     {
                         prompt: scenarioPrompt,
                         image: {
-                            bytesBase64Encoded: sceneImgBase64, // using the SCENE image (or original if failed)
+                            bytesBase64Encoded: sceneImgBase64,
                             mimeType: sceneImgMimeType
                         }
                     }
@@ -220,7 +240,7 @@ Deno.serve(async (req) => {
         if (!aiResponse.ok) {
             const errText = await aiResponse.text();
             console.error("AI API Error:", errText);
-            throw new Error(`AI API Error: ${errText}`);
+            throw new Error("AI API Error: " + errText);
         }
 
         const operation = await aiResponse.json();
@@ -233,10 +253,10 @@ Deno.serve(async (req) => {
                 lead_id: lead_id,
                 type: 'video',
                 status: 'processing',
-                input_path: generatedScenePath, // Points to the Scene Image used
+                input_path: generatedScenePath,
                 metadata: {
                     operation_name: operationName,
-                    scenario: ageRange,
+                    scenario: finalScenario,
                     prompt: scenarioPrompt,
                     negative_prompt: negativePrompt
                 }

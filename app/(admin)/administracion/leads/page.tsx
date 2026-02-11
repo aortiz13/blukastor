@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Loader2, Download, Eye } from "lucide-react";
+import { Loader2, Download, Eye, Search } from "lucide-react";
 import { toast } from "sonner";
 import { LeadDetailModal } from "@/components/admin/LeadDetailModal";
 
@@ -10,6 +10,17 @@ export default function LeadsPage() {
     const [leads, setLeads] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedLead, setSelectedLead] = useState<any | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const filteredLeads = useMemo(() => {
+        if (!searchTerm.trim()) return leads;
+        const lowTerm = searchTerm.toLowerCase();
+        return leads.filter(lead =>
+            lead.name?.toLowerCase().includes(lowTerm) ||
+            lead.email?.toLowerCase().includes(lowTerm) ||
+            lead.phone?.toLowerCase().includes(lowTerm)
+        );
+    }, [leads, searchTerm]);
 
     const fetchLeads = useCallback(async () => {
         try {
@@ -100,6 +111,17 @@ export default function LeadsPage() {
                 </button>
             </div>
 
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                    type="text"
+                    placeholder="Buscar por nombre, email o teléfono..."
+                    className="w-full pl-10 pr-4 py-2 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-white"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
             <div className="bg-card rounded-xl border border-border overflow-hidden">
                 {loading ? (
                     <div className="p-12 flex justify-center text-muted-foreground">
@@ -119,12 +141,14 @@ export default function LeadsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {leads.length === 0 ? (
+                                {filteredLeads.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-6 py-4 text-center text-muted-foreground">No hay leads registrados aún.</td>
+                                        <td colSpan={6} className="px-6 py-4 text-center text-muted-foreground">
+                                            {searchTerm ? "No se encontraron leads que coincidan con la búsqueda." : "No hay leads registrados aún."}
+                                        </td>
                                     </tr>
                                 ) : (
-                                    leads.map((lead) => (
+                                    filteredLeads.map((lead) => (
                                         <tr key={lead.id} className="bg-card border-b border-border hover:bg-muted/10 transition-colors">
                                             <td className="px-6 py-4">{new Date(lead.created_at).toLocaleDateString()}</td>
                                             <td className="px-6 py-4 font-medium text-foreground">{lead.name}</td>

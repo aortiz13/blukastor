@@ -10,12 +10,13 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Phone, Calendar, User, ImageIcon, MonitorPlay, Download, Share2, CheckCircle2, Loader2, Archive, Trees, Home, Briefcase, Wine, Palmtree, Sparkles } from "lucide-react";
+import { Mail, Phone, Calendar, User, ImageIcon, MonitorPlay, Download, Share2, CheckCircle2, Loader2, Archive, Trees, Home, Briefcase, Wine, Palmtree, Sparkles, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { BeforeAfterSlider } from "@/components/widget/BeforeAfterSlider";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
+import { deleteLeadAction } from "@/app/(admin)/administracion/leads/actions";
 
 interface LeadDetailModalProps {
     lead: any | null;
@@ -31,6 +32,8 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
     const [viewMode, setViewMode] = useState<'video' | 'images'>('images');
     const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
     const [pollingCount, setPollingCount] = useState(0);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     const scenarios = [
         { id: 'park', label: 'Parque', icon: Trees, description: 'Exterior natural, luz de día' },
@@ -170,6 +173,27 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
             console.error(error);
         } finally {
             setLoadingAction(false);
+        }
+    };
+
+    const handleDeleteLead = async () => {
+        if (!lead?.id) return;
+        setDeleting(true);
+        try {
+            const result = await deleteLeadAction(lead.id);
+            if (result.success) {
+                toast.success("Lead eliminado correctamente");
+                if (onLeadUpdated) onLeadUpdated();
+                onOpenChange(false);
+            } else {
+                toast.error(result.error || "Error al eliminar el lead");
+            }
+        } catch (error: any) {
+            toast.error("Error crítico al eliminar");
+            console.error(error);
+        } finally {
+            setDeleting(false);
+            setShowDeleteConfirm(false);
         }
     };
 
@@ -375,6 +399,15 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
                                             lead.status === 'contacted' ? <CheckCircle2 className="w-4 h-4 mr-2" /> : null}
                                         {lead.status === 'contacted' ? "Contactado" : "Marcar Contactado"}
                                     </Button>
+                                    <Button
+                                        variant="destructive"
+                                        className="w-full"
+                                        onClick={() => setShowDeleteConfirm(true)}
+                                        disabled={deleting}
+                                    >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Eliminar Lead
+                                    </Button>
                                     <Button variant="secondary" className="w-full">
                                         <Archive className="w-4 h-4 mr-2" />
                                         Archivar
@@ -383,6 +416,36 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
                             </div>
                         </div>
                     </div>
+
+                    {/* Deletion Confirmation Dialog */}
+                    <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+                        <DialogContent className="max-w-md">
+                            <DialogHeader>
+                                <DialogTitle>¿Estás completamente seguro?</DialogTitle>
+                                <DialogDescription>
+                                    Esta acción no se puede deshacer. Esto eliminará permanentemente al lead
+                                    <strong> {lead.name}</strong>, todos sus resultados de análisis y las imágenes/vídeos generados.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="flex justify-end gap-3 mt-4">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    disabled={deleting}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    onClick={handleDeleteLead}
+                                    disabled={deleting}
+                                >
+                                    {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                                    Eliminar Definitivamente
+                                </Button>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
 
                     {/* Right Column: Visual Result */}
                     <div className="col-span-12 md:col-span-7 bg-zinc-950 p-4 relative flex flex-col items-center overflow-hidden">

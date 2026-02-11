@@ -69,8 +69,10 @@ export async function middleware(request: NextRequest) {
     }
 
     if (request.nextUrl.pathname.startsWith("/login") && user) {
+        console.log("[Middleware] Authenticated user on /login, redirecting to target...");
+        const next = request.nextUrl.searchParams.get("next") || "/administracion/dashboard";
         const url = request.nextUrl.clone();
-        url.pathname = "/administracion/dashboard"; // Default landing. Middleware/Page logic can redirect Basic users later if needed.
+        url.pathname = next;
         return NextResponse.redirect(url);
     }
 

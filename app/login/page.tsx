@@ -22,21 +22,40 @@ export default function LoginPage() {
 
     // Auto-redirect if already logged in (handles fragment cases)
     useEffect(() => {
+        const handleRedirect = (session: any) => {
+            if (!session) return;
+
+            console.log("[LoginPage] Session detected, handling redirect...");
+            const hash = window.location.hash;
+            const searchParams = new URLSearchParams(window.location.search);
+            const nextParam = searchParams.get("next");
+
+            // If we came from an invite/recovery, we want to go specifically to update-password
+            if (hash.includes('type=recovery') || hash.includes('type=invite') || hash.includes('type=signup')) {
+                console.log("[LoginPage] Auth fragment detected, enforcing password update route");
+                window.location.href = "/administracion/update-password";
+            } else if (nextParam) {
+                console.log("[LoginPage] Next param detected:", nextParam);
+                window.location.href = nextParam;
+            } else {
+                console.log("[LoginPage] Default redirect to dashboard");
+                window.location.href = "/administracion/dashboard";
+            }
+        };
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                console.log("[LoginPage] Session detected via event:", event);
-                // If the URL has #type=recovery, we might want to go to update-password
-                const hash = window.location.hash;
-                if (hash.includes('type=recovery') || hash.includes('type=invite')) {
-                    router.push("/administracion/update-password");
-                } else {
-                    router.push("/administracion/dashboard");
-                }
+            if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+                handleRedirect(session);
             }
         });
 
+        // Also check immediately on mount
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) handleRedirect(session);
+        });
+
         return () => subscription.unsubscribe();
-    }, [supabase, router]);
+    }, [supabase]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();

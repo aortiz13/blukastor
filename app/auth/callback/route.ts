@@ -46,6 +46,9 @@ export async function GET(request: Request) {
     }
 
     // If no code, we might have a fragment (implicit flow)
-    // We redirect to the 'next' destination anyway, so the client-side lib can try to parse the fragment
-    return NextResponse.redirect(`${origin}${next}`);
+    // We redirect to /login with the 'next' parameter, so the LoginPage can handle the fragment
+    const loginUrl = new URL(`${origin}/login`);
+    loginUrl.searchParams.set("next", next);
+
+    return NextResponse.redirect(loginUrl.toString());
 }

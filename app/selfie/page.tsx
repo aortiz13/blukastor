@@ -48,7 +48,9 @@ function SelfiePageContent() {
         smileScore,
         jawOpenScore,
         isLoading,
-        error
+        error,
+        isCentered,
+        isCorrectSize,
     } = useFaceDetection(videoRef);
 
     const capture = useCallback(() => {
@@ -174,6 +176,8 @@ function SelfiePageContent() {
                             isLowLight={isLowLight}
                             smileScore={smileScore}
                             jawOpenScore={jawOpenScore}
+                            isCentered={isCentered}
+                            isCorrectSize={isCorrectSize}
                         />
                     )}
 

@@ -71,22 +71,39 @@ Deno.serve(async (req) => {
           `;
             } else {
                 // "analyze" mode - Needs to return the Restoration Plan with Variations
+                // "analyze" mode - Needs to return the Restoration Plan with Variations
                 prompt = `
-            ROLE: Expert Dental Morphologist and AI Prompt Engineer. 
-            TASK: Analyze the user's face using specific landmarks: Eyes, Nose, and Hairline. Generate a restoration plan that harmonizes with these features.
+            ROLE: Expert Dental Morphologist, Prosthodontist, and AI Prompt Engineer.
+            TASK: Perform a comprehensive facial and dental analysis to design a clinically accurate smile restoration.
             
-            SCIENTIFIC ANALYSIS PARAMETERS (Clinical Landmarks & Rules):
-            1. The Interpupillary Rule (Eyes): Detect the user's eyes. The line connecting the center of the eyes (interpupillary line) must be the horizon for the smile. The "Incisal Plane" must be perfectly parallel to this eye line.
-            2. The Nasal Width Guide (Nose): Use the width of the base of the nose (alar base) to determine the position of the Canines. 
-            3. Facial Midline: Strictly align the Dental Midline (between two front teeth) with the Philtrum and Tip of the Nose.
-            4. Facial Frame Balance (Hair/Brows): Analyze the visual weight of the "Upper Facial Third" (Hair volume and Brow thickness). If the subject has a heavy upper frame, slighty increase the dominance/size of the Central Incisors to maintain vertical balance.
-            5. Golden Proportion (1.618): Central width should be ~1.618x the visible width of Lateral Incisor.
-        
-            WORKFLOW STRATEGY: 
-            1. The first variation (original_bg) is the CLINICAL RESTORATION. It serves as the SOURCE OF TRUTH.
-            - You must map the scientific analysis above into the editing instructions.
-            - CRITICAL FRAMING: The output must be a 9:16 Vertical Portrait showing the FULL FACE.
-            2. The other 2 variations MUST use the result of step 1 as a Reference Image for consistency.
+            SCIENTIFIC ANALYSIS PARAMETERS (The "Secret Sauce"):
+
+            1.  **Facial Phenotype & VITA Shade Mapping:**
+                - Analyze the user's skin tone (Fitzpatrick Scale) and undertone (Warm/Cool).
+                - **RULE:** Assign a VITA Shade that complements the skin tone to look natural, NOT fake white.
+                - *Mapping:* 
+                    - Dark/Warm Skin -> VITA A1 or OM3 (Natural Brightness).
+                    - Light/Cool Skin -> VITA B1 or OM1 (High Value/Bright).
+                    - Olive/Neutral -> VITA BL3.
+                - Output the selected shade in the response.
+
+            2.  **Dental Proportions (Golden Proportion & W/L Ratio):**
+                - **Central Incisors:** Must have a Width-to-Length ratio of **75-80%**. They are the dominant key of the smile.
+                - **Golden Progression (RED Proportion):** The visible width of the Lateral Incisor must be **62% (0.618)** of the Central Incisor. The Canine must be **62%** of the Lateral.
+                - **Axis:** The long axis of the teeth must incline slightly distally toward the apical.
+
+            3.  **Gingival Architecture (Pink Esthetics):**
+                - **Zenith Points:** The highest point of the gingival margin (Zenith) for Centrals and Canines should be at the same height. The Lateral Incisor zenith should be 0.5mm-1mm *lower* (more coronal).
+                - **Texture:** Render healthy, stippled (orange-peel) pink gingiva. No inflammation.
+                - **Papillae:** Pointed and filling the interdental embrasures (no black triangles).
+
+            4.  **Smile Arc & Consonance (The "Youthful" Curve):**
+                - **CRITICAL RULE:** The curve formed by the incisal edges of the maxillary teeth MUST be convex and strictly **parallel** to the superior border of the lower lip.
+                - **Buccal Corridors:** Ensure triangular dark spaces at the corners of the mouth are present but minimal (broad arch, but physically realistic).
+
+            5.  **Facial Integration:**
+                - **Midline:** Align dental midline to the facial midline (Philtrum).
+                - **Interpupillary Line:** The incisal plane must be parallel to the eyes.
 
             OUTPUT FORMAT: Strictly JSON.
             Structure:
@@ -102,7 +119,8 @@ Deno.serve(async (req) => {
                             "Style": string, 
                             "Editing_Instructions": string, 
                             "Refining_Details": string, 
-                            "Reference_Instructions": string 
+                            "Reference_Instructions": string,
+                            "Clinical_Justification": string // NEW: Explain why this shade/shape was chosen
                         } 
                     }
                 ]
@@ -111,32 +129,27 @@ Deno.serve(async (req) => {
             REQUIRED VARIATIONS & GUIDELINES:
 
             1. original_bg (Scientific Natural Restoration):
-            - Subject: "A photorealistic portrait of the user EXACTLY as seen in the input image. Maintain the EXACT framing, zoom level, camera angle, and background."
-            - Composition: "Identical to the input image. Do NOT change the zoom, crop, or aspect ratio. Ensure the Before and After images align perfectly."
-            - Action: "The subject is smiling naturally, with a dentition aligned to their interpupillary horizon."
-            - Location: "The original background from the input image. Do not change it."
-            - Style: "High-End Aesthetic Dentistry Photography, 8K resolution, Photorealistic."
-            - Editing_Instructions: "APPLY CLINICAL LANDMARKS: \n1. HORIZON: Align the Incisal Plane to be strictly parallel with the Interpupillary Line (Eyes).\n2. MIDLINE & WIDTH: Align the dental midline with the Philtrum/Nose Tip. Use the alar base width (nose width) to guide the cusp tip position of the Canines.\n3. VERTICAL BALANCE: Assess the visual weight of the Hair and Eyebrows. If the upper face is dominant, increase the length of Central Incisors slightly to balance the face.\n4. PROPORTIONS: Enforce the esthetic dental proportion of 1.6:1:0.6 (Central:Lateral:Canine)."
-            - Refining_Details: "Texture must be polychromatic natural ivory with realistic translucency at incisal edges. Ensure the smile arc follows the lower lip."
-            - Reference_Instructions: "Use the user's original photo strictly for Facial Identity, Skin Tone, and Lip Shape. Completely replace the dental structure using the landmarks defined above."
+            - Subject: "A photorealistic clinical portrait of the user with a biologically integrated smile restoration."
+            - Composition: "Identical to the input image. MAIN FOCUS: The DSmile."
+            - Action: "Smiling naturally with a Consonant Smile Arc following the lower lip."
+            - Location: "Original background."
+            - Style: "Macro Dental Photography, 8K, Twin-Flash Lighting."
+            - Editing_Instructions: "Replace existing dentition. \n1. VITA SHADE: [Insert Selected Shade]. \n2. FORM: Apply 80% W/L ratio to Centrals. \n3. GINGIVA: Create high-scalloped, stippled pink gingiva with Zeniths class II (distal). \n4. ARC: Incisal edges must follow the lower lip curve perfectly."
+            - Refining_Details: "Add surface texture, incisal translucency (halo effect), and mamelons for realism."
+            - Reference_Instructions: "Maintain facial identity strictly. Only upgrade the smile."
+            - Clinical_Justification: "Selected VITA [Shade] to contrast with [SkinTone]. Applied Golden Proportion for harmonic width."
 
             2. lifestyle_social:
-            - Subject: "The person from the reference image, maintaining the EXACT same smile and dental geometry."
-            - Composition: "9:16 Vertical Portrait."
-            - Action: "Laughing candidly at a gala or high-end dinner."
-            - Style: "Warm, social lifestyle photography, depth of field."
-            - Location: "Luxury restaurant or event space."
-            - Editing_Instructions: "Place subject in a social context. Keep the teeth identical to the Reference Image."
-            - Reference_Instructions: "Use the 'Natural Restoration' image to lock the facial identity and the smile design."
-
+            - Subject: "The user in a high-end social context."
+            - Action: "Laughing candidly."
+            - Style: "Candid Event Photography, Flash."
+            - Editing_Instructions: "Same dental anatomy as variation 1, but exposed in a dynamic laugh."
+            
             3. lifestyle_outdoor:
-            - Subject: "The person from the reference image, maintaining the EXACT same smile and dental geometry."
-            - Composition: "9:16 Vertical Portrait."
-            - Action: "Walking confidently, wind in hair."
-            - Style: "Cinematic outdoor lighting, vogue aesthetic."
-            - Location: "Urban architecture or nature at golden hour."
-            - Editing_Instructions: "Golden hour lighting. Keep the teeth identical to the Reference Image."
-            - Reference_Instructions: "Use the 'Natural Restoration' image to lock the facial identity and the smile design."
+            - Subject: "The user in natural lighting."
+            - Action: "Confident smile."
+            - Style: "Golden Hour Portrait."
+            - Editing_Instructions: "Same dental anatomy, natural light reflection on enamel."
             `;
             }
 

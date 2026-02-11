@@ -80,10 +80,10 @@ Deno.serve(async (req) => {
             scenarioDetails = `- Location: "Vibrant green park. Natural daylight. Green background."\n- Action: "Laughing naturally and warmly. Gentle head tilting in joy."`;
         } else if (ageRange === '55+') {
             sceneDescription = "Warm, cozy portrait in a family dining room with indoor lighting.";
-            scenarioDetails = `- Location: "Warm family dining room. Indoor lighting."\n- Action: "Smiling and interacting. Continuous gentle movement."`;
+            scenarioDetails = `- Location: "Warm family dining room. Indoor lighting."\n- Action: "Smiling warmly or laughing gently. Continuous gentle movement."`;
         } else {
             sceneDescription = "Stylish portrait on an urban rooftop terrace with a city sunset background.";
-            scenarioDetails = `- Location: "Stylish urban rooftop terrace. City sunset background."\n- Action: "Holding a drink and chatting naturally. Continuous light activity."`;
+            scenarioDetails = `- Location: "Stylish urban rooftop terrace. City sunset background."\n- Action: "Holding a drink and laughing or smiling naturally. High-end social aesthetic."`;
         }
 
 
@@ -180,10 +180,11 @@ Deno.serve(async (req) => {
         const baseInstructions = `
         - Subject: "The person from the input image."
         - Composition: "9:16 Vertical Portrait. FIXED CAMERA. NO ROTATION."
+        - IMPORTANT: "The subject is smiling or laughing. The smile must be prominent and STABLE. The subject must NOT move their lips to form words or speak. Maintain identical dental structure."
         `;
 
         const scenarioPrompt = `${baseInstructions}\n${scenarioDetails}\n- Style: "Cinematic, Photorealistic, 4k High Quality."\n- NOTE: The video must start INSTANTLY in the target location (${ageRange === '18-30' ? 'Park' : 'Room/Roof'}). Do NOT fade in from the input image background.`;
-        const negativePrompt = "black background, dark background, studio background, black void, morphing face, changing teeth, closing mouth, distortion, cartoon, low quality, glitchy motion, talking, flashing lights, extra limbs, blurry face, flickering teeth, floating objects, static start, frozen face, pause before moving, camera rotation, spinning camera, zoom out, open mouth";
+        const negativePrompt = "talking, speech, mouth moving to speak, articulating words, conversation, morphing face, changing teeth, closing mouth, distortion, cartoon, low quality, glitchy motion, flashing lights, extra limbs, blurry face, flickering teeth, floating objects, static start, frozen face, camera rotation, spinning camera, zoom out";
 
         // Endpoint for Veo 3.1
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning?key=${apiKey}`;

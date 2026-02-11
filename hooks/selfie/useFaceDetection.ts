@@ -127,8 +127,8 @@ export const useFaceDetection = (
             // Require both a smile AND an open mouth (teeth visible)
             // Require both a smile AND an open mouth (teeth visible)
             // jawOpen thresholds: 0 (closed) to 1 (fully open).
-            // Adjusted as requested: smile > 0.25, jaw > 0.03
-            const isSmilingDetected = smileScore > 0.25 && jawOpenScore > 0.03;
+            // Adjusted as requested: smile > 0.25, jaw > 0.01 (Relaxed for natural smiles)
+            const isSmilingDetected = smileScore > 0.25 && jawOpenScore > 0.01;
             setIsSmiling(isSmilingDetected);
 
             // Alignment Checks

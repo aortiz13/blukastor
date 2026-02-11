@@ -44,7 +44,7 @@ export const FaceOverlay: React.FC<FaceOverlayProps> = ({
             feedbackText = "Necesitas más luz";
         } else if (!isSmiling) {
             // Check specific reasons for not smiling
-            if (smileScore > 0.25 && jawOpenScore <= 0.03) {
+            if (smileScore > 0.25 && jawOpenScore <= 0.01) {
                 strokeColor = "#eab308";
                 feedbackText = "Abre un poco más la boca";
             } else {

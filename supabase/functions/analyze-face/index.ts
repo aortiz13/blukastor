@@ -82,9 +82,10 @@ Deno.serve(async (req) => {
                 - Analyze the user's skin tone (Fitzpatrick Scale) and undertone (Warm/Cool).
                 - **RULE:** Assign a VITA Shade that complements the skin tone to look natural, NOT fake white.
                 - *Mapping:* 
-                    - Dark/Warm Skin -> VITA A1 or OM3 (Natural Brightness).
-                    - Light/Cool Skin -> VITA B1 or OM1 (High Value/Bright).
-                    - Olive/Neutral -> VITA BL3.
+                    - Dark/Warm Skin -> VITA A2 or A3 (Warm/Natural). AVERAGE VALUE.
+                    - Light/Cool Skin -> VITA A1 or B2 (Natural Brightness).
+                    - Olive/Neutral -> VITA A2.
+                - **CRITICAL:** Do NOT select OM1, OM2, or OM3 unless the user looks like a celebrity model. Favor NATURAL DENTIN tones.
                 - Output the selected shade in the response.
 
             2.  **Dental Proportions (Golden Proportion & W/L Ratio):**
@@ -134,10 +135,10 @@ Deno.serve(async (req) => {
             - Action: "Smiling naturally with a Consonant Smile Arc following the lower lip."
             - Location: "Original background."
             - Style: "Macro Dental Photography, 8K, Twin-Flash Lighting."
-            - Editing_Instructions: "Replace existing dentition. \n1. VITA SHADE: [Insert Selected Shade]. \n2. FORM: Apply 80% W/L ratio to Centrals. \n3. GINGIVA: Create high-scalloped, stippled pink gingiva with Zeniths class II (distal). \n4. ARC: Incisal edges must follow the lower lip curve perfectly."
-            - Refining_Details: "Add surface texture, incisal translucency (halo effect), and mamelons for realism."
+            - Editing_Instructions: "Replace existing dentition. \n1. VITA SHADE: [Insert Selected Shade] with gradation (darker cervical, lighter incisal). \n2. TEXTURE: Mamelons and perikymata MUST be visible. \n3. FORM: Apply 80% W/L ratio to Centrals. \n4. GINGIVA: High-scalloped, stippled pink gingiva."
+            - Refining_Details: "CRITICAL: The teeth must NOT look like white plastic. They must have TRANSPARENCY at the edges (blue/gray halo). Add surface irregularities and light reflection."
             - Reference_Instructions: "Maintain facial identity strictly. Only upgrade the smile."
-            - Clinical_Justification: "Selected VITA [Shade] to contrast with [SkinTone]. Applied Golden Proportion for harmonic width."
+            - Clinical_Justification: "Selected biologically appropriate VITA [Shade] to contrast with [SkinTone] and avoid the 'fake veneer' look."
 
             2. lifestyle_social:
             - Subject: "The user in a high-end social context."

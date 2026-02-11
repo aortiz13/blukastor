@@ -21,6 +21,27 @@ export async function logApiUsage(serviceName: string) {
 }
 
 /**
+ * Persists detailed audit logs for AI interactions and system events.
+ */
+export async function logAudit(action: string, details: any) {
+    try {
+        console.log(`[AUDIT] ${action}:`, JSON.stringify(details, null, 2));
+        const supabase = await createClient();
+        const { error } = await supabase.from('audit_logs').insert({
+            action,
+            details,
+            created_at: new Date().toISOString(),
+        });
+
+        if (error) {
+            console.error('[BackendService] Failed to persist audit log:', error);
+        }
+    } catch (e) {
+        console.error('[BackendService] logAudit crashed:', e);
+    }
+}
+
+/**
  * Checks if the user has enough video generation quota.
  * For this MVP, we might just check a simple counter or boolean flag in the DB.
  */

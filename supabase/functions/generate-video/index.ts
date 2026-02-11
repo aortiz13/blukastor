@@ -184,6 +184,11 @@ Deno.serve(async (req) => {
         `;
 
         const scenarioPrompt = `${baseInstructions}\n${scenarioDetails}\n- Style: "Cinematic, Photorealistic, 4k High Quality."\n- NOTE: The video must start INSTANTLY in the target location (${ageRange === '18-30' ? 'Park' : 'Room/Roof'}). Do NOT fade in from the input image background.`;
+
+        console.log("--- SECURE GENERATE VIDEO PROMPT ---");
+        console.log(scenarioPrompt);
+        console.log("------------------------------------");
+
         const negativePrompt = "talking, speech, mouth moving to speak, articulating words, conversation, morphing face, changing teeth, closing mouth, distortion, cartoon, low quality, glitchy motion, flashing lights, extra limbs, blurry face, flickering teeth, floating objects, static start, frozen face, camera rotation, spinning camera, zoom out";
 
         // Endpoint for Veo 3.1

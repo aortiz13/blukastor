@@ -24,14 +24,23 @@ export default function LeadsPage() {
                 toast.error(`Error cargando leads: ${error.message}`);
                 throw error;
             }
-            setLeads(data || []);
+            const updatedLeads = data || [];
+            setLeads(updatedLeads);
+
+            // Sync selectedLead if it's currently open
+            if (selectedLead) {
+                const refreshedLead = updatedLeads.find((l: any) => l.id === selectedLead.id);
+                if (refreshedLead) {
+                    setSelectedLead(refreshedLead);
+                }
+            }
         } catch (err: any) {
             console.error("Leads Fetch Error:", err);
             toast.error("No se pudieron cargar los leads. Revisa la consola.");
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [selectedLead]);
 
     useEffect(() => {
         fetchLeads();

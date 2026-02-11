@@ -2,7 +2,7 @@
 
 import { GoogleGenAI, Type, HarmCategory, HarmBlockThreshold } from "@google/genai";
 import { AnalysisResponse, VariationType } from "@/types/gemini";
-import { logApiUsage, checkVideoQuota, markVideoQuotaUsed } from "./backendService";
+import { logApiUsage, checkVideoQuota, markVideoQuotaUsed, logAudit } from "./backendService";
 import { uploadGeneratedImage } from "./storage";
 
 // Models
@@ -112,6 +112,11 @@ export const validateImageStrict = async (base64Image: string): Promise<{ succes
         console.log("[Gemini] Edge Function Response:", resultKey);
 
         if (resultKey) {
+            await logAudit('AI_VALIDATION_RESULT', {
+                mode: 'validate',
+                is_valid: resultKey.is_valid,
+                reason: resultKey.rejection_reason
+            });
             // Check keys returned by the specific 'validate' prompt
             // "is_valid": boolean, "rejection_reason": string
             return {
@@ -127,6 +132,7 @@ export const validateImageStrict = async (base64Image: string): Promise<{ succes
 
     } catch (error: any) {
         console.error("[Gatekeeper] Delegate Error:", error);
+        await logAudit('AI_VALIDATION_ERROR', { error: error.message });
         return { success: false, error: `Error de Validación: ${error.message}` };
     }
 };
@@ -180,6 +186,7 @@ export const analyzeImageAndGeneratePrompts = async (base64Image: string): Promi
             rawText = JSON.stringify(text);
         }
 
+        await logAudit('AI_ANALYSIS_RESULT', { raw_text: rawText });
         await logApiUsage('GEMINI_VISION_ANALYSIS');
         const result = safeParseJSON(rawText) as AnalysisResponse;
 
@@ -192,6 +199,7 @@ export const analyzeImageAndGeneratePrompts = async (base64Image: string): Promi
 
     } catch (criticalError: any) {
         console.error("[Gemini Analysis] Fatal Error Details:", criticalError);
+        await logAudit('AI_ANALYSIS_ERROR', { error: criticalError.message });
         return { success: false, error: `Error en Análisis: ${criticalError.message?.slice(0, 50)}` };
     }
 };
@@ -281,6 +289,7 @@ export const generateSmileVariation = async (
 
         const result = await response.json();
         console.log("[Gemini] Edge Function Response:", result);
+        await logAudit('AI_SMILE_GENERATION_RESULT', { result });
 
         if (result.success && result.public_url) {
             return { success: true, data: result.public_url };
@@ -291,6 +300,7 @@ export const generateSmileVariation = async (
 
     } catch (criticalGenError: any) {
         console.error("[Gemini] FATAL ERROR in generateSmileVariation:", criticalGenError);
+        await logAudit('AI_SMILE_GENERATION_ERROR', { error: criticalGenError.message });
         return { success: false, error: `Error Fatal Generando Imagen: ${criticalGenError.message}` };
     }
 };

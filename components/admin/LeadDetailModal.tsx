@@ -36,12 +36,16 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
     // Fetch existing generations (useEffect)
     useEffect(() => {
         if (lead && open) {
+            console.log(`[LeadDetailModal] Loading data for lead: ${lead.id} (${lead.name})`);
             const video = lead.generations?.find((g: any) => g.type === 'video' && g.status === 'completed');
-            const pendingVideo = lead.generations?.find((g: any) => g.type === 'video' && (g.status === 'pending' || g.status === 'processing'));
+            const pendingVideo = lead.generations?.find((g: any) => g.type === 'video' && (g.status === 'pending' || g.status === 'processing' || g.status === 'processing_video'));
 
             if (video) {
+                console.log("[LeadDetailModal] Found completed video:", video.id);
                 setVideoGen(video);
+                setGeneratingVideo(false);
             } else if (pendingVideo) {
+                console.log("[LeadDetailModal] Found pending video:", pendingVideo.id);
                 setVideoGen(pendingVideo);
                 setGeneratingVideo(true);
             } else {
@@ -49,7 +53,7 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
                 setGeneratingVideo(false);
             }
         }
-    }, [lead, open]);
+    }, [lead?.id, open]); // Only reset if lead ID or open state changes
 
     // Polling logic for pending video
     useEffect(() => {
@@ -63,12 +67,16 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
 
                     if (error) throw error;
 
+                    console.log("[LeadDetailModal] Polling Status:", data.status);
+
                     if (data.status === 'completed') {
+                        console.log("[LeadDetailModal] Video Ready! Updating UI.");
                         setVideoGen(data);
                         setGeneratingVideo(false);
                         toast.success("¡Vídeo generado con éxito!");
                         if (onLeadUpdated) onLeadUpdated();
-                    } else if (data.status === 'error') {
+                    } else if (data.status === 'error' || data.status === 'failed') {
+                        console.error("[LeadDetailModal] Video Generation Failed:", data);
                         setGeneratingVideo(false);
                         toast.error("Error al generar vídeo");
                     }
@@ -98,6 +106,7 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
 
             if (error) throw error;
 
+            console.log("[LeadDetailModal] Video generation initiated:", data);
             setVideoGen({ id: data.generation_id, status: 'processing' });
             toast.info("Generación de vídeo iniciada...", { description: "Esto puede tardar hasta 1 minuto." });
         } catch (error: any) {

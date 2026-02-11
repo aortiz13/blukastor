@@ -83,6 +83,10 @@ Deno.serve(async (req) => {
                 - The input image must be the reference for identity.
             `;
 
+            console.log("--- SECURE GENERATE SMILE PROMPT ---");
+            console.log(finalPrompt);
+            console.log("------------------------------------");
+
         } else {
             // 2. Fallback to Old Insecure/Simple Flow (if no analysis_id provided)
             finalPrompt = `

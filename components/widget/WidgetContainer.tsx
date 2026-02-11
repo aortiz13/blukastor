@@ -698,18 +698,29 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
 
                                                 {/* DESPUES */}
                                                 <div className="space-y-1 flex flex-col h-full min-h-0">
-                                                    <div className="flex-1 relative aspect-[9/16] md:aspect-auto rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl group">
+                                                    <div
+                                                        className="flex-1 relative aspect-[9/16] md:aspect-auto rounded-xl md:rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl group select-none"
+                                                        onContextMenu={(e) => e.preventDefault()}
+                                                    >
                                                         {generatedImage ? (
                                                             <>
-                                                                <img src={generatedImage} alt="Despues" className="w-full h-full object-cover" />
-                                                                {/* Watermark */}
-                                                                <div className="absolute inset-0 flex items-center justify-center p-4 z-10 pointer-events-none opacity-60">
+                                                                {/* Background Image Representation - Using style to avoid direct src inspection easily */}
+                                                                <div
+                                                                    className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                                                                    style={{ backgroundImage: `url(${generatedImage})` }}
+                                                                    draggable={false}
+                                                                />
+                                                                {/* Watermark Overlay - No pointer-events-none here to intercept right clicks */}
+                                                                <div className="absolute inset-0 flex items-center justify-center p-4 z-10 opacity-60">
                                                                     <img
                                                                         src="https://dentalcorbella.com/wp-content/uploads/2023/07/logo-white-trans2.png"
                                                                         alt="Watermark"
-                                                                        className="w-full opacity-40 drop-shadow-md rotate-[-20deg]"
+                                                                        className="w-full opacity-40 drop-shadow-md rotate-[-20deg] select-none pointer-events-none"
+                                                                        draggable={false}
                                                                     />
                                                                 </div>
+                                                                {/* Invisible protective layer to block "Copy Image" or similar browser features */}
+                                                                <div className="absolute inset-0 z-20 bg-transparent" />
                                                             </>
                                                         ) : (
                                                             <div className="w-full h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-zinc-300" /></div>

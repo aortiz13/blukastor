@@ -27,20 +27,19 @@ export default function LeadsPage() {
             const updatedLeads = data || [];
             setLeads(updatedLeads);
 
-            // Sync selectedLead if it's currently open
-            if (selectedLead) {
-                const refreshedLead = updatedLeads.find((l: any) => l.id === selectedLead.id);
-                if (refreshedLead) {
-                    setSelectedLead(refreshedLead);
-                }
-            }
+            // Sync selectedLead if it's currently open, without causing a dependency loop
+            setSelectedLead((prev: any) => {
+                if (!prev) return null;
+                const refreshedLead = updatedLeads.find((l: any) => l.id === prev.id);
+                return refreshedLead || prev;
+            });
         } catch (err: any) {
             console.error("Leads Fetch Error:", err);
             toast.error("No se pudieron cargar los leads. Revisa la consola.");
         } finally {
             setLoading(false);
         }
-    }, [selectedLead]);
+    }, []); // Empty dependencies to avoid callback recreation
 
     useEffect(() => {
         fetchLeads();

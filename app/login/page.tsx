@@ -26,9 +26,11 @@ export default function LoginPage() {
             if (!session) return;
 
             console.log(`[LoginPage] Session detected (Event: ${event}), handling redirect...`);
-            const hash = window.location.hash;
-            const searchParams = new URLSearchParams(window.location.search);
+            const hash = typeof window !== 'undefined' ? window.location.hash : '';
+            const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
             const nextParam = searchParams.get("next");
+
+            console.log("[LoginPage] Context:", { hash, nextParam, event });
 
             // If we came from an invite/recovery, we want to go specifically to update-password
             const isRecoveryFlow = event === 'PASSWORD_RECOVERY' ||

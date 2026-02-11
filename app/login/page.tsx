@@ -29,14 +29,16 @@ export default function LoginPage() {
             });
 
             if (error) {
+                console.log("[LoginPage] Auth error:", error.message);
                 throw error;
             }
 
+            console.log("[LoginPage] Login successful, redirecting to dashboard...");
             toast.success("¡Bienvenido de vuelta!");
             router.push("/administracion/dashboard");
             router.refresh(); // Refresh to update middleware/session state
         } catch (error: any) {
-            console.error(error);
+            console.error("[LoginPage] Catch block error:", error);
             toast.error(error.message || "Error al iniciar sesión");
         } finally {
             setLoading(false);

@@ -76,6 +76,8 @@ export async function middleware(request: NextRequest) {
 
     // Role-based access control for Basic users
     if (request.nextUrl.pathname.startsWith("/administracion") && user) {
+        console.log("[Middleware] Verifying role for user:", user.email);
+
         // Quick check for sensitive routes like /administracion/settings
         if (request.nextUrl.pathname.startsWith("/administracion/settings")) {
             const { data: roleData } = await supabase
@@ -84,7 +86,10 @@ export async function middleware(request: NextRequest) {
                 .eq('user_id', user.id)
                 .single();
 
+            console.log("[Middleware] Role found for settings access:", roleData?.role);
+
             if (roleData?.role !== 'admin') {
+                console.log("[Middleware] Redirecting non-admin away from settings");
                 // Redirect Basic users away from settings
                 const url = request.nextUrl.clone();
                 url.pathname = "/administracion/leads";

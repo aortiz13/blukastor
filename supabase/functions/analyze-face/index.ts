@@ -83,11 +83,19 @@ Deno.serve(async (req) => {
                 - **RULE:** Do NOT replace valid biological structure if it's healthy. The goal is INTEGRATION.
                 - **Gap Assessment:** Specifically target edentulous spaces (missing teeth) for generation.
 
-            2.  **Color Matching & VITA Shade (Natural Integration):**
-                - **Sample:** Detect the average color of the user's *existing* teeth (even if lower arch is visible).
-                - **RULE:** The restoration MUST match the natural chroma/hue of the patient's existing biology. 
-                - **Selection:** If the user has teeth, pick a VITA shade that represents a realistic improvement (e.g., if natural is A3, go to A2 or A1. Do NOT jump to OM1/Bleach).
-                - **Skin Tone Check:** Ensure the shade respects the Fitzpatrick skin scale (Dark skin -> High Value/Contrast is risky, stick to natural A1/B1; Light skin -> Can handle higher value).
+            2.  **Advanced VITA Shade Analysis (Full Classical Scale):**
+                - **CONTEXT:** The user wants a NATURAL restorative look, not "Hollywood White".
+                - **VITA CLASSICAL GUIDE REFERENCE:**
+                    - **Group A (Reddish-Brownish):** A1, A2, A3, A3.5, A4 (The most common natural shades).
+                    - **Group B (Reddish-Yellowish):** B1, B2, B3, B4.
+                    - **Group C (Greyish):** C1, C2, C3, C4.
+                    - **Group D (Reddish-Grey):** D2, D3, D4.
+                    - **Bleach (Forbidden unless naturally bright):** OM1, OM2, OM3, BL1-4.
+                - **ALGORITHM:**
+                    1. **Detect** the current shade of existing teeth (e.g., "A3.5").
+                    2. **Select** a target shade that is **1 or 2 steps brighter** (Value) but maintains the same **Hue Family** (e.g., "A3.5" -> "A3" or "A2"). 
+                    3. **PROHIBITION:** Do NOT jump from A3.5 to OM1. Do NOT produce opaque "toilet bowl white".
+                    4. **Output:** "Detected: [Shade], Target: [Shade]".
 
             3.  **Dental Proportions (Golden Proportion & W/L Ratio):**
                 - **Central Incisors:** Must have a Width-to-Length ratio of **75-80%**. 
@@ -130,10 +138,10 @@ Deno.serve(async (req) => {
             - Action: "Smiling naturally."
             - Location: "Original background."
             - Style: "Macro Dental Photography, 8K, Twin-Flash Lighting."
-            - Editing_Instructions: "Restoration Strategy: INTEGATION. \n1. MISSING TEETH: Generate photorealistic implants/pontics in spaces [List Missing Teeth]. \n2. EXISTING TEETH: Refine shape but PRESERVE natural position if aligned. \n3. COLOR: Use VITA [Insert Shade] (Matched to existing enamel + 1 shade brightness). \n4. GINGIVA: Restore pink esthetics only where missing."
+            - Editing_Instructions: "Restoration Strategy: INTEGATION. \n1. VITA SHADE: Apply [Target Shade]. \n2. EXISTING TEETH: Conserve healthy structure. \n3. MISSING UNITS: Generate photorealistic implants in [Target Shade]. \n4. GINGIVA: Restore pink esthetics only where missing."
             - Refining_Details: "Texture must match the user's natural enamel (perikymata, translucency). NO OPAQUE WHITE. The goal is invisible restoration."
             - Reference_Instructions: "Maintain facial identity strictly. Detect and match the user's natural tooth shade."
-            - Clinical_Justification: "Detected natural shade [Shade]. Preserved existing dentition structure. Restored missing units in harmony with facial midline."
+            - Clinical_Justification: "Detected natural shade [Detected Shade]. Applied [Target Shade] for natural brightness improvement (Max 2 steps)."
 
             2. lifestyle_social:
             - Subject: "The user in a high-end social context."
@@ -149,6 +157,9 @@ Deno.serve(async (req) => {
             `;
             }
 
+            console.log("--- ANALYZE FACE PROMPT DEBUG ---");
+            console.log(prompt);
+            console.log("--------------------------------");
             console.log("Calling Gemini API with endpoint:", endpoint);
             // console.log("Payload sent:", JSON.stringify(body, null, 2)); // Uncomment for full payload debug if needed
 

@@ -72,7 +72,8 @@ export function LeadDetailModal({ lead, open, onOpenChange, onLeadUpdated }: Lea
     // Polling logic for pending video
     useEffect(() => {
         let interval: any;
-        const isPending = videoGen?.status === 'pending' ||
+        const isPending = videoGen?.status === 'initializing' ||
+            videoGen?.status === 'pending' ||
             videoGen?.status === 'processing' ||
             videoGen?.status === 'processing_video' ||
             videoGen?.status === 'processing_video_veo';

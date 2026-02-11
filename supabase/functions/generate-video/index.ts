@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
         // STEP 2: GENERATE VIDEO (Veo)
         console.log("Starting VEO Generation with Scene Image...");
 
-        const baseInstructions = "- Subject: \"The person from the input image.\"\n- Composition: \"9:16 Vertical Portrait. FIXED CAMERA. NO ROTATION.\"\n- IMPORTANT: \"The subject is smiling or laughing. The smile must be prominent, frozen and STABLE. Lips are locked in a fixed smile. ABSOLUTELY NO MOUTH MOVEMENT. The subject must NOT move their lips to form words, mumble, or speak. Mouth must stay partially open in a static, glowing smile. Maintain identical dental structure and face shape throughout.\"";
+        const baseInstructions = "- Subject: \"The person from the input image.\"\n- Composition: \"9:16 Vertical Portrait. FIXED CAMERA. NO ROTATION.\"\n- IMPORTANT: \"The subject has a warm, natural expression that evolves gently. The smile should look organic, with natural movements of the lips and cheeks. The subject can transition from a gentle closed-mouth smile to a joyful open-mouth smile. ABSOLUTELY NO SPEECH or talking. The mouth must NOT move to form words, mumble, or lip-sync. Movement must be purely expressive and organic, maintaining identical dental structure and facial identity throughout.\"";
 
         const scenarioPrompt = baseInstructions + "\n" + scenarioDetails + "\n- Style: \"Cinematic, Photorealistic, 4k High Quality.\"\n- NOTE: The video must start INSTANTLY in the target location. Do NOT fade in from the input image background.";
 
@@ -210,7 +210,7 @@ Deno.serve(async (req) => {
         console.log(scenarioPrompt);
         console.log("------------------------------------");
 
-        const negativePrompt = "talking, speech, lip syncing, mouth opening and closing, articulating words, conversing, dialog, whispering, chewing, mumbling, jaw movement, chin movement, changing expression, morphing teeth, morphing face, closing mouth, distortion, glitchy dental structure, low quality, flashing pixels, jerky head movement";
+        const negativePrompt = "talking, speech, lip syncing, articulating words, conversing, dialog, whispering, chewing, mumbling, aggressive jaw movement, speaking, uttering, morphing teeth, morphing face, distortion, glitchy dental structure, low quality, flashing pixels, jerky head movement";
 
         const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning?key=" + apiKey;
 

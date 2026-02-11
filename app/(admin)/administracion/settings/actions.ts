@@ -5,6 +5,19 @@ import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 
 export async function inviteUser(formData: FormData) {
+    // 0. Check critical configuration early
+    const resendApiKey = process.env.RESEND_API_KEY;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+    if (!supabaseUrl || !serviceRoleKey || !resendApiKey) {
+        let missing = [];
+        if (!supabaseUrl) missing.push("NEXT_PUBLIC_SUPABASE_URL");
+        if (!serviceRoleKey) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+        if (!resendApiKey) missing.push("RESEND_API_KEY");
+        return { error: `Configuración incompleta en .env.local: Falta ${missing.join(', ')}` };
+    }
+
     const supabase = await createClient()
 
     // 1. Verify current user is admin
@@ -85,11 +98,6 @@ export async function inviteUser(formData: FormData) {
     const verifyLink = inviteData.properties.action_link;
 
     // 5. Send email using Resend
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) {
-        return { error: 'Error de configuración: RESEND_API_KEY no encontrada' }
-    }
-
     try {
         const { Resend } = await import('resend');
         const resend = new Resend(resendApiKey);
@@ -185,10 +193,16 @@ import { cookies } from 'next/headers'
 
 async function createAdminClient() {
     const cookieStore = await cookies()
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !serviceRoleKey) {
+        throw new Error('Configuración incompleta: Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en el servidor.')
+    }
 
     return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        supabaseUrl,
+        serviceRoleKey,
         {
             cookies: {
                 getAll() {

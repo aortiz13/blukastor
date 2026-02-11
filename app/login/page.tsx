@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { login } from "./actions";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -41,22 +42,22 @@ export default function LoginPage() {
         e.preventDefault();
         setLoading(true);
 
-        try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
+        const formData = new FormData();
+        formData.append("email", email);
+        formData.append("password", password);
 
-            if (error) {
-                console.log("[LoginPage] Auth error:", error.message);
+        try {
+            const result = await login(formData);
+
+            if (result?.error) {
+                toast.error(result.error);
+            }
+            // If success, the server action redirects automatically
+        } catch (error: any) {
+            // Next.js redirect throws an error, we should catch it if we want to handle other errors
+            if (error.message === 'NEXT_REDIRECT') {
                 throw error;
             }
-
-            console.log("[LoginPage] Login successful, redirecting to dashboard...");
-            toast.success("¡Bienvenido de vuelta!");
-            router.push("/administracion/dashboard");
-            router.refresh(); // Refresh to update middleware/session state
-        } catch (error: any) {
             console.error("[LoginPage] Catch block error:", error);
             toast.error(error.message || "Error al iniciar sesión");
         } finally {

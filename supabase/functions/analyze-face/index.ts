@@ -140,6 +140,9 @@ Deno.serve(async (req) => {
             `;
             }
 
+            console.log("Calling Gemini API with endpoint:", endpoint);
+            // console.log("Payload sent:", JSON.stringify(body, null, 2)); // Uncomment for full payload debug if needed
+
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
@@ -158,9 +161,12 @@ Deno.serve(async (req) => {
                 })
             })
 
+            console.log("Gemini Response Status:", response.status);
+
             if (!response.ok) {
                 const errText = await response.text()
-                throw new Error(`Gemini API Error: ${errText}`)
+                console.error("Gemini API Error Body:", errText);
+                throw new Error(`Gemini API Error (${response.status}): ${errText}`)
             }
 
             const result = await response.json()

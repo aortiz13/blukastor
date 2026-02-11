@@ -113,6 +113,8 @@ Deno.serve(async (req) => {
         // Use the model requested. If it fails, we fall back to mock.
         const modelEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`
 
+        console.log("Calling Gemini API (Smile Gen) with endpoint:", modelEndpoint);
+
         const response = await fetch(modelEndpoint, {
             method: 'POST',
             headers: {
@@ -128,10 +130,12 @@ Deno.serve(async (req) => {
             })
         })
 
+        console.log("Gemini Response Status:", response.status);
+
         if (!response.ok) {
             const err = await response.text();
-            console.error("Gemini API Error:", err);
-            throw new Error(`Gemini API Failed: ${err}`)
+            console.error("Gemini API Error Body:", err);
+            throw new Error(`Gemini API Failed (${response.status}): ${err}`)
         }
 
         const result = await response.json();

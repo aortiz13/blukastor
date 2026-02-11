@@ -46,8 +46,8 @@ Deno.serve(async (req) => {
                 throw new Error("GOOGLE_API_KEY is not configured")
             }
 
-            // Use Gemini 1.5 Flash for speed and analysis (Stable)
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
+            // Use Gemini 2.0 Flash (Verified Working)
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
 
             let prompt = "";
 

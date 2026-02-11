@@ -16,6 +16,7 @@ export const useFaceDetection = (
     const [currentJawOpenScore, setCurrentJawOpenScore] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [currentAlignmentState, setCurrentAlignmentState] = useState({ isCentered: false, isCorrectSize: false });
 
     const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
     const requestRef = useRef<number>(0);
@@ -136,12 +137,23 @@ export const useFaceDetection = (
             const rightCheek = landmarks[454];
 
             const faceWidth = Math.abs(rightCheek.x - leftCheek.x);
+
+            // Relaxed thresholds for better desktop compatibility (especially landscape 16:9 cams)
             const isCentered =
-                noseTip.x > 0.4 && noseTip.x < 0.6 && noseTip.y > 0.3 && noseTip.y < 0.7;
-            const isCorrectSize = faceWidth > 0.25 && faceWidth < 0.55;
+                noseTip.x > 0.35 && noseTip.x < 0.65 && noseTip.y > 0.2 && noseTip.y < 0.8;
+
+            // On desktop landscape, a face filling the guide oval is around 0.20-0.25 of frame width.
+            // Setting min to 0.10 to be very permissive.
+            const isCorrectSize = faceWidth > 0.10 && faceWidth < 0.7;
+
+            // Update state with separate flags for more granular feedback if needed
+            // (Internal state update if you decide to add them, but for now we'll just use the logic)
 
             // Face must be Centered + Correct Size + Smiling + Good Light to be "Aligned"
             setIsAligned(isCentered && isCorrectSize && isSmilingDetected && !isLowLight);
+
+            // We'll also update the hook to return these specifically for the UI
+            setCurrentAlignmentState({ isCentered, isCorrectSize });
         } else {
             setFaceDetected(false);
             setMultipleFacesDetected(false);
@@ -168,6 +180,8 @@ export const useFaceDetection = (
         smileScore: currentSmileScore,
         jawOpenScore: currentJawOpenScore,
         isLoading,
-        error
+        error,
+        isCentered: currentAlignmentState.isCentered,
+        isCorrectSize: currentAlignmentState.isCorrectSize,
     };
 };

@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
         // Let's stick to 2.0-Flash for the *text description* part if that is what this does.
         // BUT the user says "Para diseñar la sonrisa".
         // Use the model requested. If it fails, we fall back to mock.
-        const modelEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
+        const modelEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${apiKey}`
 
         console.log("Calling Gemini API (Smile Gen) with endpoint:", modelEndpoint);
 

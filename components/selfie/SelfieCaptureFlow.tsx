@@ -38,7 +38,9 @@ export function SelfieCaptureFlow({ onCapture, onCancel }: SelfieCaptureFlowProp
         smileScore,
         jawOpenScore,
         isLoading,
-        error
+        error,
+        isCentered,
+        isCorrectSize,
     } = useFaceDetection(videoRef);
 
     const capture = useCallback(() => {
@@ -128,6 +130,8 @@ export function SelfieCaptureFlow({ onCapture, onCancel }: SelfieCaptureFlowProp
                                 isLowLight={isLowLight}
                                 smileScore={smileScore}
                                 jawOpenScore={jawOpenScore}
+                                isCentered={isCentered}
+                                isCorrectSize={isCorrectSize}
                             />
                         )}
                     </div>

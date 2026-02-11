@@ -10,6 +10,8 @@ interface FaceOverlayProps {
     isLowLight: boolean;
     smileScore: number;
     jawOpenScore: number;
+    isCentered: boolean;
+    isCorrectSize: boolean;
 }
 
 export const FaceOverlay: React.FC<FaceOverlayProps> = ({
@@ -20,6 +22,8 @@ export const FaceOverlay: React.FC<FaceOverlayProps> = ({
     isLowLight,
     smileScore,
     jawOpenScore,
+    isCentered,
+    isCorrectSize,
 }) => {
     // Determine stroke color and feedback text based on detailed state
     let strokeColor = "#ef4444"; // Default Red
@@ -50,7 +54,13 @@ export const FaceOverlay: React.FC<FaceOverlayProps> = ({
         } else {
             // Smiling but not aligned (position/size)
             strokeColor = "#ef4444";
-            feedbackText = "Ajusta tu posición";
+            if (!isCentered) {
+                feedbackText = "Centra tu cara";
+            } else if (!isCorrectSize) {
+                feedbackText = "Acércate un poco más";
+            } else {
+                feedbackText = "Ajusta tu posición";
+            }
         }
     } else if (isAligned) {
         strokeColor = "rgba(34, 197, 94, 0.8)"; // Subtler Green

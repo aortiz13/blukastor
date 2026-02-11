@@ -52,6 +52,7 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
     const [image, setImage] = useState<File | null>(null);
     // State for generated image URL
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+    const [analysisId, setAnalysisId] = useState<string | null>(null); // New secure ID state
 
     // State for tracking user intent (image vs video/consultation)
     const [leadIntent, setLeadIntent] = useState<'image' | 'video'>('image');
@@ -272,14 +273,23 @@ export default function WidgetContainer({ initialStep }: { initialStep?: Step } 
             const naturalVariation = analysisResult.variations.find((v: any) => v.type === VariationType.ORIGINAL_BG);
             if (!naturalVariation) throw new Error("No se encontró plan de restauración natural.");
 
-            const prompt = `
-                Perform a ${naturalVariation.prompt_data.Composition} of ${naturalVariation.prompt_data.Subject} ${naturalVariation.prompt_data.Action} in a ${naturalVariation.prompt_data.Location}.
-                Style: ${naturalVariation.prompt_data.Style}. 
-                IMPORTANT INSTRUCTIONS: ${naturalVariation.prompt_data.Editing_Instructions}.
-                ${naturalVariation.prompt_data.Refining_Details || ''}
-            `;
+            // SECURE FLOW: Save ID if available
+            if (analysisResult.analysis_id) {
+                setAnalysisId(analysisResult.analysis_id);
+            }
 
-            const genResult = await generateSmileVariation(base64, prompt, "9:16", currentUserId);
+            // Fallback prompt text for UI/Legacy (Backend will ignore this if analysis_id is present)
+            const fallbackPrompt = naturalVariation.prompt_data.Subject || "Smile Design";
+
+            // Pass analysis_id and variation type to use server-side prompt construction
+            const genResult = await generateSmileVariation(
+                base64,
+                fallbackPrompt,
+                "9:16",
+                currentUserId,
+                analysisResult.analysis_id, // New param
+                VariationType.ORIGINAL_BG   // New param
+            );
 
             if (!genResult.success || !genResult.data) {
                 throw new Error(genResult.error || "Fallo en la generación de sonrisa");

@@ -31,6 +31,7 @@ export interface Variation {
 }
 
 export interface AnalysisResponse {
+    analysis_id?: string;
     variations: Variation[];
 }
 

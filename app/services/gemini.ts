@@ -241,7 +241,9 @@ export const generateSmileVariation = async (
     inputImageBase64: string,
     variationPrompt: string,
     aspectRatio: "1:1" | "3:4" | "4:3" | "9:16" | "16:9" = "1:1",
-    userId: string = "anon"
+    userId: string = "anon",
+    analysisId?: string, // NEW: Secure ID
+    variationType?: string // NEW: To select the variation from DB
 ): Promise<{ success: boolean; data?: string; error?: string }> => {
     console.log("[Gemini] generateSmileVariation STARTED (Edge Function Delegate)");
 
@@ -264,8 +266,10 @@ export const generateSmileVariation = async (
             body: JSON.stringify({
                 image_base64: data,
                 prompt_options: {
-                    variationPrompt,
-                    aspectRatio
+                    variationPrompt, // Fallback / UI Text
+                    aspectRatio,
+                    analysis_id: analysisId, // Pass the ID
+                    type: variationType // Pass the type (e.g. 'original_bg')
                 }
             })
         });

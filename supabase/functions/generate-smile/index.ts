@@ -31,15 +31,68 @@ Deno.serve(async (req) => {
             base64Image = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
         }
 
-        // Construct Prompt
-        const finalPrompt = `
-      Subject: ${prompt_options?.variationPrompt || "Portrait of the user with a perfect, natural smile."}
-      Important: Maintain the EXACT framing, zoom, angle, and background of the original image. Do NOT zoom in or out. Do NOT crop.
-      Action: Smiling confidently with a perfect, natural smile.
-      Style: Photorealistic, cinematic lighting, 8k resolution, spa dental aesthetic being extremely high quality.
-      Target Details: ${JSON.stringify(prompt_options || {})}
-      Editing Input: Replace only the teeth with high quality veneers, keeping the face structure, skin texture, and background exactly the same.
-    `
+        // --- PROMPT ENGINEERING STRATEGY ---
+        let finalPrompt = "";
+
+        // 1. Check for Secure Analysis ID (Proposed Optimized Flow)
+        if (prompt_options?.analysis_id) {
+            console.log(`Fetching secure prompt from DB: ${prompt_options.analysis_id}`);
+
+            const { data: analysisRecord, error: dbError } = await supabase
+                .from('analysis_results')
+                .select('result')
+                .eq('id', prompt_options.analysis_id)
+                .single();
+
+            if (dbError || !analysisRecord) {
+                throw new Error("Security Error: Invalid or expired Analysis ID.");
+            }
+
+            // Find the requested variation (e.g. "original_bg")
+            // The client sends `variationPrompt` which currently might be just the 'Subject' string or the type.
+            // We need to know WHICH variation type validation to pick.
+            // Let's assume `prompt_options.variation_type` is passed, or we infer it.
+            // If `variationPrompt` contains the type name (e.g. "original_bg")...
+            // Or we check `prompt_options.type`.
+
+            // Fallback: If the client passes the "Subject" text that matches one of the variations...
+            // Ideally, client should send `type: 'original_bg'`.
+            // Let's assume `prompt_options.type` exists (we will add it to client).
+            // If not, default to 'original_bg'.
+            const targetType = prompt_options.type || 'original_bg';
+
+            const variation = analysisRecord.result.variations.find((v: any) => v.type === targetType);
+
+            if (!variation) {
+                console.warn(`Variation ${targetType} not found in analysis. Using first available.`); // Fallback
+            }
+            const promptData = variation ? variation.prompt_data : analysisRecord.result.variations[0].prompt_data;
+
+            // --- CONSTRUCT FULL DEMO-QUALITY PROMPT ---
+            // Combining all the rich instructions into one block.
+            finalPrompt = `
+                Perform a ${promptData.Composition} of ${promptData.Subject} ${promptData.Action} in a ${promptData.Location}.
+                Style: ${promptData.Style}. 
+                IMPORTANT EDITING INSTRUCTIONS: ${promptData.Editing_Instructions}
+                ${promptData.Refining_Details || ''}
+                ${promptData.Reference_Instructions || ''}
+                
+                TECHNICAL CONSTRAINTS:
+                - Maintain the EXACT framing, zoom, angle, and background of the original image. 
+                - Do NOT zoom in or out. Do NOT crop the head. 
+                - The input image must be the reference for identity.
+            `;
+
+        } else {
+            // 2. Fallback to Old Insecure/Simple Flow (if no analysis_id provided)
+            finalPrompt = `
+              Subject: ${prompt_options?.variationPrompt || "Portrait of the user with a perfect, natural smile."}
+              Important: Maintain the EXACT framing, zoom, angle, and background of the original image. Do NOT zoom in or out. Do NOT crop.
+              Action: Smiling confidently with a perfect, natural smile.
+              Style: Photorealistic, cinematic lighting, 8k resolution, dental aesthetic high quality.
+              Editing Input: Replace only the teeth with high quality veneers, keeping the face structure, skin texture, and background exactly the same.
+            `;
+        }
 
         // Call Imaging API (Gemini/Imagen via Google AI Studio)
         const apiKey = Deno.env.get('GOOGLE_API_KEY')

@@ -171,7 +171,71 @@ Deno.serve(async (req) => {
                 throw new Error("Empty response from AI")
             }
 
-            return new Response(analysisText, {
+            // Parse the JSON to save it structured
+            let analysisJson;
+            try {
+                // Remove markdown code blocks if present
+                const cleanText = analysisText.replace(/```json/g, '').replace(/```/g, '').trim();
+                analysisJson = JSON.parse(cleanText);
+            } catch (e) {
+                console.error("Failed to parse Gemini response as JSON:", analysisText);
+                // Fallback: Save as raw text wrapped in object if parsing fails, but for this specific flow we expect JSON.
+                // If it fails, we might just return the text as before, but we can't save it effectively or secure it.
+                // We'll throw because the app expects JSON.
+                throw new Error("Invalid JSON from AI Analysis");
+            }
+
+            // --- SAVE TO DB (Server-Side Caching) ---
+            const { data: insertedData, error: dbError } = await supabase
+                .from('analysis_results')
+                .insert({
+                    result: analysisJson,
+                    // If we had a lead_id, we would save it here. For now it's anonymous/session-based until lead is created?
+                    // The prompt doesn't send lead_id yet. It's fine for now.
+                })
+                .select('id')
+                .single();
+
+            if (dbError) {
+                console.error("Failed to save analysis to DB:", dbError);
+                // We can continue but we won't have an ID. 
+                // However, the security requirement implies we MUST rely on the ID.
+                throw new Error("Database Error: Failed to secure analysis session.");
+            }
+
+            const analysisId = insertedData.id;
+
+            // --- SANITIZE RESPONSE ---
+            // Create a safe version for the client (Removing the "Secret Sauce" prompts)
+            const safeAnalysis = {
+                analysis_id: analysisId, // Client needs this for the next step
+                variations: analysisJson.variations.map((v: any) => ({
+                    type: v.type,
+                    // We keep the descriptive fields for the UI (if used) but REMOVE the instructions
+                    prompt_data: {
+                        Subject: v.prompt_data.Subject, // Maybe keep Subject if needed for UI title? Or remove if too revealing?
+                        // "Subject" in the prompt is actually the full image description. It might contain "scientific aligned smile...".
+                        // User wanted to hide "instructions". 
+                        // Let's hide everything except what's needed for the UI cards.
+                        // Does the UI display these text fields?
+                        // Looking at the code, WidgetContainer might use them.
+                        // Checking types... usually UI just shows "Natural", "Social", "Outdoor".
+                        // Let's assume we only need the keys or simple labels.
+                        // But to be safe, let's include non-instruction fields if they exist, or just null them.
+
+                        // Masking critical proprietary instructions:
+                        Editing_Instructions: null,
+                        Refining_Details: null,
+                        Reference_Instructions: null,
+
+                        // Keep benign fields if used by UI for preview text
+                        Style: v.prompt_data.Style,
+                        Location: v.prompt_data.Location
+                    }
+                }))
+            };
+
+            return new Response(JSON.stringify(safeAnalysis), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             })
 

@@ -50,7 +50,7 @@ export default function LoginPage() {
         };
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            console.log("[LoginPage] Auth state change:", event);
+            console.log("[LoginPage] Auth state change event:", event, !!session);
             if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED')) {
                 handleRedirect(session, event);
             }
@@ -58,6 +58,7 @@ export default function LoginPage() {
 
         // Also check immediately on mount
         supabase.auth.getSession().then(({ data: { session } }) => {
+            console.log("[LoginPage] Initial session check:", !!session);
             if (session) handleRedirect(session, 'INITIAL_SESSION');
         });
 

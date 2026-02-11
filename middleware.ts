@@ -52,6 +52,7 @@ export async function middleware(request: NextRequest) {
     // Protected Routes Logic
     // If accessing /administracion/* and not authenticated, redirect to /login
     if (request.nextUrl.pathname.startsWith("/administracion") && !user) {
+        console.log("[Middleware] Unauthenticated access to protected route:", request.nextUrl.pathname, "Redirecting to /login");
         const url = request.nextUrl.clone();
         url.pathname = "/login";
         return NextResponse.redirect(url);

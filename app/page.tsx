@@ -58,11 +58,6 @@ export default function Home() {
             <Sparkles className="w-5 h-5 text-teal-500" strokeWidth={1} /> Smile Forward
           </h1>
           <div className="flex items-center gap-4">
-            <Link href="/administracion/dashboard" className="hidden md:block">
-              <Button variant="ghost" size="sm" className="rounded-full font-sans tracking-wide uppercase text-xs text-white/80 hover:text-white hover:bg-white/10 gap-2">
-                <LayoutDashboard className="w-4 h-4" strokeWidth={1.5} /> {t.admin}
-              </Button>
-            </Link>
             <ModeToggle />
           </div>
         </div>

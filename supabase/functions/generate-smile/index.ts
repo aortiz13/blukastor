@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
         if (!apiKey) throw new Error("GOOGLE_API_KEY missing")
 
         // User requested "gemini-3-pro-image-preview" for smile design
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
         // NOTE: Keeping 2.0-flash for DESCRIPTION generation as 'generate-smile' currently generates text description of improvements,
         // or a mock image. If the INTENT is to generate an actual image via 3-pro, the endpoint/body would need to change to an image generation endpoint
         // which might not be fully supported via 'generateContent' for all models or requires 'imagen'.
@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
         // Let's stick to 2.0-Flash for the *text description* part if that is what this does.
         // BUT the user says "Para diseñar la sonrisa".
         // Use the model requested. If it fails, we fall back to mock.
-        const modelEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${apiKey}`
+        const modelEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`
 
         const response = await fetch(modelEndpoint, {
             method: 'POST',

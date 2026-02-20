@@ -1,118 +1,85 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from 'next/server'
+import { updateSession } from './lib/supabase/middleware'
 
-export async function middleware(request: NextRequest) {
-    let response = NextResponse.next({
-        request: {
-            headers: request.headers,
-        },
-    });
+export default async function middleware(request: NextRequest) {
+    // 1. Update Supabase Auth Session
+    const supabaseResponse = await updateSession(request)
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+    // 2. Path & Hostname Prep
+    const url = request.nextUrl
+    const path = url.pathname
+    const searchParams = url.searchParams.toString()
+    const fullPath = `${path}${searchParams.length > 0 ? `?${searchParams}` : ''}`
 
-    if (!supabaseUrl || !supabaseKey) {
-        console.error("Middleware Supabase Init Failed: Missing URL or Key");
-        console.error("URL Found:", !!supabaseUrl);
-        console.error("Key Found:", !!supabaseKey);
-        // We might want to allow the request to proceed if it's not a protected route,
-        // or just crash/error out. For now, let's let createServerClient throw its own error
-        // or return a dummy client that will fail on use, but best to throw here if critical.
-        // However, existing behavior was to crash inside createServerClient.
-        // Let's proceed but likely it will fail.
+    // Ignore internal nextjs paths and static files
+    // Refined to catch common file extensions instead of any dot
+    const isStaticFile = /\.(png|jpg|jpeg|gif|webp|svg|ico|css|js|mjs|txt|xml|json)$/.test(path)
+    if (path.startsWith('/_next') || isStaticFile || path.startsWith('/api') || path.startsWith('/auth') || path.startsWith('/admin')) {
+        return supabaseResponse
     }
 
-    const supabase = createServerClient(
-        supabaseUrl!,
-        supabaseKey!,
-        {
-            cookies: {
-                getAll() {
-                    return request.cookies.getAll();
-                },
-                setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value, options }) =>
-                        request.cookies.set(name, value)
-                    );
-                    response = NextResponse.next({
-                        request,
-                    });
-                    cookiesToSet.forEach(({ name, value, options }) =>
-                        response.cookies.set(name, value, options)
-                    );
-                },
-            },
+    let hostname = request.headers.get('host') || ''
+    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000'
+
+    // Local Development Normalization
+    if (process.env.NODE_ENV === 'development') {
+        // If it's blukastor.localhost:3000 -> hostname becomes blukastor
+        if (hostname.endsWith('.localhost:3000')) {
+            hostname = hostname.replace('.localhost:3000', '')
+        } else if (hostname === 'localhost:3000' || hostname === '127.0.0.1:3000') {
+            hostname = rootDomain.split(':')[0] // Use first part of rootDomain
         }
-    );
-
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-
-    // Protected Routes Logic
-    // If accessing /administracion/* and not authenticated, redirect to /login
-    if (request.nextUrl.pathname.startsWith("/administracion") && !user) {
-        console.log("[Middleware] Unauthenticated access to protected route:", request.nextUrl.pathname, "Redirecting to /login");
-        const url = request.nextUrl.clone();
-        url.pathname = "/login";
-        return NextResponse.redirect(url);
+    } else {
+        // Production logic
+        if (hostname.endsWith(`.${rootDomain}`)) {
+            hostname = hostname.replace(`.${rootDomain}`, '')
+        }
     }
 
-    // Auth Routes Logic
-    // If accessing /login or /signup and ALREADY authenticated, redirect to /administracion/dashboard
-    // Also block /signup for non-admins (public signup disabled)
-    if (request.nextUrl.pathname.startsWith("/signup")) {
-        // Check if there is an invite code or similar if we wanted that, but user asked to DISABLE it.
-        // "no se permita registrar". So we redirect /signup to /login.
-        const url = request.nextUrl.clone();
-        url.pathname = "/login";
-        return NextResponse.redirect(url);
+    // 3. Prevent Infinite Loops
+    if (path.startsWith(`/${hostname}`)) {
+        return supabaseResponse
     }
 
-    if (request.nextUrl.pathname.startsWith("/login") && user) {
-        console.log("[Middleware] Authenticated user on /login, redirecting to target...");
-        const next = request.nextUrl.searchParams.get("next") || "/administracion/dashboard";
-        const url = request.nextUrl.clone();
-        url.pathname = next;
-        return NextResponse.redirect(url);
+    let rewriteUrl: URL | null = null;
+
+    // A. Root/Main Domain Logic (Landing Page vs Admin)
+    const normalizedRoot = rootDomain.split(':')[0]
+    if (hostname === rootDomain || hostname === normalizedRoot) {
+        // If they visit /dashboard or /login on the root domain, let them pass through
+        if (path === '/dashboard' || path === '/login') {
+            return supabaseResponse
+        }
+        return supabaseResponse
     }
 
-    // Role-based access control for Basic users
-    if (request.nextUrl.pathname.startsWith("/administracion") && user) {
-        console.log("[Middleware] Verifying role for user:", user.email);
+    // B. Admin/App Subdomain Logic (admin.root.com or app.root.com)
+    if (hostname === `admin.${rootDomain}` || hostname === `app.${rootDomain}` || hostname === `admin.${normalizedRoot}` || hostname === `app.${normalizedRoot}`) {
+        rewriteUrl = new URL(`${path === '/' ? '/dashboard' : path}`, request.url)
+    }
+    // C. Tenant Logic (anything else)
+    else {
+        // Rewrite to the (portal) group -> app/[domain]/...
+        rewriteUrl = new URL(`/${hostname}${fullPath}`, request.url)
+    }
 
-        // Quick check for sensitive routes like /administracion/settings
-        if (request.nextUrl.pathname.startsWith("/administracion/settings")) {
-            const { data: roleData } = await supabase
-                .from('user_roles')
-                .select('role')
-                .eq('user_id', user.id)
-                .single();
-
-            console.log("[Middleware] Role found for settings access:", roleData?.role);
-
-            if (roleData?.role !== 'admin') {
-                console.log("[Middleware] Redirecting non-admin away from settings");
-                // Redirect Basic users away from settings
-                const url = request.nextUrl.clone();
-                url.pathname = "/administracion/leads";
-                return NextResponse.redirect(url);
+    if (rewriteUrl) {
+        const rewriteResponse = NextResponse.rewrite(rewriteUrl, {
+            request: {
+                headers: request.headers,
             }
-        }
+        })
+        supabaseResponse.headers.forEach((value, key) => {
+            rewriteResponse.headers.set(key, value)
+        })
+        return rewriteResponse
     }
 
-    return response;
+    return supabaseResponse
 }
 
 export const config = {
     matcher: [
-        /*
-         * Match all request paths except for the ones starting with:
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         * Feel free to modify this pattern to include more paths.
-         */
-        "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js|mjs|json)$).*)',
     ],
-};
+}

@@ -1,14 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
-  output: "standalone",
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '10mb',
+    /* config options here */
+    reactCompiler: true,
+    experimental: {
+        serverActions: {
+            allowedOrigins: ["blukastor.brandboost-ai.com.localhost:3000", "localhost:3000"],
+        },
     },
-  },
+    // @ts-ignore - Turbopack root override to fix workspace root inference issue
+    turbopack: {
+        root: __dirname,
+        resolveAlias: {
+            "shadcn": "./node_modules/shadcn",
+        },
+    },
 };
 
 export default nextConfig;

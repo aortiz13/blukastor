@@ -31,9 +31,12 @@ export default async function middleware(request: NextRequest) {
         }
     } else {
         // Production logic
-        if (hostname.endsWith(`.${rootDomain}`)) {
-            hostname = hostname.replace(`.${rootDomain}`, '')
-        }
+        // We do NOT want to strip the root domain from `hostname` quite yet 
+        // because the Tenant Logic (app/[domain]) expects the full custom domain (like `admin.autoflowai.io`) 
+        // OR the subdomain. Our database uses the full domain. 
+        // The Vercel platforms starter usually just leaves `hostname` intact for domains 
+        // and only strips for subdomains IF the database stores subdomains. 
+        // Since Blukastor DB stores `domain` as `empresa.autoflowai.io` we should leave hostname intact.
     }
 
     // 3. Prevent Infinite Loops

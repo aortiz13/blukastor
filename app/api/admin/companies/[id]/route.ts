@@ -32,6 +32,7 @@ export async function PATCH(
         // Only allow specific fields to be updated
         const allowedFields = [
             'name',
+            'domain',
             'company_kind',
             'contact_email',
             'contact_phone',

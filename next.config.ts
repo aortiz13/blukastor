@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
             allowedOrigins: ["blukastor.brandboost-ai.com.localhost:3000", "localhost:3000"],
         },
     },
+    output: 'standalone',
     // @ts-ignore - Turbopack root override to fix workspace root inference issue
     turbopack: {
         root: __dirname,

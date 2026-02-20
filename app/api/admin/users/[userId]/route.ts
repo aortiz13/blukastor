@@ -78,7 +78,7 @@ export async function PATCH(
 
         // Update admin role
         const { data: updatedAdmin, error } = await supabase
-            .from('admins')
+            .from('admin_profiles')
             .update({ role })
             .eq('auth_user_id', userId)
             .select()
@@ -124,9 +124,9 @@ export async function DELETE(
             return NextResponse.json({ error: 'Forbidden: Super admin privileges required' }, { status: 403 })
         }
 
-        // Remove user from admins table
+        // Remove user from admin_profiles table
         const { error: adminError } = await supabase
-            .from('admins')
+            .from('admin_profiles')
             .delete()
             .eq('auth_user_id', userId)
 

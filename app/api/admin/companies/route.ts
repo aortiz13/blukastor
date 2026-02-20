@@ -111,10 +111,10 @@ export async function POST(request: Request) {
         if (existingUser) {
             // User exists, create admin record
             const { error: adminError } = await supabase
-                .from('admins')
+                .from('admin_profiles')
                 .insert({
                     auth_user_id: existingUser.id,
-                    client_company_id: company.id,
+                    company_id: company.id,
                     role: admin_role || 'owner',
                     scope: 'instance',
                 })
@@ -165,11 +165,11 @@ export async function GET(request: Request) {
         if (adminCheck.scope === 'instance') {
             // Instance admins only see their own company
             const { data: adminCompanies } = await supabase
-                .from('admins')
-                .select('client_company_id')
+                .from('admin_profiles')
+                .select('company_id')
                 .eq('auth_user_id', user.id)
 
-            const companyIds = adminCompanies?.map(a => a.client_company_id) || []
+            const companyIds = adminCompanies?.map(a => a.company_id) || []
             query = query.in('id', companyIds)
         }
 

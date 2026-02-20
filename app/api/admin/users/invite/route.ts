@@ -42,10 +42,10 @@ export async function POST(request: Request) {
 
             // Check if already an admin for this company
             const { data: existingAdmin } = await supabase
-                .from('admins')
-                .select('id')
+                .from('admin_profiles')
+                .select('auth_user_id')
                 .eq('auth_user_id', authUserId)
-                .eq('client_company_id', companyId)
+                .eq('company_id', companyId)
                 .single()
 
             if (existingAdmin) {
@@ -54,10 +54,10 @@ export async function POST(request: Request) {
 
             // Add as admin
             const { data: admin, error: adminError } = await supabase
-                .from('admins')
+                .from('admin_profiles')
                 .insert({
                     auth_user_id: authUserId,
-                    client_company_id: companyId,
+                    company_id: companyId,
                     role,
                     scope: 'instance'
                 })
@@ -124,10 +124,10 @@ export async function POST(request: Request) {
 
             // Now add as admin
             const { data: admin, error: adminError } = await supabase
-                .from('admins')
+                .from('admin_profiles')
                 .insert({
                     auth_user_id: authUserId,
-                    client_company_id: companyId,
+                    company_id: companyId,
                     role,
                     scope: 'instance'
                 })

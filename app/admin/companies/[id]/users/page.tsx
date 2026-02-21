@@ -45,7 +45,7 @@ export default async function CompanyUsersPage({ params }: PageProps) {
     const { data: users, error: usersError } = await supabase
         .from('admin_instance_users_unified')
         .select('*')
-        .eq('client_company_id', id)
+        .eq('company_id', id)
         .order('created_at', { ascending: false })
 
     const totalUsers = users?.length || 0

@@ -52,18 +52,42 @@ export default async function ProfilePage({ params }: { params: Promise<{ domain
             if (companyIdToUse) {
                 const serviceClient = createServiceClient()
                 const { data: newContact, error: insertError } = await serviceClient
-                    .from('wa_contacts')
+                    .from('contacts')
                     .insert({
-                        company_id: companyIdToUse,
+                        client_company_id: companyIdToUse,
                         user_id: user.id,
-                        name: 'Admin - ' + (user.email?.split('@')[0] || 'User'),
-                        wa_id: 'admin_' + user.id.substring(0, 8),
+                        push_name: 'Admin - ' + (user.email?.split('@')[0] || 'User'),
+                        phone: 'admin_' + user.id.substring(0, 8),
                     })
-                    .select('id, company_id')
+                    .select('id, client_company_id')
                     .single()
 
-                if (!insertError && newContact) {
-                    contact = newContact
+                if (insertError) {
+                    const { data: waContact, error: waError } = await serviceClient
+                        .schema('wa')
+                        .from('contacts')
+                        .insert({
+                            client_company_id: companyIdToUse,
+                            user_id: user.id,
+                            push_name: 'Admin - ' + (user.email?.split('@')[0] || 'User'),
+                            phone: 'admin_' + user.id.substring(0, 8),
+                        })
+                        .select('id, client_company_id')
+                        .single()
+
+                    if (!waError && waContact) {
+                        contact = {
+                            id: waContact.id,
+                            company_id: waContact.client_company_id
+                        }
+                    } else {
+                        console.error('Failed to create admin contact in wa config:', waError || insertError)
+                    }
+                } else if (newContact) {
+                    contact = {
+                        id: newContact.id,
+                        company_id: newContact.client_company_id
+                    }
                 }
             }
         }

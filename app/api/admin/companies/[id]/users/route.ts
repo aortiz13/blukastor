@@ -59,10 +59,11 @@ export async function POST(
 
             // Add as admin
             const { data: admin, error: adminError } = await supabase
-                .from('admin_profiles')
+                .schema('wa')
+                .from('admins')
                 .insert({
                     auth_user_id: authUserId,
-                    company_id: id,
+                    client_company_id: id,
                     role,
                     scope: 'instance'
                 })
@@ -111,10 +112,11 @@ export async function POST(
 
             // Now add as admin
             const { data: admin, error: adminError } = await supabase
-                .from('admin_profiles')
+                .schema('wa')
+                .from('admins')
                 .insert({
                     auth_user_id: authUserId,
-                    company_id: id,
+                    client_company_id: id,
                     role,
                     scope: 'instance'
                 })

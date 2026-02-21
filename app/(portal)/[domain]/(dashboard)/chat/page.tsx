@@ -12,7 +12,7 @@ export default async function ChatPage({ params }: { params: Promise<{ domain: s
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect(`/login`)
+        redirect(`/login?next=${encodeURIComponent(`/${domain}/chat`)}`)
     }
 
     // Resolve company from domain (supports ID or custom domain)

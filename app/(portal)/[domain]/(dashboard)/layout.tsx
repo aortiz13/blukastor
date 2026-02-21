@@ -17,9 +17,9 @@ export default async function DashboardLayout({
     // 1. Check Authentication FIRST
     const { data: { user } } = await supabase.auth.getUser()
 
+    // Redirect user to login with return path
     if (!user) {
-        // If not authenticated, redirect to the login page WITHIN this domain
-        redirect(`/${domain}/login`)
+        redirect(`/login?next=${encodeURIComponent(`/${domain}/dashboard`)}`)
     }
 
     // 2. Fetch Company Data for Sidebar

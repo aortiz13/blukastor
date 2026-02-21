@@ -41,7 +41,7 @@ export async function POST(
 
         // Update company branding
         const { data: company, error } = await supabase
-            .from('companies')
+            .from('client_companies')
             .update(updates)
             .eq('id', id)
             .select()

@@ -11,7 +11,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ domai
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect(`/login`)
+        redirect(`/login?next=${encodeURIComponent(`/${domain}/settings`)}`)
     }
 
     const company = await getCompanyByDomain(supabase, domain)

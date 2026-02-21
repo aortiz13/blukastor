@@ -13,7 +13,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ domain
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect(`/login`)
+        redirect(`/login?next=${encodeURIComponent(`/${domain}/profile`)}`)
     }
 
     // Fetch contact_id for the user

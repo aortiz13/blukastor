@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { getCompanyByDomain } from '@/lib/data/companies'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { redirect } from 'next/navigation'
@@ -33,11 +34,42 @@ export default async function ProfilePage({ params }: { params: Promise<{ domain
         }
     }
 
-    const { data: contact, error } = await query
+    let { data: contact, error } = await query
         .limit(1)
         .maybeSingle()
 
     if (error || !contact) {
+        // Fallback for Superadmins: automatically provision a contact record
+        const { data: adminCheck } = await supabase
+            .from('admin_profiles')
+            .select('role, scope')
+            .eq('auth_user_id', user.id)
+            .single()
+
+        if (adminCheck && (adminCheck.scope === 'global' || adminCheck.role === 'super_admin')) {
+            const companyIdToUse = company?.id || (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(domain) ? domain : null)
+
+            if (companyIdToUse) {
+                const serviceClient = createServiceClient()
+                const { data: newContact, error: insertError } = await serviceClient
+                    .from('wa_contacts')
+                    .insert({
+                        company_id: companyIdToUse,
+                        user_id: user.id,
+                        name: 'Admin - ' + (user.email?.split('@')[0] || 'User'),
+                        wa_id: 'admin_' + user.id.substring(0, 8),
+                    })
+                    .select('id, company_id')
+                    .single()
+
+                if (!insertError && newContact) {
+                    contact = newContact
+                }
+            }
+        }
+    }
+
+    if (!contact) {
         console.error('Profile access error:', error)
         return (
             <div className="p-8 text-red-500">

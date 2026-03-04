@@ -360,3 +360,60 @@ export async function removeMember(memberId: string) {
     revalidatePath('/dashboard')
     return { success: true }
 }
+
+export async function getMyTeams() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    // 1. Fetch all memberships for the current user
+    const { data: memberships, error: memberError } = await supabase
+        .from('project_members_view')
+        .select('project_id, role, created_at')
+        .eq('user_id', user.id)
+
+    if (memberError || !memberships || memberships.length === 0) {
+        if (memberError) console.error('Error fetching my teams:', memberError)
+        return []
+    }
+
+    const projectIds = memberships.map(m => m.project_id)
+
+    // 2. Fetch project details
+    const { data: projects, error: projectsError } = await supabase
+        .from('companies')
+        .select('id, name, company_kind, created_at')
+        .in('id', projectIds)
+
+    if (projectsError || !projects) {
+        console.error('Error fetching team details:', projectsError)
+        return []
+    }
+
+    // 3. Fetch member counts per project
+    const { data: allMembers } = await supabase
+        .from('project_members_view')
+        .select('project_id')
+        .in('project_id', projectIds)
+
+    const memberCounts: Record<string, number> = {}
+    allMembers?.forEach(m => {
+        memberCounts[m.project_id] = (memberCounts[m.project_id] || 0) + 1
+    })
+
+    // 4. Merge data
+    return memberships.map(m => {
+        const project = projects.find(p => p.id === m.project_id)
+        if (!project) return null
+        return {
+            project_id: project.id,
+            project_name: project.name,
+            company_kind: project.company_kind,
+            role: m.role,
+            member_count: memberCounts[project.id] || 1,
+            joined_at: m.created_at,
+            project_created_at: project.created_at,
+        }
+    }).filter(Boolean)
+}

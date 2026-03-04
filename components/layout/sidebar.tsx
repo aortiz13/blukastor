@@ -10,6 +10,7 @@ import {
     LayoutDashboard,
     MessageSquare,
     User,
+    Users,
     Settings,
     LogOut,
     ChevronRight,
@@ -42,6 +43,7 @@ export function Sidebar({ domain, companyName, logoUrl, primaryColor }: SidebarP
         { label: 'Finanzas', icon: DollarSign, href: `/finance` },
         { label: 'Agentes Virtuales', icon: MessageSquare, href: `/chat` },
         { label: 'Proyectos', icon: Briefcase, href: `/projects` },
+        { label: 'Mis Equipos', icon: Users, href: `/my-teams` },
         { label: 'Metas', icon: Target, href: `/goals` },
         { label: 'Contenido', icon: ChevronRight, href: `/content` }, // Placeholder for extra nav
     ]

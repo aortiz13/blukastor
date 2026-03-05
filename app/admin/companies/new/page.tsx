@@ -21,6 +21,7 @@ export default function NewCompanyPage() {
         phone_number: '',
 
         // Step 3: Branding (optional)
+        logo_url: '',
         custom_domain: '',
         primary_color: '#6366f1',
         secondary_color: '#8b5cf6',
@@ -247,6 +248,23 @@ export default function NewCompanyPage() {
                         <h2 className="text-2xl font-black text-gray-900 mb-6">Configuración de Marca (Opcional)</h2>
 
                         <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-2">Logo de la Empresa (URL)</label>
+                            <input
+                                type="url"
+                                value={formData.logo_url}
+                                onChange={(e) => updateFormData('logo_url', e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                placeholder="https://ejemplo.com/logo.png"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Este logo aparecerá en el portal y login de la empresa. Puedes configurarlo después.</p>
+                            {formData.logo_url && (
+                                <div className="mt-3 w-20 h-20 rounded-xl overflow-hidden border border-gray-200">
+                                    <img src={formData.logo_url} alt="Logo preview" className="w-full h-full object-contain bg-gray-50" />
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
                             <label className="block text-sm font-bold text-gray-700 mb-2">Dominio Personalizado</label>
                             <input
                                 type="text"
@@ -293,6 +311,12 @@ export default function NewCompanyPage() {
                                     />
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                            <p className="text-sm text-blue-700">
+                                <strong>Nota:</strong> Puedes configurar más opciones de branding (tipografía, redes sociales, misión, visión, valores) después de crear la empresa, desde la sección de Branding.
+                            </p>
                         </div>
                     </div>
                 )}

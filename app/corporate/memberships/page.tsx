@@ -24,6 +24,7 @@ export default async function CorporateMembershipsPage() {
 
     // Fetch all memberships with contact info
     const { data: memberships } = await supabase
+        .schema('wa')
         .from('memberships')
         .select('*, contacts!inner(phone, push_name, real_name)')
         .eq('client_company_id', activeCompany.companyId)

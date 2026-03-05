@@ -69,7 +69,7 @@ export default async function CorporateLayout({
     // Fetch company branding
     const { data: companyBranding } = await supabase
         .from('client_companies')
-        .select('logo_url, primary_color, secondary_color, frontend_config')
+        .select('logo_url, logo_dark_url, logo_icon_url, primary_color, secondary_color, accent_color, tagline, frontend_config')
         .eq('id', activeCompany.companyId)
         .single()
 

@@ -34,6 +34,7 @@ export default async function CorporateDashboard() {
 
     // Get recent memberships
     const { data: recentMemberships } = await supabase
+        .schema('wa')
         .from('memberships')
         .select('id, plan, status, started_at, expires_at, contact_id, contacts!inner(phone, push_name)')
         .eq('client_company_id', activeCompany.companyId)

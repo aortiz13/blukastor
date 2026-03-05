@@ -14,8 +14,25 @@ export default async function middleware(request: NextRequest) {
     // Ignore internal nextjs paths and static files
     // Refined to catch common file extensions instead of any dot
     const isStaticFile = /\.(png|jpg|jpeg|gif|webp|svg|ico|css|js|mjs|txt|xml|json)$/.test(path)
-    if (path.startsWith('/_next') || isStaticFile || path.startsWith('/api') || path.startsWith('/auth') || path.startsWith('/admin') || path.startsWith('/corporate')) {
+    if (path.startsWith('/_next') || isStaticFile || path.startsWith('/api') || path.startsWith('/auth') || path.startsWith('/admin')) {
         return supabaseResponse
+    }
+
+    // For corporate paths, inject x-pathname into request headers so server components can read it
+    if (path.startsWith('/corporate')) {
+        const requestHeaders = new Headers(request.headers)
+        requestHeaders.set('x-pathname', path)
+        const corporateResponse = NextResponse.next({
+            request: { headers: requestHeaders },
+        })
+        // Preserve Supabase auth cookies
+        supabaseResponse.headers.forEach((value, key) => {
+            corporateResponse.headers.set(key, value)
+        })
+        supabaseResponse.cookies.getAll().forEach((cookie) => {
+            corporateResponse.cookies.set(cookie.name, cookie.value)
+        })
+        return corporateResponse
     }
 
     let hostname = request.headers.get('host') || ''

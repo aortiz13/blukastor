@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCorporateAdminProfile, resolveActiveCompany } from '@/lib/actions/corporate-helpers'
-import { Users, Search, Phone, Calendar, Tag } from 'lucide-react'
+import { Users, Search, Phone, Calendar, Tag, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 export default async function CorporateUsersPage() {
     const supabase = await createClient()
@@ -27,6 +28,7 @@ export default async function CorporateUsersPage() {
     let membershipMap: Record<string, any> = {}
     if (contactIds.length > 0) {
         const { data: memberships } = await supabase
+            .schema('wa')
             .from('memberships')
             .select('contact_id, plan, status')
             .eq('client_company_id', activeCompany.companyId)
@@ -109,15 +111,16 @@ export default async function CorporateUsersPage() {
                             <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Última Actividad</th>
                             <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Membresía</th>
                             <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tags</th>
+                            <th className="px-6 py-4 w-10"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {contacts?.map((contact) => {
                             const membership = membershipMap[contact.id]
                             return (
-                                <tr key={contact.id} className="hover:bg-gray-50/50 transition-colors">
+                                <tr key={contact.id} className="hover:bg-gray-50/50 transition-colors cursor-pointer group">
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
+                                        <Link href={`/corporate/users/${contact.id}`} className="flex items-center gap-3">
                                             <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm">
                                                 {(contact.push_name || contact.phone).charAt(0).toUpperCase()}
                                             </div>
@@ -127,7 +130,7 @@ export default async function CorporateUsersPage() {
                                                     <p className="text-xs text-gray-400">{contact.real_name}</p>
                                                 )}
                                             </div>
-                                        </div>
+                                        </Link>
                                     </td>
                                     <td className="px-6 py-4 font-mono text-sm text-gray-600">{contact.phone}</td>
                                     <td className="px-6 py-4 text-sm text-gray-500">
@@ -156,6 +159,11 @@ export default async function CorporateUsersPage() {
                                                 </span>
                                             ))}
                                         </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <Link href={`/corporate/users/${contact.id}`} className="text-gray-300 group-hover:text-gray-500 transition-colors">
+                                            <ChevronRight size={16} />
+                                        </Link>
                                     </td>
                                 </tr>
                             )

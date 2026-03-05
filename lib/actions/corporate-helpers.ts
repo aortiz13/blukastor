@@ -82,6 +82,7 @@ export async function getCorporateMetrics(supabase: SupabaseClient, companyId: s
             .select('id, terms_accepted', { count: 'exact' })
             .eq('client_company_id', companyId),
         supabase
+            .schema('wa')
             .from('membership_plans')
             .select('id', { count: 'exact', head: true })
             .eq('client_company_id', companyId),

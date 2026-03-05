@@ -33,16 +33,28 @@ export default async function PortalLayout({
     }
 
     const branding = company?.frontend_config as any || {}
-    const primaryColor = branding.primary_color || '#000000'
+    const primaryColor = company?.primary_color || branding.primary_color || '#000000'
+    const fontHeading = company?.font_heading || 'Inter'
+    const fontBody = company?.font_body || 'Inter'
+
+    // Build Google Fonts URL for the company's selected fonts
+    const fontsToLoad = [...new Set([fontHeading, fontBody])]
+    const googleFontsUrl = `https://fonts.googleapis.com/css2?${fontsToLoad.map(f => `family=${f.replace(/ /g, '+')}:wght@400;500;600;700`).join('&')}&display=swap`
 
     return (
-        <div
-            className="min-h-screen bg-gray-50/30"
-            style={{
-                ['--primary' as any]: primaryColor,
-            } as any}
-        >
-            {children}
-        </div>
+        <>
+            <link rel="stylesheet" href={googleFontsUrl} />
+            <div
+                className="min-h-screen bg-gray-50/30"
+                style={{
+                    ['--primary' as any]: primaryColor,
+                    ['--font-heading' as any]: `'${fontHeading}', sans-serif`,
+                    ['--font-body' as any]: `'${fontBody}', sans-serif`,
+                    fontFamily: `'${fontBody}', sans-serif`,
+                } as any}
+            >
+                {children}
+            </div>
+        </>
     )
 }

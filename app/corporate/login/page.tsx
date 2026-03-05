@@ -1,8 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Building2, Loader2, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react'
+
+interface CompanyBranding {
+    found: boolean
+    name?: string
+    logo_url?: string
+    logo_dark_url?: string
+    logo_icon_url?: string
+    primary_color?: string
+    secondary_color?: string
+    cover_image_url?: string
+    tagline?: string
+    login_background_url?: string
+    login_welcome_text?: string
+}
 
 export default function CorporateLoginPage() {
     const [email, setEmail] = useState('')
@@ -11,7 +25,27 @@ export default function CorporateLoginPage() {
     const [isMagicLinkLoading, setIsMagicLinkLoading] = useState(false)
     const [message, setMessage] = useState('')
     const [messageType, setMessageType] = useState<'error' | 'success' | 'info'>('info')
+    const [branding, setBranding] = useState<CompanyBranding | null>(null)
     const supabase = createClient()
+
+    // Detect custom domain and fetch branding
+    useEffect(() => {
+        const hostname = window.location.hostname
+        // Skip for localhost and default domains
+        if (hostname === 'localhost' || hostname.includes('vercel') || hostname.includes('blukastor')) {
+            return
+        }
+
+        // Custom domain detected — fetch branding
+        fetch(`/api/corporate/branding?domain=${encodeURIComponent(hostname)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.found) {
+                    setBranding(data)
+                }
+            })
+            .catch(err => console.error('Failed to fetch branding:', err))
+    }, [])
 
     const handlePasswordLogin = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -33,7 +67,7 @@ export default function CorporateLoginPage() {
         // Verify corporate admin access
         const { data: adminProfile, error: profileError } = await supabase
             .from('admin_profiles')
-            .select('id')
+            .select('auth_user_id')
             .eq('auth_user_id', data.user.id)
             .limit(1)
 
@@ -77,16 +111,35 @@ export default function CorporateLoginPage() {
         }
     }
 
+    // Resolved branding values
+    const companyName = branding?.name
+    const logoUrl = branding?.logo_url || branding?.logo_dark_url
+    const primaryColor = branding?.primary_color || '#6366f1'
+    const secondaryColor = branding?.secondary_color || '#8b5cf6'
+    const loginBgUrl = branding?.login_background_url || branding?.cover_image_url
+    const welcomeText = branding?.login_welcome_text || branding?.tagline
+    const loginTitle = companyName ? `Portal ${companyName}` : 'Portal Corporativo'
+    const loginSubtitle = welcomeText || 'Acceso exclusivo para clientes corporativos'
+
     return (
         <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
             {/* Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900" />
+            {loginBgUrl ? (
+                <>
+                    <div className="absolute inset-0">
+                        <img src={loginBgUrl} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                </>
+            ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900" />
+            )}
 
             {/* Decorative elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
-                <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/5 rounded-full blur-3xl" />
+                <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl" style={{ backgroundColor: `${primaryColor}15` }} />
+                <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full blur-3xl" style={{ backgroundColor: `${secondaryColor}15` }} />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-3xl" style={{ backgroundColor: `${primaryColor}08` }} />
                 {/* Grid pattern */}
                 <div
                     className="absolute inset-0 opacity-[0.03]"
@@ -101,14 +154,30 @@ export default function CorporateLoginPage() {
             <div className="relative z-10 w-full max-w-md mx-4">
                 {/* Logo / Branding */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/30 mb-5">
-                        <Building2 className="text-white" size={30} />
-                    </div>
+                    {logoUrl ? (
+                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm shadow-lg mb-5 p-2 border border-white/10">
+                            <img
+                                src={logoUrl}
+                                alt={companyName || 'Logo'}
+                                className="max-w-full max-h-full object-contain"
+                            />
+                        </div>
+                    ) : (
+                        <div
+                            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg mb-5"
+                            style={{
+                                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                                boxShadow: `0 10px 25px -5px ${primaryColor}40`,
+                            }}
+                        >
+                            <Building2 className="text-white" size={30} />
+                        </div>
+                    )}
                     <h1 className="text-3xl font-extrabold text-white tracking-tight">
-                        Portal Corporativo
+                        {loginTitle}
                     </h1>
                     <p className="mt-2 text-indigo-200/70 text-sm">
-                        Acceso exclusivo para clientes corporativos
+                        {loginSubtitle}
                     </p>
                 </div>
 
@@ -149,7 +218,11 @@ export default function CorporateLoginPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                            className="w-full flex items-center justify-center gap-2 py-3.5 text-white font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                            style={{
+                                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                                boxShadow: `0 10px 25px -5px ${primaryColor}40`,
+                            }}
                         >
                             {isLoading ? (
                                 <Loader2 className="animate-spin" size={20} />
@@ -182,7 +255,7 @@ export default function CorporateLoginPage() {
                             <Loader2 className="animate-spin" size={18} />
                         ) : (
                             <>
-                                <Sparkles size={16} className="text-indigo-400" />
+                                <Sparkles size={16} style={{ color: primaryColor }} />
                                 Enviar Magic Link
                             </>
                         )}
@@ -191,10 +264,10 @@ export default function CorporateLoginPage() {
                     {/* Message */}
                     {message && (
                         <div className={`mt-5 p-3 rounded-xl text-sm text-center font-medium ${messageType === 'error'
-                                ? 'bg-red-500/10 text-red-300 border border-red-500/20'
-                                : messageType === 'success'
-                                    ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
-                                    : 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20'
+                            ? 'bg-red-500/10 text-red-300 border border-red-500/20'
+                            : messageType === 'success'
+                                ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
+                                : 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20'
                             }`}>
                             {message}
                         </div>

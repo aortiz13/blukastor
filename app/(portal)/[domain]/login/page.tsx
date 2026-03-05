@@ -12,6 +12,7 @@ export default function LoginPage() {
     const domain = decodeURIComponent(rawDomain || '')
 
     const [company, setCompany] = useState<any>(null)
+    const [loadingCompany, setLoadingCompany] = useState(true)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -20,9 +21,11 @@ export default function LoginPage() {
 
     useEffect(() => {
         if (domain) {
-            getCompanyByDomain(supabase, domain).then(setCompany)
+            getCompanyByDomain(supabase, domain)
+                .then(setCompany)
+                .finally(() => setLoadingCompany(false))
         }
-    }, [domain, supabase])
+    }, [domain])
 
     const handleMagicLink = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -40,7 +43,7 @@ export default function LoginPage() {
         if (error) {
             setMessage('Error: ' + error.message)
         } else {
-            setMessage('Check your email for the magic link!')
+            setMessage('¡Revisa tu email para entrar!')
         }
     }
 
@@ -62,69 +65,135 @@ export default function LoginPage() {
         }
     }
 
-    const branding = company?.frontend_config || {}
+    // Read branding from top-level company columns (not frontend_config)
+    const logoUrl = company?.logo_url || ''
+    const primaryColor = company?.primary_color || '#111827'
+    const coverImageUrl = company?.cover_image_url || ''
+    const companyName = company?.name || 'Portal'
+    const fontHeading = company?.font_heading || 'Inter'
+    const fontBody = company?.font_body || 'Inter'
+    const portalConfig = (company?.frontend_config as any)?.portal || {}
+    const welcomeText = portalConfig.login_welcome_text || `Bienvenido al portal de ${companyName}`
+
+    // Google Fonts
+    const fontsToLoad = [...new Set([fontHeading, fontBody])]
+    const googleFontsUrl = `https://fonts.googleapis.com/css2?${fontsToLoad.map((f: string) => `family=${f.replace(/ /g, '+')}:wght@400;500;600;700`).join('&')}&display=swap`
+
+    if (loadingCompany) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-gray-50">
+                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+            </div>
+        )
+    }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
-            <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-md">
-                <div className="text-center">
-                    {branding.logo_url && <img src={branding.logo_url} alt="Logo" className="mx-auto h-12 w-auto mb-4" />}
-                    <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-                        Entrar a {company?.name || 'Portal'}
-                    </h2>
-                </div>
-
-                <div className="mt-8 space-y-6">
-                    <form onSubmit={handlePasswordLogin} className="space-y-4">
-                        <div className="space-y-2">
-                            <input
-                                type="email"
-                                required
-                                className="block w-full rounded border p-2 text-sm focus:ring-2 focus:ring-black outline-none"
-                                placeholder="Email address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                            <input
-                                type="password"
-                                required
-                                className="block w-full rounded border p-2 text-sm focus:ring-2 focus:ring-black outline-none"
-                                placeholder="Password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
+        <>
+            <link rel="stylesheet" href={googleFontsUrl} />
+            <div
+                className="flex min-h-screen"
+                style={{ fontFamily: `'${fontBody}', sans-serif` }}
+            >
+                {/* Left side — Cover Image */}
+                {coverImageUrl && (
+                    <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative">
+                        <img
+                            src={coverImageUrl}
+                            alt={companyName}
+                            className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                        <div className="relative z-10 flex flex-col justify-end p-12">
+                            {logoUrl && (
+                                <img src={logoUrl} alt={companyName} className="h-10 w-auto mb-6 brightness-0 invert" />
+                            )}
+                            <h2
+                                className="text-3xl font-bold text-white max-w-md leading-tight"
+                                style={{ fontFamily: `'${fontHeading}', sans-serif` }}
+                            >
+                                {welcomeText}
+                            </h2>
                         </div>
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="flex w-full justify-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
-                            style={{ backgroundColor: branding.primary_color || '#000000' }}
-                        >
-                            {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Entrar con Contraseña'}
-                        </button>
-                    </form>
-
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center"><span className="w-full border-t"></span></div>
-                        <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-gray-500">Or</span></div>
                     </div>
-
-                    <button
-                        onClick={handleMagicLink}
-                        disabled={isLoading}
-                        className="flex w-full justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
-                    >
-                        Enviar Magic Link
-                    </button>
-                </div>
-
-                {message && (
-                    <p className={`mt-4 text-center text-sm ${message.startsWith('Error') ? 'text-red-500' : 'text-green-600'}`}>
-                        {message}
-                    </p>
                 )}
+
+                {/* Right side — Login Form */}
+                <div className={`flex-1 flex items-center justify-center p-8 bg-white ${!coverImageUrl ? 'bg-gray-50' : ''}`}>
+                    <div className="w-full max-w-sm space-y-8">
+                        {/* Logo + Header */}
+                        <div className="text-center">
+                            {logoUrl && (
+                                <img
+                                    src={logoUrl}
+                                    alt={companyName}
+                                    className="mx-auto h-14 w-auto mb-6 object-contain"
+                                />
+                            )}
+                            <h1
+                                className="text-2xl font-bold text-gray-900"
+                                style={{ fontFamily: `'${fontHeading}', sans-serif` }}
+                            >
+                                Entrar a {companyName}
+                            </h1>
+                            {/* Show welcome text on mobile when no cover image */}
+                            <p className="mt-2 text-sm text-gray-500 lg:hidden">
+                                {welcomeText}
+                            </p>
+                        </div>
+
+                        {/* Login Form */}
+                        <form onSubmit={handlePasswordLogin} className="space-y-4">
+                            <div className="space-y-3">
+                                <input
+                                    type="email"
+                                    required
+                                    className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
+                                    style={{ '--tw-ring-color': primaryColor + '40', borderColor: 'rgb(229,231,235)' } as any}
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                                <input
+                                    type="password"
+                                    required
+                                    className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
+                                    style={{ '--tw-ring-color': primaryColor + '40' } as any}
+                                    placeholder="Contraseña"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                                style={{ backgroundColor: primaryColor }}
+                            >
+                                {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Entrar con Contraseña'}
+                            </button>
+                        </form>
+
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-200"></span></div>
+                            <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-3 text-gray-400">O también</span></div>
+                        </div>
+
+                        <button
+                            onClick={handleMagicLink}
+                            disabled={isLoading || !email}
+                            className="flex w-full justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+                        >
+                            Enviar Magic Link
+                        </button>
+
+                        {message && (
+                            <p className={`text-center text-sm font-medium ${message.startsWith('Error') ? 'text-red-500' : 'text-emerald-600'}`}>
+                                {message}
+                            </p>
+                        )}
+                    </div>
+                </div>
             </div>
-        </div>
+        </>
     )
 }
-

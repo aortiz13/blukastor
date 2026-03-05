@@ -14,6 +14,7 @@ import {
     X,
     Building2,
     ChevronDown,
+    Palette,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
@@ -35,6 +36,7 @@ const corporateNavigation = [
     { name: 'Escalamiento Manual', href: '/corporate/escalation', icon: ShieldAlert },
     { name: 'Membresías', href: '/corporate/memberships', icon: CreditCard },
     { name: 'Finanzas Globales', href: '/corporate/finance', icon: TrendingUp },
+    { name: 'Branding', href: '/corporate/branding', icon: Palette },
 ]
 
 export function CorporateSidebar({

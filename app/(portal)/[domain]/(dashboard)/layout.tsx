@@ -34,21 +34,22 @@ export default async function DashboardLayout({
     }
 
     const branding = company?.frontend_config as any || {}
-    const primaryColor = branding.primary_color || '#000000'
+    const primaryColor = company?.primary_color || branding.primary_color || '#000000'
+    const fontHeading = company?.font_heading || 'Inter'
 
     return (
         <div className="flex h-screen overflow-hidden">
             <Sidebar
                 domain={domain}
                 companyName={company.name}
-                logoUrl={branding.logo_url}
+                logoUrl={company?.logo_url || branding.logo_url}
                 primaryColor={primaryColor}
             />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Mobile Header (Hidden on Desktop) */}
                 <header className="md:hidden border-b p-4 bg-white flex justify-between items-center">
-                    <span className="font-bold text-lg">{company.name}</span>
+                    <span className="font-bold text-lg" style={{ fontFamily: `'${fontHeading}', sans-serif` }}>{company.name}</span>
                     <button className="p-2 bg-gray-50 rounded-lg">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />

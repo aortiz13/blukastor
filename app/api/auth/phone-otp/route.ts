@@ -151,19 +151,29 @@ export async function POST(request: Request) {
         }
 
         // 6. Send OTP via WhatsApp (Edge Function → Evolution API)
+        const payload = {
+            phone: normalizedPhone,
+            otp,
+            instanceName: instance.instance_name,
+            companyName: company?.name || 'la plataforma',
+        }
+        console.log('[Phone OTP] Invoking send-whatsapp-otp with:', payload)
+
         const { error: sendError } = await supabase.functions.invoke('send-whatsapp-otp', {
-            body: {
-                phone: normalizedPhone,
-                otp,
-                instanceName: instance.instance_name,
-                companyName: company?.name || 'la plataforma',
-            }
+            body: payload
         })
 
         if (sendError) {
             console.error('Error sending WhatsApp OTP:', sendError)
             return NextResponse.json(
-                { error: 'Error al enviar código por WhatsApp' },
+                {
+                    error: 'Error al enviar código por WhatsApp',
+                    debug: {
+                        sendError,
+                        instanceName: instance.instance_name,
+                        normalizedPhone
+                    }
+                },
                 { status: 500 }
             )
         }

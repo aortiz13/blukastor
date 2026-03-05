@@ -219,12 +219,10 @@ export function InviteUserModal({ isOpen, onClose }: InviteUserModalProps) {
                         >
                             <option value="user">Usuario</option>
                             <option value="admin">Administrador</option>
-                            <option value="owner">Propietario</option>
                         </select>
                         <div className="bg-gray-50 rounded-xl p-3 mt-2 space-y-1 text-xs text-gray-600">
                             <p><strong>Usuario:</strong> Acceso básico a la plataforma</p>
-                            <p><strong>Administrador:</strong> Gestión de usuarios y configuración</p>
-                            <p><strong>Propietario:</strong> Control total de la instancia</p>
+                            <p><strong>Administrador:</strong> Gestión de usuarios y configuración completa</p>
                         </div>
                     </div>
 

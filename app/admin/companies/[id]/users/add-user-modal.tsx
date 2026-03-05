@@ -118,7 +118,6 @@ export function AddUserModal({ companyId, companyName, isOpen, onClose }: AddUse
                         >
                             <option value="user">Usuario</option>
                             <option value="admin">Administrador</option>
-                            <option value="owner">Propietario</option>
                         </select>
                         <p className="text-xs text-gray-500 mt-2">
                             Define los permisos del usuario en esta instancia
@@ -130,8 +129,7 @@ export function AddUserModal({ companyId, companyName, isOpen, onClose }: AddUse
                         <p className="text-xs font-bold text-gray-700">Descripción de roles:</p>
                         <div className="space-y-1 text-xs text-gray-600">
                             <p><strong>Usuario:</strong> Acceso básico a la plataforma</p>
-                            <p><strong>Administrador:</strong> Gestión de usuarios y configuración</p>
-                            <p><strong>Propietario:</strong> Control total de la instancia</p>
+                            <p><strong>Administrador:</strong> Gestión de usuarios y configuración completa</p>
                         </div>
                     </div>
 

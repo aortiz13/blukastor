@@ -74,7 +74,7 @@ export async function POST(request: Request) {
                 const projectMemberships = projectIds.map((projectId: string) => ({
                     project_id: projectId,
                     user_id: authUserId,
-                    role: role === 'owner' ? 'owner' : role === 'admin' ? 'admin' : 'member'
+                    role: role === 'admin' ? 'admin' : 'member'
                 }))
 
                 const { error: projectError } = await supabase
@@ -144,7 +144,7 @@ export async function POST(request: Request) {
                 const projectMemberships = projectIds.map((projectId: string) => ({
                     project_id: projectId,
                     user_id: authUserId,
-                    role: role === 'owner' ? 'owner' : role === 'admin' ? 'admin' : 'member'
+                    role: role === 'admin' ? 'admin' : 'member'
                 }))
 
                 const { error: projectError } = await supabase

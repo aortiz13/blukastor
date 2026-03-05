@@ -117,7 +117,7 @@ export async function POST(request: Request) {
                 .insert({
                     auth_user_id: existingUser.id,
                     company_id: company.id,
-                    role: admin_role || 'owner',
+                    role: admin_role || 'admin',
                     scope: 'instance',
                 })
 

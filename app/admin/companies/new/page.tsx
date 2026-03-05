@@ -31,7 +31,7 @@ export default function NewCompanyPage() {
 
         // Step 5: Admin
         admin_email: '',
-        admin_role: 'owner',
+        admin_role: 'admin',
     })
 
     const [loading, setLoading] = useState(false)
@@ -377,8 +377,7 @@ export default function NewCompanyPage() {
                                 onChange={(e) => updateFormData('admin_role', e.target.value)}
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
                             >
-                                <option value="owner">Owner</option>
-                                <option value="admin">Admin</option>
+                                <option value="admin">Administrador</option>
                                 <option value="viewer">Viewer</option>
                             </select>
                         </div>

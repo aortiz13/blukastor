@@ -155,9 +155,8 @@ export default async function UsersPage() {
                                         <span className={cn(
                                             "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider",
                                             user.role === 'super_admin' ? "bg-purple-100 text-purple-700" :
-                                                user.role === 'owner' ? "bg-blue-100 text-blue-700" :
-                                                    user.role === 'admin' ? "bg-green-100 text-green-700" :
-                                                        "bg-gray-100 text-gray-700"
+                                                user.role === 'admin' ? "bg-green-100 text-green-700" :
+                                                    "bg-gray-100 text-gray-700"
                                         )}>
                                             {user.role || 'Admin'}
                                         </span>

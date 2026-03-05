@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Palette } from 'lucide-react'
-import { BrandingForm } from './branding-form'
+import BrandingForm from './branding-form'
 
 interface PageProps {
     params: Promise<{ id: string }>

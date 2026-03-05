@@ -7,6 +7,8 @@ WORKDIR /app
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
 RUN npm install
+# Remove corrupted @types directories with spaces in names (npm bug)
+RUN find /app/node_modules/@types -maxdepth 1 -name '* *' -type d -exec rm -rf {} + 2>/dev/null || true
 
 # Stage 2: Rebuild the source code only when needed
 FROM node:20-alpine AS builder

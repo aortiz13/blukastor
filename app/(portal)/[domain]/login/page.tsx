@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getCompanyByDomain } from '@/lib/data/companies'
-import { Loader2, Mail, Phone, MessageCircle } from 'lucide-react'
+import { Loader2, Mail, Phone, MessageCircle, UserPlus } from 'lucide-react'
 import { useParams } from 'next/navigation'
 
 export default function LoginPage() {
@@ -24,6 +24,12 @@ export default function LoginPage() {
     const [otpCode, setOtpCode] = useState('')
     const [otpSent, setOtpSent] = useState(false)
     const [contactName, setContactName] = useState('')
+
+    // Registration state (when hasUser: false)
+    const [needsRegistration, setNeedsRegistration] = useState(false)
+    const [regEmail, setRegEmail] = useState('')
+    const [regPassword, setRegPassword] = useState('')
+    const [regContactId, setRegContactId] = useState('')
 
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState('')
@@ -128,11 +134,55 @@ export default function LoginPage() {
 
             if (!res.ok) {
                 setMessage('Error: ' + (data.error || 'Código inválido'))
-            } else if (data.redirectUrl) {
-                // Use the magic link to establish session
+            } else if (data.hasUser && data.redirectUrl) {
+                // User exists — use the magic link to establish session
                 window.location.href = data.redirectUrl
+            } else if (!data.hasUser && data.contactId) {
+                // No user yet — show registration form
+                setRegContactId(data.contactId)
+                setNeedsRegistration(true)
+                setMessage('')
             } else {
                 setMessage(data.message || 'Verificación exitosa')
+            }
+        } catch (err: any) {
+            setMessage('Error: ' + err.message)
+        }
+
+        setIsLoading(false)
+    }
+
+    const handlePhoneRegister = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsLoading(true)
+        setMessage('')
+
+        try {
+            const res = await fetch('/api/auth/phone-register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: regEmail,
+                    password: regPassword,
+                    phone: phone.startsWith('+') ? phone : `+${phone}`,
+                    contactId: regContactId,
+                    companyId: company?.id,
+                    domain,
+                }),
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                setMessage('Error: ' + (data.error || 'Error al crear cuenta'))
+            } else if (data.redirectUrl) {
+                setMessage('✅ ¡Cuenta creada! Redirigiendo...')
+                setTimeout(() => { window.location.href = data.redirectUrl }, 1000)
+            } else {
+                setMessage('✅ Cuenta creada. Inicia sesión con tu email y contraseña.')
+                setNeedsRegistration(false)
+                setLoginMethod('email')
+                setEmail(regEmail)
             }
         } catch (err: any) {
             setMessage('Error: ' + err.message)
@@ -296,7 +346,76 @@ export default function LoginPage() {
                         {/* WhatsApp Login */}
                         {loginMethod === 'phone' && (
                             <>
-                                {!otpSent ? (
+                                {needsRegistration ? (
+                                    /* Registration Form — after OTP verified but no user exists */
+                                    <form onSubmit={handlePhoneRegister} className="space-y-4">
+                                        <div className="text-center space-y-2">
+                                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-50">
+                                                <UserPlus size={24} className="text-blue-500" />
+                                            </div>
+                                            <p className="text-sm font-semibold text-gray-800">
+                                                ¡Número verificado! 🎉
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                Crea tu cuenta para acceder al portal.
+                                                Tu número <span className="font-bold">{phone}</span> quedará asociado.
+                                            </p>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Email
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
+                                                    style={{ '--tw-ring-color': primaryColor + '40' } as any}
+                                                    placeholder="tu@email.com"
+                                                    value={regEmail}
+                                                    onChange={(e) => setRegEmail(e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Contraseña
+                                                </label>
+                                                <input
+                                                    type="password"
+                                                    required
+                                                    minLength={6}
+                                                    className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
+                                                    style={{ '--tw-ring-color': primaryColor + '40' } as any}
+                                                    placeholder="Mínimo 6 caracteres"
+                                                    value={regPassword}
+                                                    onChange={(e) => setRegPassword(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            disabled={isLoading || !regEmail || regPassword.length < 6}
+                                            className="flex w-full justify-center items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                                            style={{ backgroundColor: primaryColor }}
+                                        >
+                                            {isLoading ? (
+                                                <Loader2 className="animate-spin" size={18} />
+                                            ) : (
+                                                <>
+                                                    <UserPlus size={18} />
+                                                    Crear cuenta
+                                                </>
+                                            )}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setNeedsRegistration(false); setOtpSent(false); setOtpCode(''); setMessage('') }}
+                                            className="flex w-full justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition"
+                                        >
+                                            Volver al inicio
+                                        </button>
+                                    </form>
+                                ) : !otpSent ? (
                                     <form onSubmit={handleRequestOtp} className="space-y-4">
                                         <div className="space-y-2">
                                             <label className="block text-sm font-medium text-gray-700">

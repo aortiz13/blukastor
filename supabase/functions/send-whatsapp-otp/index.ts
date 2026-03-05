@@ -1,5 +1,6 @@
 const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL') || 'https://evoapi.autoflowai.io';
-const DEFAULT_API_KEY = Deno.env.get('EVOLUTION_API_KEY') || '';
+const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY') || '79F705602952-471C-8648-7F9D9BEE23D1';
+const DEFAULT_INSTANCE = 'Blukastor_Nova';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -12,25 +13,17 @@ Deno.serve(async (req) => {
     }
 
     try {
-        const { phone, otp, instanceName, companyName, apiKey } = await req.json();
+        const { phone, otp, instanceName, companyName } = await req.json();
 
-        // Use per-instance apiKey if provided, otherwise fall back to global
-        const evolutionApiKey = apiKey || DEFAULT_API_KEY;
+        // Always use the default instance (Blukastor_Nova) for sending OTPs
+        const instance = DEFAULT_INSTANCE;
 
-        console.log('Sending WhatsApp OTP:', { phone, instanceName, companyName, hasApiKey: !!evolutionApiKey });
+        console.log('Sending WhatsApp OTP:', { phone, instance, companyName });
 
-        if (!phone || !otp || !instanceName) {
+        if (!phone || !otp) {
             return new Response(
-                JSON.stringify({ error: 'Missing phone, otp, or instanceName' }),
+                JSON.stringify({ error: 'Missing phone or otp' }),
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-        }
-
-        if (!evolutionApiKey) {
-            console.error('No API key available for Evolution API');
-            return new Response(
-                JSON.stringify({ error: 'No API key configured for this instance' }),
-                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
         }
 
@@ -39,21 +32,20 @@ Deno.serve(async (req) => {
 
         const message = `🔐 *Código de verificación*\n\nTu código para acceder a *${companyName || 'la plataforma'}* es:\n\n*${otp}*\n\nEste código expira en 5 minutos.\nSi no solicitaste este código, ignora este mensaje.`;
 
-        const url = `${EVOLUTION_API_URL}/message/sendText/${instanceName}`;
+        const url = `${EVOLUTION_API_URL}/message/sendText/${instance}`;
         console.log('Calling Evolution API:', url);
 
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'apikey': evolutionApiKey,
+                'apikey': EVOLUTION_API_KEY,
             },
             body: JSON.stringify({
                 number: phoneNumber,
                 text: message,
             }),
-        }
-        );
+        });
 
         const data = await response.json();
         console.log('Evolution API response:', JSON.stringify(data));

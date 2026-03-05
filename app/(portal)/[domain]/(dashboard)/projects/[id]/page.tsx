@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { getProject, getProjectGoals } from '@/lib/actions/projects'
 import { getFinancialStats, getTransactions } from '@/lib/actions/finance'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -12,6 +13,7 @@ import { GoalList } from '../_components/GoalList'
 import { GoalForm } from '../_components/GoalForm'
 import { ProjectTeam } from '../_components/ProjectTeam'
 import { ProjectFinance } from '../_components/ProjectFinance'
+import { FloatingChat } from '@/components/chat/floating-chat'
 
 export default async function ProjectDetailPage({
     params,
@@ -29,6 +31,19 @@ export default async function ProjectDetailPage({
 
     const companyId = project.client_company_id || project.id
     const companyCurrency = project.currency || 'USD'
+
+    // Resolve contact for floating chat (uses project ID as company context)
+    let chatContactId: string | null = null
+    try {
+        const adminDb = createServiceClient()
+        const { data: resolvedContactId } = await adminDb.rpc('resolve_contact_id', {
+            p_user_id: user.id,
+            p_company_id: id, // project ID
+        })
+        chatContactId = resolvedContactId as string | null
+    } catch (e) {
+        console.error('Error resolving contact for floating chat:', e)
+    }
 
     const [goals, finance, transactions] = await Promise.all([
         getProjectGoals(id),
@@ -205,6 +220,16 @@ export default async function ProjectDetailPage({
                     <ProjectTeam projectId={id} />
                 </TabsContent>
             </Tabs>
+
+            {/* Floating AI Chat Agent — scoped to this project */}
+            {chatContactId && (
+                <FloatingChat
+                    contactId={chatContactId}
+                    companyId={id}
+                    projectName={project.name}
+                    primaryColor={project.primary_color}
+                />
+            )}
         </div>
     )
 }

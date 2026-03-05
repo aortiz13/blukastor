@@ -103,7 +103,7 @@ export async function POST(request: Request) {
         // admin_wa_instances view uses 'company_id' instead of 'client_company_id'
         const { data: instance } = await supabase
             .from('admin_wa_instances')
-            .select('instance_name, company_id')
+            .select('instance_name, company_id, wa_token')
             .eq('company_id', companyId)
             .limit(1)
             .single()
@@ -156,8 +156,9 @@ export async function POST(request: Request) {
             otp,
             instanceName: instance.instance_name,
             companyName: company?.name || 'la plataforma',
+            apiKey: instance.wa_token,
         }
-        console.log('[Phone OTP] Invoking send-whatsapp-otp with:', payload)
+        console.log('[Phone OTP] Invoking send-whatsapp-otp with:', { ...payload, apiKey: '***' })
 
         const { error: sendError } = await supabase.functions.invoke('send-whatsapp-otp', {
             body: payload

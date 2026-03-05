@@ -93,13 +93,17 @@ export async function POST(request: Request) {
             )
         }
 
-        // 4. If the contact has a user_id, generate a magic link for that user
-        if (contact.user_id) {
-            // Get user email from auth
+        // Treat nil UUID as no user
+        const NIL_UUID = '00000000-0000-0000-0000-000000000000'
+        const hasRealUser = contact.user_id && contact.user_id !== NIL_UUID
+
+        // 4. If the contact has a real user_id, try to log them in
+        if (hasRealUser) {
+            // Get user info from auth
             const { data: { user } } = await supabase.auth.admin.getUserById(contact.user_id)
 
             if (user?.email) {
-                // Generate a magic link
+                // Generate a magic link to auto-login
                 const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
                     type: 'magiclink',
                     email: user.email,
@@ -121,8 +125,7 @@ export async function POST(request: Request) {
             }
         }
 
-        // 5. Contact exists but has no auth user — return success with contact info
-        // The frontend can redirect to a simplified signup or directly log them in
+        // 5. Contact has no real auth user — needs registration
         return NextResponse.json({
             success: true,
             hasUser: false,

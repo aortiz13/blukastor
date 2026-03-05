@@ -60,9 +60,32 @@ export async function POST(request: Request) {
             )
         }
 
-        if (contact.user_id) {
+        // Treat nil UUID as no user
+        const NIL_UUID = '00000000-0000-0000-0000-000000000000'
+        const hasRealUser = contact.user_id && contact.user_id !== NIL_UUID
+
+        // If the contact already has a real user, just log them in
+        if (hasRealUser) {
+            const { data: { user: existingUser } } = await supabase.auth.admin.getUserById(contact.user_id)
+
+            if (existingUser?.email) {
+                const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+                    type: 'magiclink',
+                    email: existingUser.email,
+                })
+
+                if (!linkError && linkData) {
+                    return NextResponse.json({
+                        success: true,
+                        redirectUrl: linkData.properties?.action_link || null,
+                        message: 'Ya tienes una cuenta. Iniciando sesión...',
+                        alreadyRegistered: true,
+                    })
+                }
+            }
+
             return NextResponse.json(
-                { error: 'Este contacto ya tiene un usuario asociado' },
+                { error: 'Este contacto ya tiene un usuario asociado. Intenta iniciar sesión con tu email.' },
                 { status: 400 }
             )
         }

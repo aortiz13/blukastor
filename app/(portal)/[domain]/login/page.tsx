@@ -69,11 +69,13 @@ export default function LoginPage() {
     const logoUrl = company?.logo_url || ''
     const primaryColor = company?.primary_color || '#111827'
     const coverImageUrl = company?.cover_image_url || ''
+    const coverImageMobileUrl = company?.cover_image_mobile_url || ''
     const companyName = company?.name || 'Portal'
     const fontHeading = company?.font_heading || 'Inter'
     const fontBody = company?.font_body || 'Inter'
     const portalConfig = (company?.frontend_config as any)?.portal || {}
     const welcomeText = portalConfig.login_welcome_text || `Bienvenido al portal de ${companyName}`
+    const mobileCover = coverImageMobileUrl || coverImageUrl
 
     // Google Fonts
     const fontsToLoad = [...new Set([fontHeading, fontBody])]
@@ -91,10 +93,10 @@ export default function LoginPage() {
         <>
             <link rel="stylesheet" href={googleFontsUrl} />
             <div
-                className="flex min-h-screen"
+                className="flex flex-col lg:flex-row min-h-screen"
                 style={{ fontFamily: `'${fontBody}', sans-serif` }}
             >
-                {/* Left side — Cover Image */}
+                {/* Desktop: Left side — Cover Image */}
                 {coverImageUrl && (
                     <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative">
                         <img
@@ -104,9 +106,6 @@ export default function LoginPage() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                         <div className="relative z-10 flex flex-col justify-end p-12">
-                            {logoUrl && (
-                                <img src={logoUrl} alt={companyName} className="h-10 w-auto mb-6 brightness-0 invert" />
-                            )}
                             <h2
                                 className="text-3xl font-bold text-white max-w-md leading-tight"
                                 style={{ fontFamily: `'${fontHeading}', sans-serif` }}
@@ -117,31 +116,32 @@ export default function LoginPage() {
                     </div>
                 )}
 
+                {/* Mobile: Cover Image Banner */}
+                {mobileCover && (
+                    <div className="lg:hidden relative w-full h-48 sm:h-56 overflow-hidden">
+                        <img
+                            src={mobileCover}
+                            alt={companyName}
+                            className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                    </div>
+                )}
+
                 {/* Right side — Login Form */}
                 <div
-                    className={`w-full ${coverImageUrl ? 'lg:w-1/2' : ''} flex items-center justify-center p-8 lg:p-12 relative ${!coverImageUrl ? 'bg-gray-50' : ''}`}
+                    className={`w-full ${coverImageUrl ? 'lg:w-1/2' : ''} flex flex-1 items-center justify-center p-8 lg:p-12 relative ${!coverImageUrl ? 'bg-gray-50' : ''}`}
                     style={{ backgroundColor: company.login_bg_color || '#ffffff' }}
                 >
                     <div className="w-full max-w-sm space-y-8">
-                        {/* Logo + Header */}
+                        {/* Header */}
                         <div className="text-center">
-                            {logoUrl && (
-                                <img
-                                    src={logoUrl}
-                                    alt={companyName}
-                                    className="mx-auto h-14 w-auto mb-6 object-contain"
-                                />
-                            )}
                             <h1
                                 className="text-2xl font-bold text-gray-900"
                                 style={{ fontFamily: `'${fontHeading}', sans-serif` }}
                             >
-                                Entrar a {companyName}
-                            </h1>
-                            {/* Show welcome text on mobile when no cover image */}
-                            <p className="mt-2 text-sm text-gray-500 lg:hidden">
                                 {welcomeText}
-                            </p>
+                            </h1>
                         </div>
 
                         {/* Login Form */}
@@ -178,7 +178,7 @@ export default function LoginPage() {
 
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-200"></span></div>
-                            <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-3 text-gray-400">O también</span></div>
+                            <div className="relative flex justify-center text-xs uppercase"><span className="px-3 text-gray-400" style={{ backgroundColor: company.login_bg_color || '#ffffff' }}>O también</span></div>
                         </div>
 
                         <button

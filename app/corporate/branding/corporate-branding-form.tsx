@@ -417,11 +417,6 @@ export function CorporateBrandingForm({ initialData, canEdit }: CorporateBrandin
             </div>
             {/* Right: Form */}
             <div className="w-1/2 flex flex-col items-center justify-center p-4 relative" style={{ backgroundColor: loginBgColor }}>
-                {logoUrl ? (
-                    <img src={logoUrl} alt="" className="h-6 object-contain mb-2" />
-                ) : (
-                    <Building2 className="w-6 h-6 text-gray-300 mb-2" />
-                )}
                 <h3 className="text-[10px] font-bold text-gray-800 mb-0.5 text-center" style={{ fontFamily: fontHeading }}>
                     {loginWelcomeText || 'Bienvenido'}
                 </h3>
@@ -452,11 +447,6 @@ export function CorporateBrandingForm({ initialData, canEdit }: CorporateBrandin
                 )}
             </div>
             <div className="flex flex-col items-center p-3 relative" style={{ backgroundColor: loginBgColor }}>
-                {logoUrl ? (
-                    <img src={logoUrl} alt="" className="h-5 object-contain mb-1.5" />
-                ) : (
-                    <Building2 className="w-5 h-5 text-gray-300 mb-1.5" />
-                )}
                 <h3 className="text-[9px] font-bold text-gray-800 mb-0.5 text-center" style={{ fontFamily: fontHeading }}>
                     {loginWelcomeText || 'Bienvenido'}
                 </h3>

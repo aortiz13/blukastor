@@ -309,11 +309,9 @@ export default function BrandingForm({ companyId, initialData }: BrandingFormPro
                 </div>
                 {/* Right: Form */}
                 <div className="w-1/2 flex flex-col items-center justify-center p-8 relative" style={{ backgroundColor: loginBgColor }}>
-                    {logoUrl ? (
-                        <img src={logoUrl} alt="" className="h-10 object-contain mb-6" />
-                    ) : (
-                        <Building2 className="w-10 h-10 text-gray-300 mb-6" />
-                    )}
+                    <h3 className="text-base font-bold text-gray-900 mb-6 text-center" style={{ fontFamily: fontHeading }}>
+                        {loginWelcomeText || 'Bienvenido'}
+                    </h3>
                     <div className="w-full space-y-3">
                         <div className="h-10 rounded-xl border border-gray-200 bg-gray-50/50 w-full" />
                         <div className="h-10 rounded-xl border border-gray-200 bg-gray-50/50 w-full" />

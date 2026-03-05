@@ -3,6 +3,7 @@ import { getCorporateAdminProfile, resolveActiveCompany } from '@/lib/actions/co
 import { Users, Search, Phone, Calendar, Tag, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+import { InviteUserButton } from './invite-user-modal'
 
 export default async function CorporateUsersPage() {
     const supabase = await createClient()
@@ -50,11 +51,14 @@ export default async function CorporateUsersPage() {
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Usuarios</h1>
-                <p className="text-gray-500 mt-1">
-                    Todos los usuarios asociados a <span className="font-semibold text-gray-700">{activeCompany.companyName}</span>
-                </p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Usuarios</h1>
+                    <p className="text-gray-500 mt-1">
+                        Todos los usuarios asociados a <span className="font-semibold text-gray-700">{activeCompany.companyName}</span>
+                    </p>
+                </div>
+                <InviteUserButton companyName={activeCompany.companyName} />
             </div>
 
             {/* Stats */}

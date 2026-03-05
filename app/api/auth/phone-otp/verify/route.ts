@@ -46,7 +46,6 @@ export async function POST(request: Request) {
 
         // 1. Verify OTP
         const { data: otpRecord, error: otpError } = await supabase
-            .schema('wa')
             .from('phone_otps')
             .select('id, expires_at')
             .eq('phone', normalizedPhone)
@@ -74,14 +73,12 @@ export async function POST(request: Request) {
 
         // 2. Mark OTP as used
         await supabase
-            .schema('wa')
             .from('phone_otps')
             .update({ used: true })
             .eq('id', otpRecord.id)
 
         // 3. Find the contact and their auth user
         const { data: contact } = await supabase
-            .schema('wa')
             .from('contacts')
             .select('id, user_id, phone')
             .eq('phone', normalizedPhone)

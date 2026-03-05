@@ -65,10 +65,9 @@ export async function POST(request: Request) {
         const normalizedPhone = phone.startsWith('+') ? phone : `+${phone}`
         console.log('[Phone OTP] Normalized Phone:', normalizedPhone)
 
-        // 1. Check if this phone exists in wa.contacts for this company
-        console.log('[Phone OTP] Querying wa.contacts for phone:', normalizedPhone)
+        // 1. Check if this phone exists in public.contacts for this company
+        console.log('[Phone OTP] Querying contacts for phone:', normalizedPhone)
         const { data: contacts, error: contactError } = await supabase
-            .schema('wa')
             .from('contacts')
             .select('id, phone, push_name, user_id, client_company_id')
             .eq('phone', normalizedPhone)
@@ -101,11 +100,11 @@ export async function POST(request: Request) {
         console.log('[Phone OTP] Contact matched successfully:', contact.push_name)
 
         // 2. Get company info and WhatsApp instance
+        // admin_wa_instances view uses 'company_id' instead of 'client_company_id'
         const { data: instance } = await supabase
-            .schema('wa')
-            .from('wa_instances')
-            .select('instance_name, client_company_id')
-            .eq('client_company_id', companyId)
+            .from('admin_wa_instances')
+            .select('instance_name, company_id')
+            .eq('company_id', companyId)
             .limit(1)
             .single()
 
@@ -128,7 +127,6 @@ export async function POST(request: Request) {
 
         // 4. Invalidate any previous OTPs for this phone+company
         await supabase
-            .schema('wa')
             .from('phone_otps')
             .update({ used: true })
             .eq('phone', normalizedPhone)
@@ -137,7 +135,6 @@ export async function POST(request: Request) {
 
         // 5. Store OTP in database
         const { error: otpError } = await supabase
-            .schema('wa')
             .from('phone_otps')
             .insert({
                 phone: normalizedPhone,

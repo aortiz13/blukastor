@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { createServiceClient } from '@/lib/supabase/service'
 import { NextResponse } from 'next/server'
 
 export async function POST(
@@ -8,8 +8,7 @@ export async function POST(
 ) {
     try {
         const supabase = await createClient()
-        // ... existing code ...
-        const { id } = await params
+        const { id: companyId } = await params
 
         // Check if user is super admin
         const { data: { user } } = await supabase.auth.getUser()
@@ -29,10 +28,28 @@ export async function POST(
 
         // Parse request body
         const body = await request.json()
-        const { email, role = 'user' } = body
+        const { email, role = 'viewer' } = body
 
         if (!email) {
             return NextResponse.json({ error: 'Email is required' }, { status: 400 })
+        }
+
+        // Fetch company details
+        const { data: company } = await supabase
+            .from('client_companies')
+            .select('name, custom_domain')
+            .eq('id', companyId)
+            .single()
+
+        const companyName = company?.name || 'Portal'
+        const companyDomain = company?.custom_domain || null
+        const senderName = user.user_metadata?.full_name || user.email || 'Administrador'
+
+        let redirectUrl: string
+        if (companyDomain) {
+            redirectUrl = `https://${companyDomain}/login`
+        } else {
+            redirectUrl = `${process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'https://admin.autoflowai.io'}/login`
         }
 
         // Check if user exists in auth.users
@@ -42,28 +59,29 @@ export async function POST(
         let authUserId: string
 
         if (existingAuthUser && existingAuthUser.length > 0) {
-            // User exists in auth
             authUserId = existingAuthUser[0].id
 
-            // Check if already an admin for this company
+            // Check if already associated with this company
             const { data: existingAdmin } = await supabase
                 .from('admin_profiles')
                 .select('auth_user_id')
                 .eq('auth_user_id', authUserId)
-                .eq('company_id', id)
+                .eq('company_id', companyId)
                 .single()
 
             if (existingAdmin) {
-                return NextResponse.json({ error: 'User is already an admin for this company' }, { status: 400 })
+                return NextResponse.json(
+                    { error: 'El usuario ya está asociado a esta empresa' },
+                    { status: 400 }
+                )
             }
 
-            // Add as admin
+            // Add to company
             const { data: admin, error: adminError } = await supabase
-                .schema('wa')
-                .from('admins')
+                .from('admin_profiles')
                 .insert({
                     auth_user_id: authUserId,
-                    client_company_id: id,
+                    company_id: companyId,
                     role,
                     scope: 'instance'
                 })
@@ -78,45 +96,102 @@ export async function POST(
             return NextResponse.json({
                 success: true,
                 admin,
-                message: 'User added as admin successfully'
+                message: `Usuario agregado exitosamente a ${companyName}`
             })
         } else {
-            // User doesn't exist - Invite them
-            const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+            // User doesn't exist — generate invite link + send custom email
+            const supabaseAdmin = createServiceClient()
 
-            if (!serviceRoleKey) {
-                return NextResponse.json({
-                    error: 'User not found. Cannot invite without SUPABASE_SERVICE_ROLE_KEY configured.'
-                }, { status: 400 }) // 400 because it's a server config issue blocking the request
-            }
-
-            const supabaseAdmin = createSupabaseClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                serviceRoleKey,
-                {
-                    auth: {
-                        autoRefreshToken: false,
-                        persistSession: false
+            const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+                type: 'invite',
+                email,
+                options: {
+                    redirectTo: redirectUrl,
+                    data: {
+                        company_name: companyName,
+                        company_id: companyId,
+                        invited_role: role,
                     }
                 }
-            )
+            })
 
-            const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email)
+            if (linkError) {
+                // If user already registered, find and add them
+                if (linkError.message?.includes('already been registered') ||
+                    linkError.message?.includes('already exists')) {
 
-            if (inviteError) {
-                console.error('Error inviting user:', inviteError)
-                return NextResponse.json({ error: 'Failed to invite user: ' + inviteError.message }, { status: 500 })
+                    const { data: { users } } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 })
+                    const existingUser = users?.find(
+                        (u: any) => u.email?.toLowerCase() === email.toLowerCase()
+                    )
+
+                    if (existingUser) {
+                        const { data: alreadyAdmin } = await supabase
+                            .from('admin_profiles')
+                            .select('auth_user_id')
+                            .eq('auth_user_id', existingUser.id)
+                            .eq('company_id', companyId)
+                            .single()
+
+                        if (alreadyAdmin) {
+                            return NextResponse.json(
+                                { error: 'El usuario ya está asociado a esta empresa' },
+                                { status: 400 }
+                            )
+                        }
+
+                        const { data: admin, error: adminError } = await supabase
+                            .from('admin_profiles')
+                            .insert({
+                                auth_user_id: existingUser.id,
+                                company_id: companyId,
+                                role,
+                                scope: 'instance'
+                            })
+                            .select()
+                            .single()
+
+                        if (adminError) {
+                            return NextResponse.json({ error: adminError.message }, { status: 500 })
+                        }
+
+                        return NextResponse.json({
+                            success: true,
+                            admin,
+                            message: `Usuario agregado exitosamente a ${companyName}`
+                        })
+                    }
+                }
+
+                console.error('Error generating invite link:', linkError)
+                return NextResponse.json({ error: 'Error al invitar usuario: ' + linkError.message }, { status: 500 })
             }
 
-            authUserId = inviteData.user.id
+            const inviteLink = linkData.properties?.action_link || redirectUrl
+            authUserId = linkData.user.id
 
-            // Now add as admin
+            // Send custom email via Edge Function (Resend)
+            try {
+                await supabase.functions.invoke('send-company-invite', {
+                    body: {
+                        email,
+                        companyName,
+                        senderName,
+                        inviteLink,
+                        role,
+                        companyDomain,
+                    }
+                })
+            } catch (emailError) {
+                console.error('Error sending invite email (non-blocking):', emailError)
+            }
+
+            // Add to company
             const { data: admin, error: adminError } = await supabase
-                .schema('wa')
-                .from('admins')
+                .from('admin_profiles')
                 .insert({
                     auth_user_id: authUserId,
-                    client_company_id: id,
+                    company_id: companyId,
                     role,
                     scope: 'instance'
                 })
@@ -131,7 +206,7 @@ export async function POST(
             return NextResponse.json({
                 success: true,
                 admin,
-                message: 'User invited and added successfully'
+                message: `Invitación enviada y usuario agregado a ${companyName}`
             })
         }
     } catch (error: any) {

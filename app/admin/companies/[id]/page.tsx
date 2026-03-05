@@ -58,7 +58,7 @@ export default async function CompanyDetailPage({ params }: PageProps) {
                 <div className="flex items-start justify-between">
                     <div className="flex items-center gap-4">
                         {company.logo_url ? (
-                            <img src={company.logo_url} alt={company.name} className="w-20 h-20 rounded-2xl object-cover shadow-lg" />
+                            <img src={company.logo_url} alt={company.name} className="w-20 h-20 rounded-2xl object-contain bg-white shadow-lg border border-gray-100 p-1" />
                         ) : (
                             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-black text-3xl shadow-lg">
                                 {company.name.charAt(0).toUpperCase()}
@@ -105,7 +105,7 @@ export default async function CompanyDetailPage({ params }: PageProps) {
                         </div>
                     </div>
                     <p className="text-sm text-gray-600 mb-1">Usuarios</p>
-                    <p className="text-3xl font-black text-gray-900">{company.user_count || 0}</p>
+                    <p className="text-3xl font-black text-gray-900">{company.contact_count || 0}</p>
                 </div>
 
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">

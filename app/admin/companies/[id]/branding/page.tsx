@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Palette } from 'lucide-react'
-import BrandingForm from './branding-form'
+import { CorporateBrandingForm } from '@/app/corporate/branding/corporate-branding-form'
 
 interface PageProps {
     params: Promise<{ id: string }>
@@ -38,24 +38,35 @@ export default async function CompanyBrandingPage({ params }: PageProps) {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+        <div className="space-y-4">
             {/* Header */}
-            <div className="mb-8">
+            <div>
                 <Link href={`/admin/companies/${id}`} className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4">
                     <ArrowLeft className="w-4 h-4" />
                     <span className="font-medium">Volver a {company.name}</span>
                 </Link>
 
                 <div className="flex items-center gap-3 mb-2">
-                    <div className="p-3 bg-pink-100 rounded-xl">
+                    <div className="p-3 bg-pink-100 rounded-2xl">
                         <Palette className="w-6 h-6 text-pink-600" />
                     </div>
-                    <h1 className="text-4xl font-black text-gray-900">Branding</h1>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                            Branding &amp; Personalización
+                        </h1>
+                        <p className="text-gray-500 mt-0.5">
+                            Personaliza la apariencia del portal de {company.name}
+                        </p>
+                    </div>
                 </div>
-                <p className="text-gray-600">Personaliza la apariencia de esta instancia</p>
             </div>
 
-            <BrandingForm companyId={id} initialData={company} />
+            <CorporateBrandingForm
+                initialData={company}
+                canEdit={true}
+                saveEndpoint={`/api/admin/companies/${id}/branding`}
+                companyIdOverride={id}
+            />
         </div>
     )
 }

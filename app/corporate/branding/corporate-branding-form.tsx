@@ -12,6 +12,8 @@ import {
 interface CorporateBrandingFormProps {
     initialData: Record<string, any>
     canEdit: boolean
+    saveEndpoint?: string
+    companyIdOverride?: string
 }
 
 const GOOGLE_FONTS: { value: string; category: string }[] = [
@@ -304,7 +306,7 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
 
 // ─── Main Component ─────────────────────────────────────────────────
 
-export function CorporateBrandingForm({ initialData, canEdit }: CorporateBrandingFormProps) {
+export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, companyIdOverride }: CorporateBrandingFormProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState<TabId>('logos')
@@ -312,7 +314,7 @@ export function CorporateBrandingForm({ initialData, canEdit }: CorporateBrandin
     const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop')
     const frontendConfig = (initialData.frontend_config || {}) as Record<string, any>
     const disabled = !canEdit
-    const companyId = initialData.id || ''
+    const companyId = companyIdOverride || initialData.id || ''
 
     // --- State for all sections ---
     // Logos
@@ -368,7 +370,8 @@ export function CorporateBrandingForm({ initialData, canEdit }: CorporateBrandin
         if (!canEdit) return
         setLoading(true)
         try {
-            const res = await fetch('/api/corporate/company-branding', {
+            const endpoint = saveEndpoint || '/api/corporate/company-branding'
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(fields)

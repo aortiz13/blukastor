@@ -34,7 +34,7 @@ export default async function CompaniesPage() {
     // Calculate metrics
     const totalCompanies = companies?.length || 0
     const activeCompanies = companies?.filter(c => c.instance_status === 'active').length || 0
-    const totalUsers = companies?.reduce((sum, c) => sum + (c.user_count || 0), 0) || 0
+    const totalUsers = companies?.reduce((sum, c) => sum + (c.contact_count || 0), 0) || 0
     const trialCompanies = companies?.filter(c => c.instance_status === 'trial').length || 0
 
     return (
@@ -110,7 +110,7 @@ export default async function CompaniesPage() {
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
                                         {company.logo_url ? (
-                                            <img src={company.logo_url} alt={company.name} className="w-10 h-10 rounded-xl object-cover" />
+                                            <img src={company.logo_url} alt={company.name} className="w-10 h-10 rounded-xl object-contain bg-white border border-gray-100 p-0.5" />
                                         ) : (
                                             <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center font-bold text-gray-400">
                                                 {company.name.charAt(0)}
@@ -146,7 +146,7 @@ export default async function CompaniesPage() {
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
                                         <Users size={14} className="text-gray-400" />
-                                        <span className="font-medium text-gray-900">{company.user_count || 0}</span>
+                                        <span className="font-medium text-gray-900">{company.contact_count || 0}</span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 font-mono text-xs text-gray-600">

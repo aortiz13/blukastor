@@ -26,7 +26,7 @@ export function InviteUserModal({ isOpen, onClose }: InviteUserModalProps) {
     const [loadingProjects, setLoadingProjects] = useState(false)
 
     const [email, setEmail] = useState('')
-    const [role, setRole] = useState('user')
+    const [role, setRole] = useState('viewer')
     const [companyId, setCompanyId] = useState('')
     const [selectedProjects, setSelectedProjects] = useState<string[]>([])
 
@@ -217,12 +217,12 @@ export function InviteUserModal({ isOpen, onClose }: InviteUserModalProps) {
                             disabled={loading}
                             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:bg-gray-50"
                         >
-                            <option value="user">Usuario</option>
+                            <option value="viewer">Usuario</option>
                             <option value="admin">Administrador</option>
                         </select>
                         <div className="bg-gray-50 rounded-xl p-3 mt-2 space-y-1 text-xs text-gray-600">
-                            <p><strong>Usuario:</strong> Acceso básico a la plataforma</p>
-                            <p><strong>Administrador:</strong> Gestión de usuarios y configuración completa</p>
+                            <p><strong>Usuario:</strong> Acceso al portal de la empresa</p>
+                            <p><strong>Administrador:</strong> Acceso al portal corporativo y al portal de la empresa</p>
                         </div>
                     </div>
 

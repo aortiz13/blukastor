@@ -124,7 +124,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Forbidden: Super admin privileges required' }, { status: 403 })
         }
 
-        // Remove user from admin_profiles table
+        // Remove user from admin_profiles
         const { error: adminError } = await supabase
             .from('admin_profiles')
             .delete()

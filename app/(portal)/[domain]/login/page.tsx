@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getCompanyByDomain } from '@/lib/data/companies'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Mail, Phone, MessageCircle } from 'lucide-react'
 import { useParams } from 'next/navigation'
 
 export default function LoginPage() {
@@ -13,8 +13,18 @@ export default function LoginPage() {
 
     const [company, setCompany] = useState<any>(null)
     const [loadingCompany, setLoadingCompany] = useState(true)
+    const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email')
+
+    // Email state
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+
+    // Phone state
+    const [phone, setPhone] = useState('')
+    const [otpCode, setOtpCode] = useState('')
+    const [otpSent, setOtpSent] = useState(false)
+    const [contactName, setContactName] = useState('')
+
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState('')
     const supabase = createClient()
@@ -63,6 +73,70 @@ export default function LoginPage() {
         } else {
             window.location.href = '/'
         }
+    }
+
+    const handleRequestOtp = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsLoading(true)
+        setMessage('')
+
+        try {
+            const res = await fetch('/api/auth/phone-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phone: phone.startsWith('+') ? phone : `+${phone}`,
+                    companyId: company?.id,
+                }),
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                setMessage('Error: ' + (data.error || 'Error al enviar código'))
+            } else {
+                setOtpSent(true)
+                setContactName(data.contactName || '')
+                setMessage('✅ Código enviado por WhatsApp')
+            }
+        } catch (err: any) {
+            setMessage('Error: ' + err.message)
+        }
+
+        setIsLoading(false)
+    }
+
+    const handleVerifyOtp = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsLoading(true)
+        setMessage('')
+
+        try {
+            const res = await fetch('/api/auth/phone-otp/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phone: phone.startsWith('+') ? phone : `+${phone}`,
+                    otp: otpCode,
+                    companyId: company?.id,
+                }),
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                setMessage('Error: ' + (data.error || 'Código inválido'))
+            } else if (data.redirectUrl) {
+                // Use the magic link to establish session
+                window.location.href = data.redirectUrl
+            } else {
+                setMessage(data.message || 'Verificación exitosa')
+            }
+        } catch (err: any) {
+            setMessage('Error: ' + err.message)
+        }
+
+        setIsLoading(false)
     }
 
     // Read branding from top-level company columns (not frontend_config)
@@ -142,50 +216,172 @@ export default function LoginPage() {
                             </h1>
                         </div>
 
-                        {/* Login Form */}
-                        <form onSubmit={handlePasswordLogin} className="space-y-4">
-                            <div className="space-y-3">
-                                <input
-                                    type="email"
-                                    required
-                                    className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
-                                    style={{ '--tw-ring-color': primaryColor + '40', borderColor: 'rgb(229,231,235)' } as any}
-                                    placeholder="Email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-                                <input
-                                    type="password"
-                                    required
-                                    className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
-                                    style={{ '--tw-ring-color': primaryColor + '40' } as any}
-                                    placeholder="Contraseña"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                            </div>
+                        {/* Method Toggle */}
+                        <div className="flex rounded-xl border border-gray-200 overflow-hidden">
                             <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
-                                style={{ backgroundColor: primaryColor }}
+                                onClick={() => { setLoginMethod('email'); setMessage('') }}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-all ${loginMethod === 'email'
+                                        ? 'text-white'
+                                        : 'text-gray-500 hover:text-gray-700 bg-white'
+                                    }`}
+                                style={loginMethod === 'email' ? { backgroundColor: primaryColor } : {}}
                             >
-                                {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Entrar con Contraseña'}
+                                <Mail size={16} />
+                                Email
                             </button>
-                        </form>
-
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-200"></span></div>
-                            <div className="relative flex justify-center text-xs uppercase"><span className="px-3 text-gray-400" style={{ backgroundColor: company.login_bg_color || '#ffffff' }}>O también</span></div>
+                            <button
+                                onClick={() => { setLoginMethod('phone'); setMessage('') }}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-all ${loginMethod === 'phone'
+                                        ? 'text-white'
+                                        : 'text-gray-500 hover:text-gray-700 bg-white'
+                                    }`}
+                                style={loginMethod === 'phone' ? { backgroundColor: primaryColor } : {}}
+                            >
+                                <MessageCircle size={16} />
+                                WhatsApp
+                            </button>
                         </div>
 
-                        <button
-                            onClick={handleMagicLink}
-                            disabled={isLoading || !email}
-                            className="flex w-full justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
-                        >
-                            Enviar Magic Link
-                        </button>
+                        {/* Email Login */}
+                        {loginMethod === 'email' && (
+                            <>
+                                <form onSubmit={handlePasswordLogin} className="space-y-4">
+                                    <div className="space-y-3">
+                                        <input
+                                            type="email"
+                                            required
+                                            className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
+                                            style={{ '--tw-ring-color': primaryColor + '40', borderColor: 'rgb(229,231,235)' } as any}
+                                            placeholder="Email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                        />
+                                        <input
+                                            type="password"
+                                            required
+                                            className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
+                                            style={{ '--tw-ring-color': primaryColor + '40' } as any}
+                                            placeholder="Contraseña"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                                        style={{ backgroundColor: primaryColor }}
+                                    >
+                                        {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Entrar con Contraseña'}
+                                    </button>
+                                </form>
+
+                                <div className="relative">
+                                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-200"></span></div>
+                                    <div className="relative flex justify-center text-xs uppercase"><span className="px-3 text-gray-400" style={{ backgroundColor: company.login_bg_color || '#ffffff' }}>O también</span></div>
+                                </div>
+
+                                <button
+                                    onClick={handleMagicLink}
+                                    disabled={isLoading || !email}
+                                    className="flex w-full justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+                                >
+                                    Enviar Magic Link
+                                </button>
+                            </>
+                        )}
+
+                        {/* WhatsApp Login */}
+                        {loginMethod === 'phone' && (
+                            <>
+                                {!otpSent ? (
+                                    <form onSubmit={handleRequestOtp} className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Número de WhatsApp
+                                            </label>
+                                            <div className="relative">
+                                                <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                <input
+                                                    type="tel"
+                                                    required
+                                                    className="block w-full rounded-xl border border-gray-200 pl-11 pr-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
+                                                    style={{ '--tw-ring-color': primaryColor + '40' } as any}
+                                                    placeholder="+56912345678"
+                                                    value={phone}
+                                                    onChange={(e) => setPhone(e.target.value)}
+                                                />
+                                            </div>
+                                            <p className="text-xs text-gray-400">
+                                                Incluye el código de país (ej: +56, +1, +54)
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            disabled={isLoading || !phone}
+                                            className="flex w-full justify-center items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                                            style={{ backgroundColor: '#25D366' }}
+                                        >
+                                            {isLoading ? (
+                                                <Loader2 className="animate-spin" size={18} />
+                                            ) : (
+                                                <>
+                                                    <MessageCircle size={18} />
+                                                    Enviar código por WhatsApp
+                                                </>
+                                            )}
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <form onSubmit={handleVerifyOtp} className="space-y-4">
+                                        <div className="text-center space-y-2">
+                                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-50">
+                                                <MessageCircle size={24} className="text-green-500" />
+                                            </div>
+                                            <p className="text-sm text-gray-600">
+                                                Enviamos un código a<br />
+                                                <span className="font-bold text-gray-900">{phone}</span>
+                                            </p>
+                                            {contactName && (
+                                                <p className="text-xs text-gray-400">
+                                                    Hola {contactName} 👋
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Código de verificación
+                                            </label>
+                                            <input
+                                                type="text"
+                                                required
+                                                maxLength={6}
+                                                className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-center text-2xl font-bold tracking-[0.5em] focus:ring-2 focus:outline-none transition"
+                                                style={{ '--tw-ring-color': primaryColor + '40' } as any}
+                                                placeholder="------"
+                                                value={otpCode}
+                                                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                            />
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            disabled={isLoading || otpCode.length !== 6}
+                                            className="flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                                            style={{ backgroundColor: primaryColor }}
+                                        >
+                                            {isLoading ? <Loader2 className="animate-spin" size={18} /> : 'Verificar código'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setOtpSent(false); setOtpCode(''); setMessage('') }}
+                                            className="flex w-full justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition"
+                                        >
+                                            Cambiar número
+                                        </button>
+                                    </form>
+                                )}
+                            </>
+                        )}
 
                         {message && (
                             <p className={`text-center text-sm font-medium ${message.startsWith('Error') ? 'text-red-500' : 'text-emerald-600'}`}>

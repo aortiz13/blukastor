@@ -298,17 +298,14 @@ export default function BrandingForm({ companyId, initialData }: BrandingFormPro
                     ) : (
                         <div className="w-full h-full bg-gradient-to-br from-indigo-600 to-purple-700 opacity-60" />
                     )}
-                    <div className="absolute bottom-10 left-10 right-10 text-white">
-                        <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: fontHeading }}>
-                            {loginWelcomeText || 'Bienvenido'}
-                        </h3>
-                        <p className="text-sm opacity-80" style={{ fontFamily: fontBody }}>
-                            Accede a tu cuenta corporativa.
-                        </p>
-                    </div>
                 </div>
                 {/* Right: Form */}
                 <div className="w-1/2 flex flex-col items-center justify-center p-8 relative" style={{ backgroundColor: loginBgColor }}>
+                    {logoUrl ? (
+                        <img src={logoUrl} alt="" className="h-10 object-contain mb-4" />
+                    ) : (
+                        <Building2 className="w-10 h-10 text-gray-300 mb-4" />
+                    )}
                     <h3 className="text-base font-bold text-gray-900 mb-6 text-center" style={{ fontFamily: fontHeading }}>
                         {loginWelcomeText || 'Bienvenido'}
                     </h3>

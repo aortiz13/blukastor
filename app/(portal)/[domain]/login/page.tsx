@@ -104,15 +104,6 @@ export default function LoginPage() {
                             alt={companyName}
                             className="absolute inset-0 w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                        <div className="relative z-10 flex flex-col justify-end p-12">
-                            <h2
-                                className="text-3xl font-bold text-white max-w-md leading-tight"
-                                style={{ fontFamily: `'${fontHeading}', sans-serif` }}
-                            >
-                                {welcomeText}
-                            </h2>
-                        </div>
                     </div>
                 )}
 
@@ -134,8 +125,15 @@ export default function LoginPage() {
                     style={{ backgroundColor: company.login_bg_color || '#ffffff' }}
                 >
                     <div className="w-full max-w-sm space-y-8">
-                        {/* Header */}
+                        {/* Logo + Header */}
                         <div className="text-center">
+                            {logoUrl && (
+                                <img
+                                    src={logoUrl}
+                                    alt={companyName}
+                                    className="mx-auto h-14 w-auto mb-6 object-contain"
+                                />
+                            )}
                             <h1
                                 className="text-2xl font-bold text-gray-900"
                                 style={{ fontFamily: `'${fontHeading}', sans-serif` }}

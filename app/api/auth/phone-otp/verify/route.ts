@@ -1,14 +1,43 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
+async function resolveCompanyId(supabase: any, companyId?: string, domain?: string): Promise<string | null> {
+    if (companyId) return companyId
+    if (!domain) return null
+
+    const { data: byDomain } = await supabase
+        .from('client_companies').select('id').eq('custom_domain', domain).limit(1).single()
+    if (byDomain) return byDomain.id
+
+    const { data: byConfig } = await supabase
+        .from('client_companies').select('id').eq('frontend_config->>domain', domain).limit(1).single()
+    if (byConfig) return byConfig.id
+
+    const subdomain = domain.split('.')[0]
+    if (subdomain) {
+        const { data: byName } = await supabase
+            .from('client_companies').select('id, name').ilike('name', `%${subdomain}%`).limit(1).single()
+        if (byName) return byName.id
+    }
+    return null
+}
+
 export async function POST(request: Request) {
     try {
         const supabase = await createServiceClient()
-        const { phone, otp, companyId } = await request.json()
+        const { phone, otp, companyId: rawCompanyId, domain } = await request.json()
 
-        if (!phone || !otp || !companyId) {
+        if (!phone || !otp) {
             return NextResponse.json(
-                { error: 'Teléfono, código y empresa son requeridos' },
+                { error: 'Teléfono y código son requeridos' },
+                { status: 400 }
+            )
+        }
+
+        const companyId = await resolveCompanyId(supabase, rawCompanyId, domain)
+        if (!companyId) {
+            return NextResponse.json(
+                { error: 'No se pudo identificar la empresa' },
                 { status: 400 }
             )
         }

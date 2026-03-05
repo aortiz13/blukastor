@@ -87,6 +87,7 @@ export default function LoginPage() {
                 body: JSON.stringify({
                     phone: phone.startsWith('+') ? phone : `+${phone}`,
                     companyId: company?.id,
+                    domain,
                 }),
             })
 
@@ -119,6 +120,7 @@ export default function LoginPage() {
                     phone: phone.startsWith('+') ? phone : `+${phone}`,
                     otp: otpCode,
                     companyId: company?.id,
+                    domain,
                 }),
             })
 
@@ -221,8 +223,8 @@ export default function LoginPage() {
                             <button
                                 onClick={() => { setLoginMethod('email'); setMessage('') }}
                                 className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-all ${loginMethod === 'email'
-                                        ? 'text-white'
-                                        : 'text-gray-500 hover:text-gray-700 bg-white'
+                                    ? 'text-white'
+                                    : 'text-gray-500 hover:text-gray-700 bg-white'
                                     }`}
                                 style={loginMethod === 'email' ? { backgroundColor: primaryColor } : {}}
                             >
@@ -232,8 +234,8 @@ export default function LoginPage() {
                             <button
                                 onClick={() => { setLoginMethod('phone'); setMessage('') }}
                                 className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-all ${loginMethod === 'phone'
-                                        ? 'text-white'
-                                        : 'text-gray-500 hover:text-gray-700 bg-white'
+                                    ? 'text-white'
+                                    : 'text-gray-500 hover:text-gray-700 bg-white'
                                     }`}
                                 style={loginMethod === 'phone' ? { backgroundColor: primaryColor } : {}}
                             >

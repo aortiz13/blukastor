@@ -22,6 +22,10 @@ export default async function DashboardLayout({
         redirect(`/login?next=${encodeURIComponent(`/${domain}/dashboard`)}`)
     }
 
+    // Get user display name
+    const userMeta = user.user_metadata || {}
+    const userName = userMeta.full_name || userMeta.name || user.email?.split('@')[0] || 'Usuario'
+
     // 2. Fetch Company Data for Sidebar
     const company = await getCompanyByDomain(supabase, domain)
     // Note: Parent layout already checked company existence, but we need data here.
@@ -44,6 +48,7 @@ export default async function DashboardLayout({
                 companyName={company.name}
                 logoUrl={company?.logo_url || branding.logo_url}
                 primaryColor={primaryColor}
+                userName={userName}
             />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">

@@ -26,9 +26,10 @@ interface SidebarProps {
     companyName: string
     logoUrl?: string
     primaryColor?: string
+    userName?: string
 }
 
-export function Sidebar({ domain, companyName, logoUrl, primaryColor }: SidebarProps) {
+export function Sidebar({ domain, companyName, logoUrl, primaryColor, userName }: SidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
     const supabase = createClient()
@@ -87,7 +88,7 @@ export function Sidebar({ domain, companyName, logoUrl, primaryColor }: SidebarP
                                 {companyName}
                             </span>
                             <span className="text-[10px] text-gray-400 font-medium tracking-wider uppercase whitespace-nowrap">
-                                Blukastor Portal
+                                {userName || 'Portal'}
                             </span>
                         </div>
                     )}

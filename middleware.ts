@@ -14,7 +14,7 @@ export default async function middleware(request: NextRequest) {
     // Ignore internal nextjs paths and static files
     // Refined to catch common file extensions instead of any dot
     const isStaticFile = /\.(png|jpg|jpeg|gif|webp|svg|ico|css|js|mjs|txt|xml|json)$/.test(path)
-    if (path.startsWith('/_next') || isStaticFile || path.startsWith('/api') || path.startsWith('/auth') || path.startsWith('/admin')) {
+    if (path.startsWith('/_next') || isStaticFile || path.startsWith('/api') || path.startsWith('/auth') || path.startsWith('/admin') || path.startsWith('/corporate')) {
         return supabaseResponse
     }
 

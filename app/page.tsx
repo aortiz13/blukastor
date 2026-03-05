@@ -31,9 +31,12 @@ export default async function Home() {
               <p className="font-bold text-gray-900 mt-1 text-lg">{user.email}</p>
             </div>
 
-            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50/50">
+            <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50/50">
               <a href="/admin/dashboard" className={`flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition ${isAdmin ? 'bg-black text-white hover:bg-gray-800' : 'bg-white text-gray-300 border border-gray-100 cursor-not-allowed'}`}>
                 {isAdmin ? 'Panel de Admin' : 'No eres Admin'}
+              </a>
+              <a href="/corporate/dashboard" className={`flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition ${isAdmin ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-gray-300 border border-gray-100 cursor-not-allowed'}`}>
+                {isAdmin ? 'Portal Corporativo' : 'Sin acceso'}
               </a>
               <LogoutButton />
             </div>

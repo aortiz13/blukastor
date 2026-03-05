@@ -52,6 +52,8 @@ export async function POST(request: Request) {
         }
 
         const companyId = await resolveCompanyId(supabase, rawCompanyId, domain)
+        console.log('[Phone OTP] Resolved Company ID:', companyId, 'from', { rawCompanyId, domain })
+
         if (!companyId) {
             return NextResponse.json(
                 { error: 'No se pudo identificar la empresa' },
@@ -61,23 +63,42 @@ export async function POST(request: Request) {
 
         // Normalize phone (ensure + prefix)
         const normalizedPhone = phone.startsWith('+') ? phone : `+${phone}`
+        console.log('[Phone OTP] Normalized Phone:', normalizedPhone)
 
         // 1. Check if this phone exists in wa.contacts for this company
-        const { data: contact, error: contactError } = await supabase
+        console.log('[Phone OTP] Querying wa.contacts for phone:', normalizedPhone)
+        const { data: contacts, error: contactError } = await supabase
             .schema('wa')
             .from('contacts')
             .select('id, phone, push_name, user_id, client_company_id')
             .eq('phone', normalizedPhone)
-            .eq('client_company_id', companyId)
-            .limit(1)
-            .single()
 
-        if (contactError || !contact) {
+        if (contactError) {
+            console.error('[Phone OTP] Supabase Query Error:', contactError)
+            return NextResponse.json({ error: 'Error en la base de datos', debug: contactError }, { status: 500 })
+        }
+
+        console.log('[Phone OTP] Found contacts for this phone:', contacts?.length || 0)
+
+        const contact = contacts?.find((c: any) => c.client_company_id === companyId)
+
+        if (!contact) {
+            console.error('[Phone OTP] No contact match for companyId:', companyId)
+            console.log('[Phone OTP] Available company IDs for this phone:', contacts?.map((c: any) => c.client_company_id))
             return NextResponse.json(
-                { error: 'Este número de teléfono no está registrado en esta empresa' },
+                {
+                    error: 'Este número de teléfono no está registrado en esta empresa',
+                    debug: {
+                        foundCount: contacts?.length || 0,
+                        availableCompanies: contacts?.map((c: any) => c.client_company_id),
+                        targetCompany: companyId,
+                        normalizedPhone
+                    }
+                },
                 { status: 404 }
             )
         }
+        console.log('[Phone OTP] Contact matched successfully:', contact.push_name)
 
         // 2. Get company info and WhatsApp instance
         const { data: instance } = await supabase

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { FaviconOverride } from '@/components/layout/favicon-override'
 // Sidebar removed - moved to (dashboard)/layout.tsx
 
 export async function generateMetadata({
@@ -72,6 +73,11 @@ export default async function PortalLayout({
     const fontHeading = company?.font_heading || 'Inter'
     const fontBody = company?.font_body || 'Inter'
 
+    // Resolve favicon URL for client-side override
+    const faviconUrl = company?.favicon_url || branding.favicon_url || ''
+    const logoIconUrl = company?.logo_icon_url || branding.logo_icon_url || ''
+    const iconUrl = faviconUrl || logoIconUrl
+
     // Build Google Fonts URL for the company's selected fonts
     const fontsToLoad = [...new Set([fontHeading, fontBody])]
     const googleFontsUrl = `https://fonts.googleapis.com/css2?${fontsToLoad.map(f => `family=${f.replace(/ /g, '+')}:wght@400;500;600;700`).join('&')}&display=swap`
@@ -79,6 +85,7 @@ export default async function PortalLayout({
     return (
         <>
             <link rel="stylesheet" href={googleFontsUrl} />
+            {iconUrl && <FaviconOverride url={iconUrl} />}
             <div
                 className="min-h-screen bg-gray-50/30"
                 style={{

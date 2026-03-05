@@ -135,8 +135,13 @@ export default function LoginPage() {
             if (!res.ok) {
                 setMessage('Error: ' + (data.error || 'Código inválido'))
             } else if (data.hasUser && data.redirectUrl) {
-                // User exists — use the magic link to establish session
-                window.location.href = data.redirectUrl
+                // User exists — rewrite magic link to redirect to this portal
+                const portalUrl = `${window.location.origin}/auth/callback`
+                const fixedUrl = data.redirectUrl.replace(
+                    /redirect_to=[^&]*/,
+                    `redirect_to=${encodeURIComponent(portalUrl)}`
+                )
+                window.location.href = fixedUrl
             } else if (!data.hasUser && data.contactId) {
                 // No user yet — show registration form
                 setRegContactId(data.contactId)
@@ -175,14 +180,22 @@ export default function LoginPage() {
 
             if (!res.ok) {
                 setMessage('Error: ' + (data.error || 'Error al crear cuenta'))
-            } else if (data.redirectUrl) {
-                setMessage('✅ ¡Cuenta creada! Redirigiendo...')
-                setTimeout(() => { window.location.href = data.redirectUrl }, 1000)
-            } else {
-                setMessage('✅ Cuenta creada. Inicia sesión con tu email y contraseña.')
-                setNeedsRegistration(false)
-                setLoginMethod('email')
-                setEmail(regEmail)
+            } else if (data.success) {
+                // Account created — sign in directly with the credentials
+                setMessage('✅ ¡Cuenta creada! Iniciando sesión...')
+                const { error: signInError } = await supabase.auth.signInWithPassword({
+                    email: regEmail,
+                    password: regPassword,
+                })
+
+                if (signInError) {
+                    setMessage('Cuenta creada. Inicia sesión con tu email y contraseña.')
+                    setNeedsRegistration(false)
+                    setLoginMethod('email')
+                    setEmail(regEmail)
+                } else {
+                    window.location.href = '/'
+                }
             }
         } catch (err: any) {
             setMessage('Error: ' + err.message)

@@ -30,7 +30,7 @@ export default async function CorporateBrandingPage() {
     const canEdit = adminProfile?.role !== 'viewer'
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {/* Header */}
             <div>
                 <div className="flex items-center gap-3 mb-2">

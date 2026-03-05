@@ -2,7 +2,42 @@ import { getCompanyByDomain } from '@/lib/data/companies'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 // Sidebar removed - moved to (dashboard)/layout.tsx
+
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ domain: string }>
+}): Promise<Metadata> {
+    const { domain: rawDomain } = await params
+    const domain = decodeURIComponent(rawDomain)
+    const supabase = await createClient()
+    const company = await getCompanyByDomain(supabase, domain)
+
+    if (!company) {
+        return { title: 'Portal' }
+    }
+
+    const branding = company?.frontend_config as any || {}
+    const faviconUrl = company?.favicon_url || branding.favicon_url || ''
+    const logoIconUrl = company?.logo_icon_url || branding.logo_icon_url || ''
+    const iconUrl = faviconUrl || logoIconUrl
+
+    return {
+        title: {
+            default: company.name,
+            template: `%s | ${company.name}`,
+        },
+        ...(iconUrl ? {
+            icons: {
+                icon: iconUrl,
+                shortcut: iconUrl,
+                apple: iconUrl,
+            },
+        } : {}),
+    }
+}
 
 export default async function PortalLayout({
     children,

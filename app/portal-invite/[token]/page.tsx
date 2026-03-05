@@ -80,7 +80,7 @@ export default async function AcceptPortalInvitePage({
                 user_id: user.id,
                 client_company_id: companyId,
                 push_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario',
-                phone: user.phone || '',
+                phone: user.email || user.phone || `user-${user.id}`,
                 first_seen: new Date().toISOString(),
             })
             .select('id')

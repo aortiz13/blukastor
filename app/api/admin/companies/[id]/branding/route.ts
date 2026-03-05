@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 // All branding fields that can be updated
 const ALLOWED_FIELDS = [
     // Logos
-    'logo_url', 'logo_dark_url', 'logo_icon_url', 'favicon_url', 'cover_image_url', 'cover_image_mobile_url',
+    'logo_url', 'logo_dark_url', 'logo_icon_url', 'favicon_url', 'cover_image_url', 'cover_image_mobile_url', 'login_bg_color',
     // Colors
     'primary_color', 'secondary_color', 'accent_color',
     // Typography

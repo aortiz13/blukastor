@@ -333,6 +333,7 @@ export function CorporateBrandingForm({ initialData, canEdit }: CorporateBrandin
     const [primaryColor, setPrimaryColor] = useState(initialData.primary_color || '#6366f1')
     const [secondaryColor, setSecondaryColor] = useState(initialData.secondary_color || '#8b5cf6')
     const [accentColor, setAccentColor] = useState(initialData.accent_color || '#f59e0b')
+    const [loginBgColor, setLoginBgColor] = useState(initialData.login_bg_color || '#ffffff')
 
     // Typography
     const [fontHeading, setFontHeading] = useState(initialData.font_heading || 'Inter')
@@ -390,6 +391,52 @@ export function CorporateBrandingForm({ initialData, canEdit }: CorporateBrandin
         }
     }
 
+    // --- Login Preview Component ---
+    const LoginPreview = () => (
+        <div className="bg-gray-100 rounded-3xl p-6 mb-8 border border-gray-200">
+            <div className="flex items-center gap-2 mb-4">
+                <Eye className="w-4 h-4 text-gray-500" />
+                <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Vista previa de tu Login</span>
+            </div>
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200 flex aspect-video max-w-3xl mx-auto">
+                {/* Left: Cover */}
+                <div className="w-1/2 relative bg-gray-900 overflow-hidden">
+                    {coverImageUrl ? (
+                        <img src={coverImageUrl} alt="" className="w-full h-full object-cover opacity-80" />
+                    ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-indigo-600 to-purple-700 opacity-60" />
+                    )}
+                    <div className="absolute bottom-10 left-10 right-10 text-white">
+                        <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: fontHeading }}>
+                            {loginWelcomeText || 'Bienvenido'}
+                        </h3>
+                        <p className="text-sm opacity-80" style={{ fontFamily: fontBody }}>
+                            Accede a tu cuenta corporativa.
+                        </p>
+                    </div>
+                </div>
+                {/* Right: Form */}
+                <div className="w-1/2 flex flex-col items-center justify-center p-8 relative" style={{ backgroundColor: loginBgColor }}>
+                    {logoUrl ? (
+                        <img src={logoUrl} alt="" className="h-10 object-contain mb-6" />
+                    ) : (
+                        <Building2 className="w-10 h-10 text-gray-300 mb-6" />
+                    )}
+                    <div className="w-full space-y-3">
+                        <div className="h-10 rounded-xl border border-gray-200 bg-gray-50/50 w-full" />
+                        <div className="h-10 rounded-xl border border-gray-200 bg-gray-50/50 w-full" />
+                        <div className="h-10 rounded-xl w-full flex items-center justify-center text-white text-sm font-bold shadow-sm" style={{ backgroundColor: primaryColor }}>
+                            Entrar
+                        </div>
+                    </div>
+                    {poweredByVisible && (
+                        <p className="absolute bottom-4 text-[8px] text-gray-400">Powered by <b>Blukastor</b></p>
+                    )}
+                </div>
+            </div>
+        </div>
+    )
+
     // --- Preview card ---
     const PreviewCard = () => (
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-200 p-5 mb-4">
@@ -436,6 +483,7 @@ export function CorporateBrandingForm({ initialData, canEdit }: CorporateBrandin
 
     return (
         <div className="space-y-4">
+            <LoginPreview />
             <PreviewCard />
 
             {/* ── 1. Logos ── */}
@@ -460,11 +508,11 @@ export function CorporateBrandingForm({ initialData, canEdit }: CorporateBrandin
 
                 <div className="mt-2 p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl">
                     <p className="text-xs font-semibold text-indigo-700 mb-1">📐 Dimensiones recomendadas para portadas</p>
-                    <p className="text-xs text-indigo-600">Desktop: <strong>1920×600px</strong> (ratio 3.2:1) · Mobile: <strong>768×1024px</strong> (ratio 3:4)</p>
+                    <p className="text-xs text-indigo-600">Desktop: <strong>1200×1600px</strong> (Vertical/Cuadrada) · Mobile: <strong>768×1024px</strong> (Vertical)</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                    <ImageUploadField label="Portada Desktop" value={coverImageUrl} onChange={setCoverImageUrl} assetType="cover" companyId={companyId} hint="1920×600px · Banners, fondo de login" disabled={disabled} />
+                    <ImageUploadField label="Portada Desktop" value={coverImageUrl} onChange={setCoverImageUrl} assetType="cover" companyId={companyId} hint="1200×1600px · Lado izquierdo del login" disabled={disabled} />
                     <ImageUploadField label="Portada Mobile" value={coverImageMobileUrl} onChange={setCoverImageMobileUrl} assetType="cover_mobile" companyId={companyId} hint="768×1024px · Se muestra en dispositivos móviles" disabled={disabled} />
                 </div>
             </Section>
@@ -476,17 +524,18 @@ export function CorporateBrandingForm({ initialData, canEdit }: CorporateBrandin
                 icon={<Palette className="w-5 h-5" />}
                 loading={loading}
                 canEdit={canEdit}
-                onSave={() => saveFields({ primary_color: primaryColor, secondary_color: secondaryColor, accent_color: accentColor })}
+                onSave={() => saveFields({ primary_color: primaryColor, secondary_color: secondaryColor, accent_color: accentColor, login_bg_color: loginBgColor })}
             >
                 <div className="flex rounded-xl overflow-hidden h-10 mb-2">
                     <div className="flex-1 flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: primaryColor }}>Primario</div>
                     <div className="flex-1 flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: secondaryColor }}>Secundario</div>
                     <div className="flex-1 flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: accentColor }}>Acento</div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <ColorField label="Color Primario" value={primaryColor} onChange={setPrimaryColor} disabled={disabled} />
                     <ColorField label="Color Secundario" value={secondaryColor} onChange={setSecondaryColor} disabled={disabled} />
                     <ColorField label="Color de Acento" value={accentColor} onChange={setAccentColor} disabled={disabled} />
+                    <ColorField label="Fondo Formulario Login" value={loginBgColor} onChange={setLoginBgColor} disabled={disabled} />
                 </div>
             </Section>
 

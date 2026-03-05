@@ -118,7 +118,10 @@ export default function LoginPage() {
                 )}
 
                 {/* Right side — Login Form */}
-                <div className={`flex-1 flex items-center justify-center p-8 bg-white ${!coverImageUrl ? 'bg-gray-50' : ''}`}>
+                <div
+                    className={`w-full ${coverImageUrl ? 'lg:w-1/2' : ''} flex items-center justify-center p-8 lg:p-12 relative ${!coverImageUrl ? 'bg-gray-50' : ''}`}
+                    style={{ backgroundColor: company.login_bg_color || '#ffffff' }}
+                >
                     <div className="w-full max-w-sm space-y-8">
                         {/* Logo + Header */}
                         <div className="text-center">

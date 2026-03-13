@@ -134,14 +134,17 @@ export default function LoginPage() {
 
             if (!res.ok) {
                 setMessage('Error: ' + (data.error || 'Código inválido'))
-            } else if (data.hasUser && data.redirectUrl) {
-                // User exists — rewrite magic link to redirect to this portal
-                const portalUrl = `${window.location.origin}/auth/callback`
-                const fixedUrl = data.redirectUrl.replace(
-                    /redirect_to=[^&]*/,
-                    `redirect_to=${encodeURIComponent(portalUrl)}`
-                )
-                window.location.href = fixedUrl
+            } else if (data.hasUser && data.tokenHash) {
+                // Verify session directly in the browser — no external redirect
+                const { error: verifyError } = await supabase.auth.verifyOtp({
+                    token_hash: data.tokenHash,
+                    type: 'magiclink',
+                })
+                if (verifyError) {
+                    setMessage('Error: ' + verifyError.message)
+                } else {
+                    window.location.href = '/'
+                }
             } else if (!data.hasUser && data.contactId) {
                 // No user yet — show registration form
                 setRegContactId(data.contactId)

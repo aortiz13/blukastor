@@ -119,7 +119,8 @@ export async function POST(request: Request) {
 
                 return NextResponse.json({
                     success: true,
-                    redirectUrl: linkData.properties?.action_link || null,
+                    tokenHash: linkData.properties?.hashed_token || null,
+                    email: user.email,
                     hasUser: true,
                 })
             }

@@ -1,14 +1,16 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
 import { Users, Mail, Shield, ShieldCheck, Clock, Link as LinkIcon } from 'lucide-react'
-import { getProjectMembers, getProjectInvites } from '@/lib/actions/project-sharing'
 import { InviteMemberModal, RevokeInviteButton, RemoveMemberButton } from '../../team/invite-modal'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
-export async function ProjectTeam({ projectId }: { projectId: string }) {
-    const supabase = await createClient()
-    const members = await getProjectMembers(projectId)
-    const invites = await getProjectInvites(projectId)
+interface ProjectTeamProps {
+    projectId: string
+    members: any[]
+    invites: any[]
+}
 
+export function ProjectTeam({ projectId, members, invites }: ProjectTeamProps) {
     // Unify lists
     const unifiedList = [
         ...(members || []).map((m: any) => ({

@@ -11,9 +11,12 @@ interface FloatingChatProps {
     companyId: string
     projectName: string
     primaryColor?: string
+    activeSection?: string
+    agentId?: string
+    chatLabel?: string
 }
 
-export function FloatingChat({ contactId, companyId, projectName, primaryColor = '#6366f1' }: FloatingChatProps) {
+export function FloatingChat({ contactId, companyId, projectName, primaryColor = '#6366f1', activeSection, agentId, chatLabel }: FloatingChatProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [messages, setMessages] = useState<Message[]>([])
     const [input, setInput] = useState('')
@@ -82,6 +85,28 @@ export function FloatingChat({ contactId, companyId, projectName, primaryColor =
         return () => { supabase.removeChannel(channel) }
     }, [isOpen, contactId])
 
+    // Reset messages when section/agent changes
+    useEffect(() => {
+        if (activeSection) {
+            setMessages([])
+            if (isOpen) {
+                // Re-fetch messages to reset the view
+                const fetchMessages = async () => {
+                    const { data } = await supabase
+                        .from('wa_consolidated')
+                        .select('*')
+                        .eq('contact_id', contactId)
+                        .order('created_at', { ascending: true })
+                    if (data) {
+                        setMessages(data.map((d: any) => ({ ...d, media: d.media || null })))
+                        setTimeout(() => scrollToBottom(false), 50)
+                    }
+                }
+                fetchMessages()
+            }
+        }
+    }, [activeSection])
+
     useEffect(() => {
         if (isAtBottomRef.current && isOpen) scrollToBottom(false)
     }, [messages, isOpen, scrollToBottom])
@@ -104,7 +129,7 @@ export function FloatingChat({ contactId, companyId, projectName, primaryColor =
         scrollToBottom()
 
         try {
-            const result = await processAIChatMessage(contactId, companyId, text)
+            const result = await processAIChatMessage(contactId, companyId, text, agentId)
             if (result.success) {
                 setMessages((prev) => [...prev, {
                     id: 'temp-ai-' + Date.now(), content: result.data.assistant_reply,
@@ -164,6 +189,17 @@ export function FloatingChat({ contactId, companyId, projectName, primaryColor =
                         <X size={14} className="text-white" />
                     </button>
                 </div>
+
+                {/* Context Banner — shows which agent is active */}
+                {chatLabel && (
+                    <div className="px-4 py-1.5 bg-white/10 border-b border-white/5 flex items-center gap-1.5"
+                        style={{ background: `${primaryColor}15` }}>
+                        <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: primaryColor }} />
+                        <span className="text-[11px] font-medium" style={{ color: primaryColor }}>
+                            Estás en el chat de {chatLabel}
+                        </span>
+                    </div>
+                )}
 
                 {/* Messages */}
                 <div ref={scrollRef} onScroll={handleScroll}

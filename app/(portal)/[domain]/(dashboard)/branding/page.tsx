@@ -54,6 +54,7 @@ export default async function PortalBrandingPage({
                 canEdit={canEdit}
                 saveEndpoint="/api/portal/branding"
                 companyIdOverride={company.id}
+                mode="portal"
             />
         </div>
     )

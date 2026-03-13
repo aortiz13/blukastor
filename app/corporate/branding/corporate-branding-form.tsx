@@ -15,7 +15,7 @@ interface CorporateBrandingFormProps {
     saveEndpoint?: string
     companyIdOverride?: string
     isSuperAdmin?: boolean
-    mode?: 'corporate' | 'project'
+    mode?: 'corporate' | 'project' | 'portal'
 }
 
 const GOOGLE_FONTS: { value: string; category: string }[] = [
@@ -312,7 +312,9 @@ const PROJECT_TABS: TabId[] = ['logos', 'colors', 'typography', 'identity', 'soc
 
 export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, companyIdOverride, isSuperAdmin = false, mode = 'corporate' }: CorporateBrandingFormProps) {
     const isProjectMode = mode === 'project'
-    const visibleTabs = isProjectMode ? TABS.filter(t => PROJECT_TABS.includes(t.id)) : TABS
+    const isPortalMode = mode === 'portal'
+    const hidePreview = isProjectMode || isPortalMode
+    const visibleTabs = (isProjectMode || isPortalMode) ? TABS.filter(t => PROJECT_TABS.includes(t.id)) : TABS
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState<TabId>('logos')
@@ -1008,7 +1010,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
     return (
         <div className="flex flex-col lg:flex-row gap-6">
             {/* ── LEFT COLUMN: Tabs + Form ── */}
-            <div className="flex-1 min-w-0 lg:max-w-[62%]">
+            <div className={hidePreview ? 'flex-1 min-w-0' : 'flex-1 min-w-0 lg:max-w-[62%]'}>
                 {/* Tab Navigation */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
                     <div className="flex overflow-x-auto scrollbar-hide">
@@ -1029,7 +1031,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                 </div>
 
                 {/* Mobile Preview Toggle — corporate mode only */}
-                {!isProjectMode && (
+                {!hidePreview && (
                     <div className="lg:hidden mb-4">
                         <button
                             onClick={() => setMobilePreviewOpen(!mobilePreviewOpen)}
@@ -1064,7 +1066,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
             </div>
 
             {/* ── RIGHT COLUMN: Sticky Preview — corporate mode only ── */}
-            {!isProjectMode && (
+            {!hidePreview && (
             <div className="hidden lg:block lg:w-[38%]">
                 <div className="sticky top-0 space-y-4">
                     <div className="bg-gradient-to-br from-gray-50 to-slate-100 rounded-2xl border border-gray-200 p-5">

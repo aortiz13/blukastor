@@ -46,24 +46,24 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json()
-        const { email, role: inviteRole, channel, permissions } = body
+        const { email, phone, role: inviteRole, channel, permissions } = body
 
-        if (!channel || !['email', 'link'].includes(channel)) {
+        if (!channel || !['email', 'link', 'whatsapp'].includes(channel)) {
             return NextResponse.json({ error: 'Invalid channel' }, { status: 400 })
         }
-        if (!inviteRole || !['admin', 'member'].includes(inviteRole)) {
+        if (!inviteRole || !['admin', 'member', 'client'].includes(inviteRole)) {
             return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
         }
 
-        // If member role, permissions should be provided
+        // If member role, permissions should be provided (module-based)
         const memberPermissions = inviteRole === 'member' ? (permissions || {
-            agents: [],
-            view_finance: false,
-            view_conversations: false,
-            view_kpis: false,
+            modules: [],
         }) : {}
         if (channel === 'email' && !email) {
             return NextResponse.json({ error: 'Email required for email invitations' }, { status: 400 })
+        }
+        if (channel === 'whatsapp' && !phone) {
+            return NextResponse.json({ error: 'Phone number required for WhatsApp invitations' }, { status: 400 })
         }
 
         const serviceClient = createServiceClient()
@@ -115,9 +115,15 @@ export async function POST(request: Request) {
             .eq('id', companyId)
             .single()
 
-        const inviteUrl = company?.custom_domain
-            ? `https://${company.custom_domain}/portal-invite/${token}`
-            : `${process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'https://admin.autoflowai.io'}/portal-invite/${token}`
+        const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'https://admin.autoflowai.io'
+
+        // Members/Admins → corporate portal, Clients → company client portal
+        let inviteUrl: string
+        if (inviteRole === 'client' && company?.custom_domain) {
+            inviteUrl = `https://${company.custom_domain}/portal-invite/${token}`
+        } else {
+            inviteUrl = `${rootDomain}/portal-invite/${token}`
+        }
 
         // Send email if channel is email
         if (channel === 'email' && email) {
@@ -133,6 +139,23 @@ export async function POST(request: Request) {
                 })
             } catch (emailError) {
                 console.error('Error sending invite email (non-blocking):', emailError)
+            }
+        }
+
+        // Send WhatsApp message if channel is whatsapp
+        if (channel === 'whatsapp' && phone) {
+            try {
+                const normalizedPhone = phone.startsWith('+') ? phone : `+${phone}`
+                await supabase.functions.invoke('send-whatsapp-invite', {
+                    body: {
+                        phone: normalizedPhone,
+                        inviteUrl,
+                        companyName: company?.name || 'la plataforma',
+                        role: inviteRole,
+                    }
+                })
+            } catch (waError) {
+                console.error('Error sending WhatsApp invite (non-blocking):', waError)
             }
         }
 

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { NextResponse } from 'next/server'
 
 /**
@@ -14,13 +15,15 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
+        const serviceClient = createServiceClient()
+
         // Determine company from admin_profiles
-        const companyId = await resolveCompanyId(supabase, user.id, request)
+        const companyId = await resolveCompanyId(serviceClient, user.id, request)
         if (!companyId) {
             return NextResponse.json({ error: 'No corporate access' }, { status: 403 })
         }
 
-        const { data: agents, error } = await supabase
+        const { data: agents, error } = await serviceClient
             .from('company_prompts')
             .select('id, agent_type, agent_name, personality_traits, target_audience, active')
             .eq('company_id', companyId)
@@ -51,13 +54,15 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
+        const serviceClient = createServiceClient()
+
         // Check edit permission (not viewer)
-        const companyId = await resolveCompanyId(supabase, user.id, request)
+        const companyId = await resolveCompanyId(serviceClient, user.id, request)
         if (!companyId) {
             return NextResponse.json({ error: 'No corporate access' }, { status: 403 })
         }
 
-        const canEdit = await checkEditPermission(supabase, user.id, companyId)
+        const canEdit = await checkEditPermission(serviceClient, user.id, companyId)
         if (!canEdit) {
             return NextResponse.json({ error: 'Permisos insuficientes. Solo lectura.' }, { status: 403 })
         }
@@ -70,7 +75,7 @@ export async function PATCH(request: Request) {
         }
 
         // Validate the agent belongs to this company
-        const { data: existingAgent } = await supabase
+        const { data: existingAgent } = await serviceClient
             .from('company_prompts')
             .select('id, company_id')
             .eq('id', agent_id)
@@ -96,7 +101,7 @@ export async function PATCH(request: Request) {
             updateData.target_audience = target_audience?.trim() || 'general'  // Fallback to default
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await serviceClient
             .from('company_prompts')
             .update(updateData)
             .eq('id', agent_id)
@@ -121,8 +126,8 @@ export async function PATCH(request: Request) {
 
 // ─── Helpers ───────────────────────────────────────────────
 
-async function resolveCompanyId(supabase: any, userId: string, request: Request): Promise<string | null> {
-    const { data: admins } = await supabase
+async function resolveCompanyId(serviceClient: any, userId: string, request: Request): Promise<string | null> {
+    const { data: admins } = await serviceClient
         .from('admin_profiles')
         .select('company_id, role, scope')
         .eq('auth_user_id', userId)
@@ -143,8 +148,8 @@ async function resolveCompanyId(supabase: any, userId: string, request: Request)
     return instanceAdmin.company_id
 }
 
-async function checkEditPermission(supabase: any, userId: string, companyId: string): Promise<boolean> {
-    const { data: admin } = await supabase
+async function checkEditPermission(serviceClient: any, userId: string, companyId: string): Promise<boolean> {
+    const { data: admin } = await serviceClient
         .from('admin_profiles')
         .select('role, scope')
         .eq('auth_user_id', userId)

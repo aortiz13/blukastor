@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import { Bot } from 'lucide-react'
 import { getCorporateAdminProfile, resolveActiveCompany } from '@/lib/actions/corporate-helpers'
@@ -16,8 +17,11 @@ export default async function CorporateAgentsPage() {
     const activeCompany = resolveActiveCompany(admins, selectedCompanyId)
     if (!activeCompany) return null
 
+    // Use service client to bypass RLS for corporate portal
+    const serviceClient = createServiceClient()
+
     // Fetch agents for this company
-    const { data: agents } = await supabase
+    const { data: agents } = await serviceClient
         .from('company_prompts')
         .select('id, agent_type, agent_name, personality_traits, target_audience')
         .eq('company_id', activeCompany.companyId)

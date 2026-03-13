@@ -22,10 +22,7 @@ import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 
 interface MemberPermissions {
-    agents: string[]
-    view_finance: boolean
-    view_conversations: boolean
-    view_kpis: boolean
+    modules: string[] // array of module keys: 'dashboard', 'users', 'compliance', 'escalation', 'memberships', 'finance', 'branding', 'agents'
 }
 
 interface CorporateSidebarProps {
@@ -39,15 +36,15 @@ interface CorporateSidebarProps {
     userPermissions?: MemberPermissions | null
 }
 
-const corporateNavigation: { name: string; href: string; icon: any; permissionKey: keyof MemberPermissions | null }[] = [
-    { name: 'Dashboard', href: '/corporate/dashboard', icon: LayoutDashboard, permissionKey: 'view_kpis' },
-    { name: 'Usuarios', href: '/corporate/users', icon: Users, permissionKey: null },
-    { name: 'Cumplimiento (T&C)', href: '/corporate/compliance', icon: FileText, permissionKey: null },
-    { name: 'Escalamiento Manual', href: '/corporate/escalation', icon: ShieldAlert, permissionKey: null },
-    { name: 'Membresías', href: '/corporate/memberships', icon: CreditCard, permissionKey: null },
-    { name: 'Finanzas Globales', href: '/corporate/finance', icon: TrendingUp, permissionKey: 'view_finance' },
-    { name: 'Branding', href: '/corporate/branding', icon: Palette, permissionKey: null },
-    { name: 'Agentes', href: '/corporate/agents', icon: Bot, permissionKey: null },
+const corporateNavigation: { name: string; href: string; icon: any; moduleKey: string }[] = [
+    { name: 'Dashboard', href: '/corporate/dashboard', icon: LayoutDashboard, moduleKey: 'dashboard' },
+    { name: 'Usuarios', href: '/corporate/users', icon: Users, moduleKey: 'users' },
+    { name: 'Cumplimiento (T&C)', href: '/corporate/compliance', icon: FileText, moduleKey: 'compliance' },
+    { name: 'Escalamiento Manual', href: '/corporate/escalation', icon: ShieldAlert, moduleKey: 'escalation' },
+    { name: 'Membresías', href: '/corporate/memberships', icon: CreditCard, moduleKey: 'memberships' },
+    { name: 'Finanzas Globales', href: '/corporate/finance', icon: TrendingUp, moduleKey: 'finance' },
+    { name: 'Branding', href: '/corporate/branding', icon: Palette, moduleKey: 'branding' },
+    { name: 'Agentes', href: '/corporate/agents', icon: Bot, moduleKey: 'agents' },
 ]
 
 export function CorporateSidebar({
@@ -72,12 +69,8 @@ export function CorporateSidebar({
     const filteredNavigation = corporateNavigation.filter(item => {
         // Admins and super admins see everything
         if (!isMember) return true
-        // Members: check permission key
-        if (item.permissionKey && userPermissions) {
-            return userPermissions[item.permissionKey] === true
-        }
-        // Items without permission key are always visible
-        return true
+        // Members: check if their module key is in the allowed list
+        return userPermissions.modules.includes(item.moduleKey)
     })
 
     useEffect(() => {

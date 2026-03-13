@@ -40,6 +40,18 @@ export default async function CorporateUsersPage() {
         })
     }
 
+    // Get company info for portal URL
+    const { data: companyInfo } = await supabase
+        .from('client_companies')
+        .select('custom_domain')
+        .eq('id', activeCompany.companyId)
+        .single()
+
+    const portalDomain = companyInfo?.custom_domain || activeCompany.companyId
+    const companyPortalUrl = companyInfo?.custom_domain
+        ? `https://${companyInfo.custom_domain}`
+        : `https://admin.autoflowai.io/${activeCompany.companyId}`
+
     const totalUsers = contacts?.length || 0
     const activeUsers = contacts?.filter(c => {
         const lastSeen = c.last_seen ? new Date(c.last_seen) : null
@@ -58,7 +70,7 @@ export default async function CorporateUsersPage() {
                         Todos los usuarios asociados a <span className="font-semibold text-gray-700">{activeCompany.companyName}</span>
                     </p>
                 </div>
-                <InviteUserButton companyName={activeCompany.companyName} />
+                <InviteUserButton companyName={activeCompany.companyName} companyPortalUrl={companyPortalUrl} />
             </div>
 
             {/* Stats */}

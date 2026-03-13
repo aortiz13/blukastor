@@ -118,6 +118,18 @@ export function AdminSidebar() {
                 {/* Footer Section */}
                 <div className="p-4 mt-auto">
                     <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                        <Link
+                            href="/admin/settings"
+                            className={cn(
+                                "flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all duration-200 group text-sm font-medium mb-1",
+                                mounted && pathname === '/admin/settings'
+                                    ? 'bg-gray-200 text-gray-900'
+                                    : 'text-gray-600 hover:bg-white'
+                            )}
+                        >
+                            <Settings size={18} className="text-gray-400" />
+                            <span>Configuración</span>
+                        </Link>
                         <button
                             onClick={handleSignOut}
                             className="flex items-center gap-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group"

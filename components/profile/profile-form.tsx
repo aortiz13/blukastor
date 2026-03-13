@@ -7,6 +7,7 @@ import {
     Building2, FileText, Save, CheckCircle2, Pencil
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ChangePasswordForm } from './change-password-form'
 
 interface ProfileData {
     real_name?: string
@@ -238,6 +239,9 @@ export function ProfileForm({ contactId, companyId }: { contactId: string; compa
                     </p>
                 </div>
             </div>
+
+            {/* Password Change */}
+            <ChangePasswordForm />
         </div>
     )
 }

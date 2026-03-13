@@ -16,6 +16,7 @@ import {
     ChevronDown,
     Palette,
     Bot,
+    UserCircle,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
@@ -221,6 +222,22 @@ export function CorporateSidebar({
                 {/* Footer Section */}
                 <div className="p-4 mt-auto">
                     <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                        <Link
+                            href="/corporate/profile"
+                            className={cn(
+                                "flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all duration-200 group text-sm font-medium mb-1",
+                                mounted && pathname === '/corporate/profile'
+                                    ? 'bg-violet-100 text-violet-700'
+                                    : 'text-gray-600 hover:bg-white'
+                            )}
+                        >
+                            <UserCircle size={18} className={cn(
+                                mounted && pathname === '/corporate/profile'
+                                    ? 'text-violet-500'
+                                    : 'text-gray-400'
+                            )} />
+                            <span>Mi Perfil</span>
+                        </Link>
                         {isSuperAdmin && (
                             <Link
                                 href="/admin/dashboard"

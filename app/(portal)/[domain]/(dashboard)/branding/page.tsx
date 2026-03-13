@@ -39,7 +39,7 @@ export default async function PortalBrandingPage({
     const initialData = userBranding || { id: company.id }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 pt-6">
             {/* Header */}
             <div>
                 <div className="flex items-center gap-3 mb-2">

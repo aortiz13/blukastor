@@ -1,8 +1,11 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useEffect, useState } from 'react'
-import { User, Mail, MapPin, Briefcase, Info, Sparkles, Loader2 } from 'lucide-react'
+import { useEffect, useState, useCallback } from 'react'
+import {
+    User, Mail, MapPin, Briefcase, Sparkles, Loader2,
+    Building2, FileText, Save, CheckCircle2, Pencil
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ProfileData {
@@ -16,29 +19,45 @@ interface ProfileData {
     bio?: string
 }
 
-export function ProfileForm({ contactId, companyId }: { contactId: string, companyId: string }) {
+const PROFILE_FIELDS: { key: keyof ProfileData; label: string; icon: any; placeholder: string; colSpan?: boolean }[] = [
+    { key: 'real_name', label: 'Nombre Completo', icon: User, placeholder: 'Ej: Juan Pérez' },
+    { key: 'nickname', label: 'Apodo / Nombre Preferido', icon: User, placeholder: '¿Cómo prefieres que te llamen?' },
+    { key: 'email', label: 'Correo Electrónico', icon: Mail, placeholder: 'tu@correo.com' },
+    { key: 'job_title', label: 'Puesto / Rol', icon: Briefcase, placeholder: 'Ej: CEO, Gerente de Ventas...' },
+    { key: 'industry', label: 'Industria', icon: Building2, placeholder: 'Ej: Inmobiliaria, Tecnología...' },
+    { key: 'country', label: 'País', icon: MapPin, placeholder: 'Ej: México, Chile...' },
+    { key: 'city', label: 'Ciudad', icon: MapPin, placeholder: 'Ej: CDMX, Santiago...' },
+    { key: 'bio', label: 'Acerca de mí', icon: FileText, placeholder: 'Una breve descripción sobre ti...', colSpan: true },
+]
+
+export function ProfileForm({ contactId, companyId }: { contactId: string; companyId: string }) {
     const [profile, setProfile] = useState<ProfileData>({})
+    const [originalProfile, setOriginalProfile] = useState<ProfileData>({})
     const [isLoading, setIsLoading] = useState(true)
-    const [isUpdating, setIsUpdating] = useState(false)
+    const [isSaving, setIsSaving] = useState(false)
+    const [saved, setSaved] = useState(false)
+    const [completion, setCompletion] = useState(0)
     const supabase = createClient()
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            const { data, error } = await supabase
-                .from('user_context')
-                .select('profile')
-                .eq('contact_id', contactId)
-                .single()
-
-            if (data?.profile) {
-                setProfile(data.profile as ProfileData)
+    const fetchProfile = useCallback(async () => {
+        try {
+            const res = await fetch(`/api/profile?contact_id=${contactId}`)
+            if (res.ok) {
+                const data = await res.json()
+                setProfile(data.profile || {})
+                setOriginalProfile(data.profile || {})
+                setCompletion(data.completion || 0)
             }
-            setIsLoading(false)
+        } catch (err) {
+            console.error('Error fetching profile:', err)
         }
+        setIsLoading(false)
+    }, [contactId])
 
+    useEffect(() => {
         fetchProfile()
 
-        // Subscribe to real-time updates for user_context
+        // Subscribe to real-time updates
         const channel = supabase
             .channel(`profile_sync_${contactId}`)
             .on(
@@ -47,14 +66,14 @@ export function ProfileForm({ contactId, companyId }: { contactId: string, compa
                     event: 'UPDATE',
                     schema: 'public',
                     table: 'user_context',
-                    filter: `contact_id=eq.${contactId}`
+                    filter: `contact_id=eq.${contactId}`,
                 },
                 (payload) => {
-                    console.log('Profile Sync: Received update', payload.new)
                     if (payload.new && (payload.new as any).profile) {
-                        setProfile((payload.new as any).profile as ProfileData)
-                        setIsUpdating(true)
-                        setTimeout(() => setIsUpdating(false), 2000)
+                        const newProfile = (payload.new as any).profile as ProfileData
+                        setProfile((prev) => ({ ...prev, ...newProfile }))
+                        setOriginalProfile((prev) => ({ ...prev, ...newProfile }))
+                        setCompletion((payload.new as any).profile_completion_percent || 0)
                     }
                 }
             )
@@ -63,110 +82,159 @@ export function ProfileForm({ contactId, companyId }: { contactId: string, compa
         return () => {
             supabase.removeChannel(channel)
         }
-    }, [contactId])
+    }, [contactId, fetchProfile, supabase])
+
+    const handleFieldChange = (key: keyof ProfileData, value: string) => {
+        setProfile((prev) => ({ ...prev, [key]: value }))
+        setSaved(false)
+    }
+
+    const handleSave = async () => {
+        setIsSaving(true)
+        try {
+            const res = await fetch('/api/profile', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contact_id: contactId, profile }),
+            })
+            const data = await res.json()
+            if (res.ok) {
+                setOriginalProfile(profile)
+                setCompletion(data.completion || 0)
+                setSaved(true)
+                setTimeout(() => setSaved(false), 3000)
+            }
+        } catch (err) {
+            console.error('Error saving profile:', err)
+        }
+        setIsSaving(false)
+    }
+
+    const hasChanges = JSON.stringify(profile) !== JSON.stringify(originalProfile)
+
+    // Calculate filled fields for progress
+    const filledCount = PROFILE_FIELDS.filter(
+        (f) => profile[f.key] && String(profile[f.key]).trim().length > 0
+    ).length
+    const totalFields = PROFILE_FIELDS.length
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center p-12">
-                <Loader2 className="animate-spin text-primary" size={32} />
+            <div className="flex items-center justify-center p-16">
+                <Loader2 className="animate-spin text-violet-500" size={32} />
             </div>
         )
     }
 
-    const Field = ({ label, icon: Icon, value, placeholder }: { label: string, icon: any, value?: string, placeholder: string }) => (
-        <div className="space-y-1.5 transition-all duration-500">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">
-                {label}
-            </label>
-            <div className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl bg-white border border-gray-100 transition-all shadow-sm",
-                isUpdating && value ? "border-primary ring-2 ring-primary/10 scale-[1.01]" : ""
-            )}>
-                <Icon size={18} className="text-gray-400 shrink-0" />
-                <div className="flex-1">
-                    {value ? (
-                        <span className="text-gray-900 font-medium">{value}</span>
-                    ) : (
-                        <span className="text-gray-300 italic text-sm">{placeholder}</span>
-                    )}
-                </div>
-                {isUpdating && value && (
-                    <Sparkles size={14} className="text-primary animate-pulse" />
-                )}
-            </div>
-        </div>
-    )
-
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-            <div className="col-span-full mb-2">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900">Tu Perfil</h2>
-                        <p className="text-gray-500 text-sm">Este perfil es gestionado automáticamente por </p>
-                    </div>
+        <div className="p-6 space-y-6">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                        <div className="p-2.5 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl shadow-lg shadow-violet-200">
+                            <User className="text-white" size={20} />
+                        </div>
+                        Mi Perfil
+                    </h2>
+                    <p className="text-gray-400 text-sm mt-1">
+                        Completa tu información personal. También se actualiza automáticamente al conversar con el agente.
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    {saved && (
+                        <span className="flex items-center gap-1.5 text-emerald-600 text-sm font-medium animate-in fade-in">
+                            <CheckCircle2 size={16} />
+                            Guardado
+                        </span>
+                    )}
+                    <button
+                        onClick={handleSave}
+                        disabled={!hasChanges || isSaving}
+                        className={cn(
+                            'flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all',
+                            hasChanges
+                                ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-200 hover:shadow-xl hover:scale-[1.02]'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        )}
+                    >
+                        {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                        Guardar
+                    </button>
                 </div>
             </div>
 
-            <Field
-                label="Nombre Real"
-                icon={User}
-                value={profile.real_name}
-                placeholder="Nova aún no conoce tu nombre completo..."
-            />
-
-            <Field
-                label="Nickname / Apodo"
-                icon={User}
-                value={profile.nickname}
-                placeholder="¿Cómo prefieres que te llamen?"
-            />
-
-            <Field
-                label="Email"
-                icon={Mail}
-                value={profile.email}
-                placeholder="ejemplo@dominio.com"
-            />
-
-            <Field
-                label="Ubicación"
-                icon={MapPin}
-                value={profile.country && profile.city ? `${profile.city}, ${profile.country}` : profile.country || profile.city}
-                placeholder="Ciudad, País"
-            />
-
-            <Field
-                label="Puesto / Rol"
-                icon={Briefcase}
-                value={profile.job_title}
-                placeholder="Ej: Emprendedor, CFO..."
-            />
-
-            <Field
-                label="Industria"
-                icon={Sparkles}
-                value={profile.industry}
-                placeholder="Ej: Inmobiliaria, Tech..."
-            />
-
-            <div className="md:col-span-2">
-                <Field
-                    label="Bio Corta"
-                    icon={Info}
-                    value={profile.bio}
-                    placeholder="Lo que Nova ha aprendido sobre tus pasiones..."
-                />
+            {/* Completion Bar */}
+            <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Perfil completado</span>
+                    <span className={cn(
+                        'text-sm font-bold',
+                        filledCount === totalFields ? 'text-emerald-600' : 'text-violet-600'
+                    )}>
+                        {filledCount}/{totalFields} campos
+                    </span>
+                </div>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                        className={cn(
+                            'h-full rounded-full transition-all duration-700',
+                            filledCount === totalFields
+                                ? 'bg-gradient-to-r from-emerald-400 to-emerald-500'
+                                : 'bg-gradient-to-r from-violet-500 to-indigo-500'
+                        )}
+                        style={{ width: `${(filledCount / totalFields) * 100}%` }}
+                    />
+                </div>
             </div>
 
-            <div className="md:col-span-2 mt-4 p-4 bg-primary/5 rounded-2xl border border-primary/10 flex gap-4 items-start">
-                <div className="p-2 bg-white rounded-lg shadow-sm">
-                    <Sparkles className="text-primary" size={20} />
+            {/* Fields Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {PROFILE_FIELDS.map(({ key, label, icon: Icon, placeholder, colSpan }) => (
+                    <div key={key} className={cn('space-y-1.5', colSpan && 'md:col-span-2')}>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">
+                            {label}
+                        </label>
+                        <div className="relative group">
+                            <Icon
+                                size={16}
+                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-violet-500 transition-colors"
+                            />
+                            {key === 'bio' ? (
+                                <textarea
+                                    rows={3}
+                                    value={profile[key] || ''}
+                                    onChange={(e) => handleFieldChange(key, e.target.value)}
+                                    placeholder={placeholder}
+                                    className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 transition-all resize-none"
+                                />
+                            ) : (
+                                <input
+                                    type={key === 'email' ? 'email' : 'text'}
+                                    value={profile[key] || ''}
+                                    onChange={(e) => handleFieldChange(key, e.target.value)}
+                                    placeholder={placeholder}
+                                    className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 transition-all"
+                                />
+                            )}
+                            {profile[key] && profile[key] !== originalProfile[key] && (
+                                <Pencil size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-violet-400" />
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* AI Auto-fill hint */}
+            <div className="p-4 bg-violet-50 rounded-2xl border border-violet-100 flex gap-4 items-start">
+                <div className="p-2 bg-white rounded-lg shadow-sm shrink-0">
+                    <Sparkles className="text-violet-500" size={18} />
                 </div>
                 <div>
-                    <h4 className="font-bold text-primary text-sm">Autocompletado Inteligente</h4>
-                    <p className="text-gray-600 text-xs mt-1 leading-relaxed">
-                        No necesitas llenar este formulario manualmente. Solo sigue hablando con Nova en el chat y ella irá completando tu perfil automáticamente usando inteligencia artificial.
+                    <h4 className="font-bold text-violet-700 text-sm">Autocompletado Inteligente</h4>
+                    <p className="text-gray-600 text-xs mt-0.5 leading-relaxed">
+                        Tu perfil también se actualiza automáticamente cuando conversas con el agente virtual.
+                        Los campos se llenarán con la información que compartas durante tus chats.
                     </p>
                 </div>
             </div>

@@ -21,14 +21,22 @@ export default async function PortalBrandingPage({
         redirect(`/login?next=${encodeURIComponent(`/${domain}/branding`)}`)
     }
 
-    // Fetch company data
+    // Fetch company (needed for companyId context)
     const company = await getCompanyByDomain(supabase, domain)
     if (!company) {
         return <div className="p-8 text-red-500">Error: No se encontró la empresa.</div>
     }
 
-    // Portal users can edit their own branding
-    const canEdit = true
+    // Fetch user's personal branding (starts empty if none exists)
+    const { data: userBranding } = await supabase
+        .from('user_branding')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('company_id', company.id)
+        .maybeSingle()
+
+    // Pass empty object if no personal branding yet — user starts fresh
+    const initialData = userBranding || { id: company.id }
 
     return (
         <div className="space-y-4">
@@ -40,18 +48,18 @@ export default async function PortalBrandingPage({
                     </div>
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                            Branding & Personalización
+                            Mi Marca Personal
                         </h1>
                         <p className="text-gray-500 mt-0.5">
-                            Personaliza la apariencia de tu portal y tu identidad de marca
+                            Configura tu identidad de marca personal
                         </p>
                     </div>
                 </div>
             </div>
 
             <CorporateBrandingForm
-                initialData={company}
-                canEdit={canEdit}
+                initialData={initialData}
+                canEdit={true}
                 saveEndpoint="/api/portal/branding"
                 companyIdOverride={company.id}
                 mode="portal"

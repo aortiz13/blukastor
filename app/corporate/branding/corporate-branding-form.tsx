@@ -686,10 +686,12 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                             <ImageUploadField label="Logo Principal" value={logoUrl} onChange={setLogoUrl} assetType="logo" companyId={companyId} hint="Fondo claro — formato horizontal" disabled={disabled} />
                             <ImageUploadField label="Logo Oscuro" value={logoDarkUrl} onChange={setLogoDarkUrl} assetType="logo_dark" companyId={companyId} hint="Para fondos oscuros / dark mode" disabled={disabled} />
                             <ImageUploadField label="Isotipo / Ícono" value={logoIconUrl} onChange={setLogoIconUrl} assetType="icon" companyId={companyId} hint="Versión cuadrada para avatares · 512×512px" disabled={disabled} />
-                            <ImageUploadField label="Favicon" value={faviconUrl} onChange={setFaviconUrl} assetType="favicon" companyId={companyId} hint="Ícono del navegador — 32×32px o 64×64px" disabled={disabled} />
+                            {!hidePreview && (
+                                <ImageUploadField label="Favicon" value={faviconUrl} onChange={setFaviconUrl} assetType="favicon" companyId={companyId} hint="Ícono del navegador — 32×32px o 64×64px" disabled={disabled} />
+                            )}
                         </div>
 
-                        {!isProjectMode && (<>
+                        {!hidePreview && (<>
                         <div className="p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl">
                             <p className="text-xs font-semibold text-indigo-700 mb-1">📐 Dimensiones recomendadas para portadas</p>
                             <p className="text-xs text-indigo-600">Desktop: <strong>1200×1600px</strong> (Vertical/Cuadrada) · Mobile: <strong>768×1024px</strong> (Vertical)</p>
@@ -703,7 +705,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
 
                         <SaveButton onClick={() => saveFields({
                             logo_url: logoUrl, logo_dark_url: logoDarkUrl, logo_icon_url: logoIconUrl,
-                            favicon_url: faviconUrl, cover_image_url: coverImageUrl, cover_image_mobile_url: coverImageMobileUrl,
+                            ...(hidePreview ? {} : { favicon_url: faviconUrl, cover_image_url: coverImageUrl, cover_image_mobile_url: coverImageMobileUrl }),
                         })} loading={loading} canEdit={canEdit} />
                     </div>
                 )
@@ -720,12 +722,12 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                             <ColorField label="Color Primario" value={primaryColor} onChange={setPrimaryColor} disabled={disabled} hint={isProjectMode ? 'Color principal de la marca.' : 'Botones principales, enlaces activos, sidebar del portal y elementos destacados.'} />
                             <ColorField label="Color Secundario" value={secondaryColor} onChange={setSecondaryColor} disabled={disabled} hint="Bordes, botones secundarios, badges y elementos de apoyo visual." />
                             <ColorField label="Color de Acento" value={accentColor} onChange={setAccentColor} disabled={disabled} hint="Notificaciones, indicadores de estado, alertas y elementos que requieren atención." />
-                            {!isProjectMode && (
+                            {!hidePreview && (
                                 <ColorField label="Fondo Formulario Login" value={loginBgColor} onChange={setLoginBgColor} disabled={disabled} hint="Color de fondo del panel derecho en la pantalla de inicio de sesión del portal." />
                             )}
                         </div>
 
-                        <SaveButton onClick={() => saveFields({ primary_color: primaryColor, secondary_color: secondaryColor, accent_color: accentColor, ...(isProjectMode ? {} : { login_bg_color: loginBgColor }) })} loading={loading} canEdit={canEdit} />
+                        <SaveButton onClick={() => saveFields({ primary_color: primaryColor, secondary_color: secondaryColor, accent_color: accentColor, ...(hidePreview ? {} : { login_bg_color: loginBgColor }) })} loading={loading} canEdit={canEdit} />
                     </div>
                 )
 

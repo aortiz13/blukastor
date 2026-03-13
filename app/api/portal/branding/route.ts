@@ -2,35 +2,64 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { NextResponse } from 'next/server'
 
-// All branding fields that portal users can update on client_companies
+// Fields that can be updated on user_branding
 const ALLOWED_FIELDS = [
-    // Logos
-    'logo_url', 'logo_dark_url', 'logo_icon_url', 'favicon_url', 'cover_image_url', 'cover_image_mobile_url', 'login_bg_color',
-    // Colors
+    'logo_url', 'logo_dark_url', 'logo_icon_url',
     'primary_color', 'secondary_color', 'accent_color',
-    // Typography
     'font_heading', 'font_body',
-    // Identity
     'tagline', 'description', 'mission', 'vision', 'values_text',
-    // Web & Social
     'website_url',
     'social_instagram', 'social_facebook', 'social_linkedin',
     'social_twitter', 'social_youtube', 'social_tiktok', 'social_whatsapp',
-    // Corporate data
-    'country', 'address', 'tax_id', 'timezone', 'locale',
-    // JSONB config
-    'frontend_config',
 ]
 
 /**
- * API for portal end-users to save branding for their client_company.
+ * GET /api/portal/branding?companyId=xxx
+ * Fetch the current user's personal branding for a specific company context.
+ */
+export async function GET(request: Request) {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const { searchParams } = new URL(request.url)
+        const companyId = searchParams.get('companyId')
+
+        let query = supabase
+            .from('user_branding')
+            .select('*')
+            .eq('user_id', user.id)
+
+        if (companyId) {
+            query = query.eq('company_id', companyId)
+        }
+
+        const { data, error } = await query.maybeSingle()
+
+        if (error) {
+            console.error('Error fetching user branding:', error)
+            return NextResponse.json({ error: error.message }, { status: 500 })
+        }
+
+        // Return empty object if no branding exists yet (new user)
+        return NextResponse.json({ branding: data || {} })
+    } catch (error: any) {
+        console.error('Error in GET /api/portal/branding:', error)
+        return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
+    }
+}
+
+/**
  * POST /api/portal/branding
+ * Save the current user's personal branding.
  * Body: { companyId, ...branding fields }
  */
 export async function POST(request: Request) {
     try {
         const supabase = await createClient()
-
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -38,23 +67,6 @@ export async function POST(request: Request) {
 
         const body = await request.json()
         const { companyId } = body
-
-        if (!companyId) {
-            return NextResponse.json({ error: 'companyId is required' }, { status: 400 })
-        }
-
-        const serviceClient = createServiceClient()
-
-        // Verify the company exists
-        const { data: company, error: companyError } = await serviceClient
-            .from('client_companies')
-            .select('id')
-            .eq('id', companyId)
-            .single()
-
-        if (companyError || !company) {
-            return NextResponse.json({ error: 'Company not found' }, { status: 404 })
-        }
 
         // Build updates only from allowed fields
         const updates: Record<string, any> = {}
@@ -64,52 +76,50 @@ export async function POST(request: Request) {
             }
         }
 
-        // Handle frontend_config merge
-        if (body.frontend_config && typeof body.frontend_config === 'object') {
-            const { data: existing } = await serviceClient
-                .from('client_companies')
-                .select('frontend_config')
-                .eq('id', companyId)
-                .single()
-
-            const existingConfig = (existing?.frontend_config as Record<string, any>) || {}
-            updates.frontend_config = {
-                ...existingConfig,
-                ...body.frontend_config,
-                portal: { ...(existingConfig.portal || {}), ...(body.frontend_config.portal || {}) },
-                legal: { ...(existingConfig.legal || {}), ...(body.frontend_config.legal || {}) },
-                communications: { ...(existingConfig.communications || {}), ...(body.frontend_config.communications || {}) },
-            }
-        }
-
-        // Portal users cannot change custom_domain
-        delete updates.custom_domain
-
-        // Portal users cannot change powered_by_visible (super_admin only)
-        if (updates.frontend_config?.portal) {
-            delete updates.frontend_config.portal.powered_by_visible
-        }
-
         if (Object.keys(updates).length === 0) {
             return NextResponse.json({ error: 'No branding fields to update' }, { status: 400 })
         }
 
-        const { data: updatedCompany, error } = await serviceClient
-            .from('client_companies')
-            .update(updates)
-            .eq('id', companyId)
-            .select()
-            .single()
+        const serviceClient = createServiceClient()
 
-        if (error) {
-            console.error('Error updating portal branding:', error)
-            return NextResponse.json({ error: error.message }, { status: 500 })
+        // Check if record already exists
+        const { data: existing } = await serviceClient
+            .from('user_branding')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('company_id', companyId || null)
+            .maybeSingle()
+
+        let result
+        if (existing) {
+            // Update existing
+            const { data, error } = await serviceClient
+                .from('user_branding')
+                .update({ ...updates, updated_at: new Date().toISOString() })
+                .eq('id', existing.id)
+                .select()
+                .single()
+            if (error) throw error
+            result = data
+        } else {
+            // Insert new record
+            const { data, error } = await serviceClient
+                .from('user_branding')
+                .insert({
+                    user_id: user.id,
+                    company_id: companyId || null,
+                    ...updates,
+                })
+                .select()
+                .single()
+            if (error) throw error
+            result = data
         }
 
         return NextResponse.json({
             success: true,
-            company: updatedCompany,
-            message: 'Branding actualizado exitosamente'
+            branding: result,
+            message: 'Branding personal guardado exitosamente'
         })
     } catch (error: any) {
         console.error('Error in POST /api/portal/branding:', error)

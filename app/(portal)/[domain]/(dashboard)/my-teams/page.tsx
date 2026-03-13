@@ -26,9 +26,9 @@ const kindConfig: Record<string, { label: string; icon: any; color: string; bg: 
 }
 
 const roleConfig: Record<string, { label: string; color: string; bg: string }> = {
-    owner: { label: 'Owner', color: 'text-blue-700', bg: 'bg-blue-50' },
+    owner: { label: 'Propietario', color: 'text-blue-700', bg: 'bg-blue-50' },
     editor: { label: 'Editor', color: 'text-amber-700', bg: 'bg-amber-50' },
-    viewer: { label: 'Viewer', color: 'text-gray-600', bg: 'bg-gray-100' },
+    viewer: { label: 'Visualizador', color: 'text-gray-600', bg: 'bg-gray-100' },
 }
 
 export default async function MyTeamsPage({
@@ -44,7 +44,7 @@ export default async function MyTeamsPage({
     if (!user) redirect(`/${domain}/login`)
 
     const company = await getCompanyByDomain(supabase, domain)
-    if (!company) return <div>Company not found</div>
+    if (!company) return <div>Empresa no encontrada</div>
 
     const teams = await getMyTeams()
 

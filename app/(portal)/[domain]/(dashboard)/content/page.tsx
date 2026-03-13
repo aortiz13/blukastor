@@ -11,7 +11,7 @@ export default async function ContentManagerPage() {
         .order('schedule_date', { ascending: true })
 
     if (error) {
-        return <div className="p-8 text-red-500">Error loading content: {error.message}</div>
+        return <div className="p-8 text-red-500">Error cargando contenido: {error.message}</div>
     }
 
     const platformIcons: Record<string, any> = {
@@ -25,7 +25,7 @@ export default async function ContentManagerPage() {
         <div className="max-w-6xl mx-auto space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Content Manager</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Gestor de Contenido</h1>
                     <p className="text-gray-500 mt-1">Planifica, programa y gestiona tus campañas de redes sociales.</p>
                 </div>
                 <button className="bg-black text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-800 transition shadow-lg shadow-black/5 text-sm">

@@ -24,7 +24,7 @@ export default async function UsersPage() {
         .select('*')
 
     if (waError) {
-        return <div className="p-8 text-red-500">Error loading users: {waError.message}</div>
+        return <div className="p-8 text-red-500">Error cargando usuarios: {waError.message}</div>
     }
 
     // Create a map of admin users by their user_id for quick lookup

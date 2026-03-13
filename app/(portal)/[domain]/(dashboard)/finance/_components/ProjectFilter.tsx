@@ -30,10 +30,10 @@ export function ProjectFilter({ projects }: { projects: { id: string, name: stri
     return (
         <Select value={currentProject} onValueChange={handleValueChange}>
             <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by Project" />
+                <SelectValue placeholder="Filtrar por Proyecto" />
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
+                <SelectItem value="all">Todos los Proyectos</SelectItem>
                 {projects.map(p => (
                     <SelectItem key={p.id} value={p.id}>
                         {p.name}

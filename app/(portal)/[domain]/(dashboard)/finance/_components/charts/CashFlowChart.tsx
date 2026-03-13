@@ -13,8 +13,8 @@ export function CashFlowChart({ data, currency }: CashFlowChartProps) {
     return (
         <Card className="col-span-4">
             <CardHeader>
-                <CardTitle>Monthly Cash Flow</CardTitle>
-                <CardDescription>Income vs Expenses over time</CardDescription>
+                <CardTitle>Flujo de Caja Mensual</CardTitle>
+                <CardDescription>Ingresos vs Gastos a lo largo del tiempo</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
                 <ResponsiveContainer width="100%" height={350}>
@@ -36,11 +36,11 @@ export function CashFlowChart({ data, currency }: CashFlowChartProps) {
                         />
                         <Tooltip
                             formatter={(value: any) => formatCurrency(Number(value), currency)}
-                            labelFormatter={(label) => `Month: ${label}`}
+                            labelFormatter={(label) => `Mes: ${label}`}
                         />
                         <Legend />
-                        <Bar dataKey="income" name="Income" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="expense" name="Expenses" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="income" name="Ingresos" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="expense" name="Gastos" fill="#ef4444" radius={[4, 4, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
             </CardContent>

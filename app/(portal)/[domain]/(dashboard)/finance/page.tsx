@@ -33,7 +33,7 @@ export default async function FinancePage({
     const company = await getCompanyByDomain(supabase, domain)
     console.log('[FinancePage] Resolved Company:', company?.id, company?.name)
 
-    if (!company) return <div>Company not found</div>
+    if (!company) return <div>Empresa no encontrada</div>
 
     // Prepare search params for transactions
     const transactionParams = {
@@ -64,7 +64,7 @@ export default async function FinancePage({
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Financial Dashboard</h2>
+                <h2 className="text-3xl font-bold tracking-tight">Panel Financiero</h2>
                 <div className="flex items-center space-x-2">
                     <ProjectFilter projects={projects || []} />
                     <ReceiptUpload companyId={company.id} userId={userId} companyCurrency={companyCurrency} />
@@ -76,7 +76,7 @@ export default async function FinancePage({
             <div className="grid gap-4 md:grid-cols-3">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Revenue ({companyCurrency})</CardTitle>
+                        <CardTitle className="text-sm font-medium">Ingresos Totales ({companyCurrency})</CardTitle>
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -84,13 +84,13 @@ export default async function FinancePage({
                             {new Intl.NumberFormat('en-US', { style: 'currency', currency: companyCurrency }).format(stats.revenue)}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            {projectId ? 'Filtered by Project' : 'All Projects'}
+                            {projectId ? 'Filtrado por Proyecto' : 'Todos los Proyectos'}
                         </p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Expenses ({companyCurrency})</CardTitle>
+                        <CardTitle className="text-sm font-medium">Gastos ({companyCurrency})</CardTitle>
                         <TrendingDown className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -104,7 +104,7 @@ export default async function FinancePage({
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Net Income ({companyCurrency})</CardTitle>
+                        <CardTitle className="text-sm font-medium">Ingreso Neto ({companyCurrency})</CardTitle>
                         <TrendingUp className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -133,7 +133,7 @@ export default async function FinancePage({
             {/* Recent Transactions Table (Full Width) */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Recent Transactions</CardTitle>
+                    <CardTitle>Transacciones Recientes</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <TransactionTable

@@ -28,11 +28,11 @@ export function TransactionList({ transactions, companyCurrency }: TransactionLi
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead className="text-right">Amount ({companyCurrency})</TableHead>
+                            <TableHead>Fecha</TableHead>
+                            <TableHead>Descripción</TableHead>
+                            <TableHead>Categoría</TableHead>
+                            <TableHead>Tipo</TableHead>
+                            <TableHead className="text-right">Monto ({companyCurrency})</TableHead>
                             <TableHead className="w-[40px]"></TableHead>
                         </TableRow>
                     </TableHeader>
@@ -72,7 +72,7 @@ export function TransactionList({ transactions, companyCurrency }: TransactionLi
                                             <button
                                                 onClick={() => setPreviewUrl(transaction.media_url)}
                                                 className="text-muted-foreground hover:text-primary transition-colors"
-                                                title="View receipt"
+                                                title="Ver recibo"
                                             >
                                                 <FileImage className="h-4 w-4" />
                                             </button>
@@ -84,7 +84,7 @@ export function TransactionList({ transactions, companyCurrency }: TransactionLi
                         {transactions.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
-                                    No transactions found.
+                                    No se encontraron transacciones.
                                 </TableCell>
                             </TableRow>
                         )}

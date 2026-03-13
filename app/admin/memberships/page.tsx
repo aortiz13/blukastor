@@ -11,7 +11,7 @@ export default async function MembershipsPage() {
         .order('expires_at', { ascending: true })
 
     if (error) {
-        return <div className="p-8 text-red-500">Error loading memberships: {error.message}</div>
+        return <div className="p-8 text-red-500">Error cargando membresías: {error.message}</div>
     }
 
     const totalMRR = memberships?.reduce((acc, m) => acc + (m.price || 0), 0) || 0

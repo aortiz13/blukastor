@@ -79,7 +79,7 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
             if (rate) {
                 setExchangeRate(rate)
             } else {
-                toast.error('Could not fetch exchange rate')
+                toast.error('No se pudo obtener la tasa de cambio')
             }
             setFetchingRate(false)
         }
@@ -92,14 +92,14 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
     const handleFile = useCallback(async (file: File) => {
         setStep('processing')
         setProgress(10)
-        setProgressLabel('Preparing file...')
+        setProgressLabel('Preparando archivo...')
 
         try {
             let imageForOcr: string | null = null
 
             // If PDF, convert first page to image using pdfjs-dist in browser
             if (file.type === 'application/pdf') {
-                setProgressLabel('Converting PDF to image...')
+                setProgressLabel('Convirtiendo PDF a imagen...')
                 setProgress(15)
                 imageForOcr = await convertPdfToImage(file)
             } else {
@@ -111,7 +111,7 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
             setProgress(30)
 
             // Upload file to storage
-            setProgressLabel('Uploading receipt...')
+            setProgressLabel('Subiendo recibo...')
             const uploadFormData = new FormData()
             uploadFormData.append('file', file)
             uploadFormData.append('companyId', companyId)
@@ -130,7 +130,7 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
             setProgress(50)
 
             // Run Tesseract.js OCR client-side
-            setProgressLabel('Running OCR (extracting text)...')
+            setProgressLabel('Ejecutando OCR (extrayendo texto)...')
             const Tesseract = (await import('tesseract.js')).default
 
             const result = await Tesseract.recognize(
@@ -146,7 +146,7 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
             )
 
             setProgress(90)
-            setProgressLabel('Parsing receipt data...')
+            setProgressLabel('Analizando datos del recibo...')
 
             const ocrText = result.data.text
             console.log('[OCR] Extracted text:', ocrText)
@@ -167,12 +167,12 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
             }
 
             setProgress(100)
-            setProgressLabel('Done!')
+            setProgressLabel('¡Listo!')
             setStep('review')
 
         } catch (error) {
             console.error('Receipt processing error:', error)
-            toast.error('Failed to process receipt. Please try again.')
+            toast.error('Error al procesar el recibo. Inténtalo de nuevo.')
             setStep('upload')
         }
     }, [companyId])
@@ -211,12 +211,12 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
             if (result?.error) {
                 toast.error(result.error)
             } else {
-                toast.success('Transaction created from receipt!')
+                toast.success('¡Transacción creada desde el recibo!')
                 setOpen(false)
                 resetForm()
             }
         } catch (error) {
-            toast.error('Failed to save transaction')
+            toast.error('Error al guardar la transacción')
         }
         setLoading(false)
     }
@@ -226,15 +226,15 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
             <DialogTrigger asChild>
                 <Button variant="outline">
                     <Upload className="mr-2 h-4 w-4" />
-                    Upload Receipt
+                    Subir Recibo
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>
-                        {step === 'upload' && 'Upload Receipt'}
-                        {step === 'processing' && 'Processing Receipt...'}
-                        {step === 'review' && 'Review Extracted Data'}
+                        {step === 'upload' && 'Subir Recibo'}
+                        {step === 'processing' && 'Procesando Recibo...'}
+                        {step === 'review' && 'Revisar Datos Extraídos'}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -250,13 +250,13 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
                     >
                         <FileImage className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                         <p className="text-lg font-medium mb-2">
-                            Drag & drop your receipt here
+                            Arrastra y suelta tu recibo aquí
                         </p>
                         <p className="text-sm text-muted-foreground mb-4">
-                            or click to browse files
+                            o haz clic para buscar archivos
                         </p>
                         <p className="text-xs text-muted-foreground">
-                            Supports: JPG, PNG, WEBP, PDF
+                            Soporta: JPG, PNG, WEBP, PDF
                         </p>
                         <input
                             ref={fileInputRef}
@@ -276,7 +276,7 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
                     <div className="space-y-6 py-4">
                         {previewUrl && (
                             <div className="relative rounded-lg overflow-hidden border max-h-48">
-                                <img src={previewUrl} alt="Receipt preview" className="w-full h-48 object-contain bg-gray-50" />
+                                <img src={previewUrl} alt="Vista previa del recibo" className="w-full h-48 object-contain bg-gray-50" />
                             </div>
                         )}
                         <div className="space-y-2">
@@ -300,14 +300,14 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
                     <div className="space-y-4">
                         {previewUrl && (
                             <div className="rounded-lg overflow-hidden border max-h-40">
-                                <img src={previewUrl} alt="Receipt" className="w-full h-40 object-contain bg-gray-50" />
+                                <img src={previewUrl} alt="Recibo" className="w-full h-40 object-contain bg-gray-50" />
                             </div>
                         )}
 
                         <div className="grid grid-cols-2 gap-4">
                             {/* Type selector */}
                             <div className="col-span-2">
-                                <Label>Transaction Type *</Label>
+                                <Label>Tipo de Transacción *</Label>
                                 <div className="flex gap-2 mt-1">
                                     <Button
                                         type="button"
@@ -315,7 +315,7 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
                                         className={type === 'expense' ? 'bg-red-600 hover:bg-red-700 flex-1' : 'flex-1'}
                                         onClick={() => setType('expense')}
                                     >
-                                        Expense
+                                        Gasto
                                     </Button>
                                     <Button
                                         type="button"
@@ -323,7 +323,7 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
                                         className={type === 'income' ? 'bg-green-600 hover:bg-green-700 flex-1' : 'flex-1'}
                                         onClick={() => setType('income')}
                                     >
-                                        Income
+                                        Ingreso
                                     </Button>
                                 </div>
                             </div>
@@ -331,7 +331,7 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
                             {/* Amount & Currency in mixed grid */}
                             <div className="col-span-2 grid grid-cols-2 gap-4">
                                 <div>
-                                    <Label htmlFor="receipt-amount">Amount *</Label>
+                                    <Label htmlFor="receipt-amount">Monto *</Label>
                                     <Input
                                         id="receipt-amount"
                                         type="number"
@@ -343,10 +343,10 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
                                     />
                                 </div>
                                 <div>
-                                    <Label>Currency</Label>
+                                    <Label>Moneda</Label>
                                     <Select value={currency} onValueChange={setCurrency}>
                                         <SelectTrigger className="mt-1">
-                                            <SelectValue placeholder="Currency" />
+                                            <SelectValue placeholder="Moneda" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {CURRENCIES.map(c => (
@@ -364,11 +364,11 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
                                 <div className="col-span-2 text-sm bg-blue-50 text-blue-800 p-2 rounded flex flex-col gap-1 border border-blue-100">
                                     <div className="flex items-center gap-2 font-medium">
                                         <ArrowRightLeft className="w-3 h-3" />
-                                        <span>Conversion Preview</span>
+                                        <span>Vista Previa de Conversión</span>
                                         {fetchingRate && <Loader2 className="w-3 h-3 animate-spin" />}
                                     </div>
                                     <div className="flex justify-between items-center text-xs opacity-90">
-                                        <span>Rate: 1 {currency} = {exchangeRate.toFixed(4)} {companyCurrency}</span>
+                                        <span>Tasa: 1 {currency} = {exchangeRate.toFixed(4)} {companyCurrency}</span>
                                     </div>
                                     <div className="font-bold text-lg border-t border-blue-200 pt-1 mt-1">
                                         ≈ {formatCurrency(convertedAmount, companyCurrency)}
@@ -378,7 +378,7 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
 
                             {/* Date */}
                             <div>
-                                <Label htmlFor="receipt-date">Date *</Label>
+                                <Label htmlFor="receipt-date">Fecha *</Label>
                                 <Input
                                     id="receipt-date"
                                     type="date"
@@ -390,14 +390,14 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
 
                             {/* Category */}
                             <div>
-                                <Label htmlFor="receipt-category">Category *</Label>
+                                <Label htmlFor="receipt-category">Categoría *</Label>
                                 <select
                                     id="receipt-category"
                                     value={category}
                                     onChange={(e) => setCategory(e.target.value)}
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background mt-1"
                                 >
-                                    <option value="">Select category</option>
+                                    <option value="">Seleccionar categoría</option>
                                     <option value="Renta">Renta</option>
                                     <option value="Servicios">Servicios</option>
                                     <option value="Marketing">Marketing</option>
@@ -414,24 +414,24 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
 
                             {/* Vendor */}
                             <div>
-                                <Label htmlFor="receipt-vendor">Vendor</Label>
+                                <Label htmlFor="receipt-vendor">Proveedor</Label>
                                 <Input
                                     id="receipt-vendor"
                                     value={vendor}
                                     onChange={(e) => setVendor(e.target.value)}
-                                    placeholder="Store name"
+                                    placeholder="Nombre del local"
                                     className="mt-1"
                                 />
                             </div>
 
                             {/* Description */}
                             <div className="col-span-2">
-                                <Label htmlFor="receipt-desc">Description</Label>
+                                <Label htmlFor="receipt-desc">Descripción</Label>
                                 <Input
                                     id="receipt-desc"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Optional notes"
+                                    placeholder="Notas opcionales"
                                     className="mt-1"
                                 />
                             </div>
@@ -439,16 +439,16 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
 
                         <div className="flex gap-2 justify-end pt-2">
                             <Button variant="outline" onClick={resetForm}>
-                                Cancel
+                                Cancelar
                             </Button>
                             <Button
                                 onClick={handleSave}
                                 disabled={loading || !amount || !date || !category}
                             >
                                 {loading ? (
-                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...</>
                                 ) : (
-                                    <><CheckCircle2 className="mr-2 h-4 w-4" /> Save Transaction</>
+                                    <><CheckCircle2 className="mr-2 h-4 w-4" /> Guardar Transacción</>
                                 )}
                             </Button>
                         </div>

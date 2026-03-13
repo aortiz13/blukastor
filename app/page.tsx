@@ -68,7 +68,7 @@ export default async function Home() {
                         <div className="flex items-center gap-2 mt-1">
                           {project.role === 'owner' ? (
                             <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                              <ShieldCheck size={10} /> Owner
+                              <ShieldCheck size={10} /> Propietario
                             </span>
                           ) : (
                             <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">

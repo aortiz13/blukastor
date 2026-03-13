@@ -13,8 +13,8 @@ export function ProjectIncomeChart({ data, currency }: ProjectIncomeChartProps) 
     return (
         <Card className="col-span-3 lg:col-span-3">
             <CardHeader>
-                <CardTitle>Income by Source</CardTitle>
-                <CardDescription>Revenue distribution by project or company</CardDescription>
+                <CardTitle>Ingresos por Fuente</CardTitle>
+                <CardDescription>Distribución de ingresos por proyecto o empresa</CardDescription>
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={350}>

@@ -14,7 +14,7 @@ export default async function FinancePage() {
         .limit(100)
 
     if (error) {
-        return <div className="p-8 text-red-500">Error loading financial data: {error.message}</div>
+        return <div className="p-8 text-red-500">Error cargando datos financieros: {error.message}</div>
     }
 
     // Mock Data for display purposes (as requested)

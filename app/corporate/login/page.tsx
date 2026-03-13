@@ -256,7 +256,7 @@ export default function CorporateLoginPage() {
                         ) : (
                             <>
                                 <Sparkles size={16} style={{ color: primaryColor }} />
-                                Enviar Magic Link
+                                Enviar Enlace Mágico
                             </>
                         )}
                     </button>

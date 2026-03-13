@@ -15,8 +15,8 @@ export function ExpensePieChart({ data, currency }: ExpensePieChartProps) {
     return (
         <Card className="col-span-3">
             <CardHeader>
-                <CardTitle>Expenses by Category</CardTitle>
-                <CardDescription>Where the money is going</CardDescription>
+                <CardTitle>Gastos por Categoría</CardTitle>
+                <CardDescription>Hacia dónde va el dinero</CardDescription>
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={350}>

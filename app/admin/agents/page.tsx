@@ -12,7 +12,7 @@ export default async function AgentsPage() {
         .order('updated_at', { ascending: false })
 
     if (error) {
-        return <div className="p-8 text-red-500">Error loading agents: {error.message}</div>
+        return <div className="p-8 text-red-500">Error cargando agentes: {error.message}</div>
     }
 
     return (

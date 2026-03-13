@@ -14,8 +14,8 @@ export function NetWorthChart({ data, currency }: NetWorthChartProps) {
     return (
         <Card className="col-span-4 lg:col-span-4">
             <CardHeader>
-                <CardTitle>Net Worth Evolution</CardTitle>
-                <CardDescription>Cumulative Net Income over time</CardDescription>
+                <CardTitle>Evolución del Patrimonio Neto</CardTitle>
+                <CardDescription>Ingreso neto acumulado a lo largo del tiempo</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
                 <ResponsiveContainer width="100%" height={350}>

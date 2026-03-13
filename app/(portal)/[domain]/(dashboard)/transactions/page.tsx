@@ -22,7 +22,7 @@ export default async function TransactionsPage() {
         .order('date', { ascending: false })
 
     if (error) {
-        return <div className="p-8 text-red-500">Error loading transactions: {error.message}</div>
+        return <div className="p-8 text-red-500">Error cargando transacciones: {error.message}</div>
     }
 
     const income = transactions?.filter(t => t.transaction_type === 'income' || t.transaction_type === 'deposit').reduce((acc, t) => acc + (t.amount || 0), 0) || 0

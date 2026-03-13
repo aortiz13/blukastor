@@ -15,7 +15,7 @@ export default async function CompliancePage() {
     const records = recordsData as any[]
 
     if (fetchError) {
-        return <div className="p-8 text-red-500">Error loading compliance data: {fetchError.message}</div>
+        return <div className="p-8 text-red-500">Error cargando datos de cumplimiento: {fetchError.message}</div>
     }
 
     const pendingCount = records?.filter(r => !r.terms_accepted).length || 0

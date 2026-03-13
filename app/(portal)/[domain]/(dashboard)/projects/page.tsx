@@ -21,7 +21,7 @@ export default async function ProjectsPage({
     if (!user) redirect(`/${domain}/login`)
 
     const company = await getCompanyByDomain(supabase, domain)
-    if (!company) return <div>Company not found</div>
+    if (!company) return <div>Empresa no encontrada</div>
 
     const projects = await getUserProjects()
 

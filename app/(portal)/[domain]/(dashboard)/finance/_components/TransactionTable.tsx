@@ -97,7 +97,7 @@ export function TransactionTable({ transactions, companyCurrency, categories }: 
         if (result?.error) {
             toast.error(result.error)
         } else {
-            toast.success('Transaction deleted')
+            toast.success('Transacción eliminada')
         }
     }
 
@@ -146,7 +146,7 @@ export function TransactionTable({ transactions, companyCurrency, categories }: 
                                             format(new Date(searchParams.get('startDate')!), "LLL dd, y")
                                         )
                                     ) : (
-                                        <span>Pick a date range</span>
+                                        <span>Seleccionar rango de fechas</span>
                                     )}
                                 </Button>
                             </PopoverTrigger>
@@ -188,12 +188,12 @@ export function TransactionTable({ transactions, companyCurrency, categories }: 
                         onValueChange={(val) => handleFilterChange('type', val)}
                     >
                         <SelectTrigger className="w-[150px]">
-                            <SelectValue placeholder="Type" />
+                            <SelectValue placeholder="Tipo" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All Types</SelectItem>
-                            <SelectItem value="income">Income</SelectItem>
-                            <SelectItem value="expense">Expense</SelectItem>
+                            <SelectItem value="all">Todos los Tipos</SelectItem>
+                            <SelectItem value="income">Ingreso</SelectItem>
+                            <SelectItem value="expense">Gasto</SelectItem>
                         </SelectContent>
                     </Select>
 
@@ -203,10 +203,10 @@ export function TransactionTable({ transactions, companyCurrency, categories }: 
                         onValueChange={(val) => handleFilterChange('category', val)}
                     >
                         <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Category" />
+                            <SelectValue placeholder="Categoría" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All Categories</SelectItem>
+                            <SelectItem value="all">Todas las Categorías</SelectItem>
                             {categories.map(cat => (
                                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                             ))}
@@ -215,7 +215,7 @@ export function TransactionTable({ transactions, companyCurrency, categories }: 
 
                     {/* Clear Filters */}
                     {(searchParams.get('startDate') || searchParams.get('type') || searchParams.get('category')) && (
-                        <Button variant="ghost" size="icon" onClick={clearFilters} title="Clear Filters">
+                        <Button variant="ghost" size="icon" onClick={clearFilters} title="Limpiar Filtros">
                             <FilterX className="h-4 w-4" />
                         </Button>
                     )}
@@ -229,20 +229,20 @@ export function TransactionTable({ transactions, companyCurrency, categories }: 
                         <TableRow>
                             <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('date')}>
                                 <div className="flex items-center">
-                                    Date
+                                    Fecha
                                     {getSortIcon('date')}
                                 </div>
                             </TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Type</TableHead>
+                            <TableHead>Descripción</TableHead>
+                            <TableHead>Categoría</TableHead>
+                            <TableHead>Tipo</TableHead>
                             <TableHead className="text-right cursor-pointer hover:bg-muted/50" onClick={() => handleSort('amount')}>
                                 <div className="flex items-center justify-end">
-                                    Amount ({companyCurrency})
+                                    Monto ({companyCurrency})
                                     {getSortIcon('amount')}
                                 </div>
                             </TableHead>
-                            <TableHead className="w-[50px]">Receipt</TableHead>
+                            <TableHead className="w-[50px]">Recibo</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
                     </TableHeader>
@@ -284,7 +284,7 @@ export function TransactionTable({ transactions, companyCurrency, categories }: 
                                             <button
                                                 onClick={() => setPreviewUrl(transaction.media_url)}
                                                 className="text-muted-foreground hover:text-primary transition-colors"
-                                                title="View receipt"
+                                                title="Ver recibo"
                                             >
                                                 <FileImage className="h-4 w-4" />
                                             </button>
@@ -299,15 +299,15 @@ export function TransactionTable({ transactions, companyCurrency, categories }: 
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
                                                 <AlertDialogHeader>
-                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        This action cannot be undone. This will permanently delete the transaction.
+                                                        Esta acción no se puede deshacer. Se eliminará permanentemente la transacción.
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                                     <AlertDialogAction onClick={() => handleDelete(transaction.id)} className="bg-destructive hover:bg-destructive/90">
-                                                        Delete
+                                                        Eliminar
                                                     </AlertDialogAction>
                                                 </AlertDialogFooter>
                                             </AlertDialogContent>
@@ -319,7 +319,7 @@ export function TransactionTable({ transactions, companyCurrency, categories }: 
                         {transactions.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
-                                    No transactions found matching your filters.
+                                    No se encontraron transacciones con los filtros aplicados.
                                 </TableCell>
                             </TableRow>
                         )}

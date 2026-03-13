@@ -13,7 +13,7 @@ export default async function ConversationAuditorPage() {
         .limit(20)
 
     if (error) {
-        return <div className="p-8 text-red-500">Error loading logs: {error.message}</div>
+        return <div className="p-8 text-red-500">Error cargando registros: {error.message}</div>
     }
 
     return (

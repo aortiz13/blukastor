@@ -19,11 +19,11 @@ export function ReceiptPreview({ url, open, onClose }: ReceiptPreviewProps) {
             <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
                 <DialogHeader>
                     <DialogTitle className="flex items-center justify-between">
-                        Receipt Preview
+                        Vista Previa del Recibo
                         <div className="flex gap-2">
                             <Button variant="outline" size="sm" asChild>
                                 <a href={url} target="_blank" rel="noopener noreferrer" download>
-                                    <Download className="h-4 w-4 mr-1" /> Download
+                                    <Download className="h-4 w-4 mr-1" /> Descargar
                                 </a>
                             </Button>
                         </div>
@@ -34,12 +34,12 @@ export function ReceiptPreview({ url, open, onClose }: ReceiptPreviewProps) {
                         <iframe
                             src={url}
                             className="w-full h-[500px] border-0"
-                            title="Receipt PDF"
+                            title="Recibo PDF"
                         />
                     ) : (
                         <img
                             src={url}
-                            alt="Receipt"
+                            alt="Recibo"
                             className="max-w-full max-h-[500px] object-contain"
                         />
                     )}

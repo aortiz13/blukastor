@@ -64,7 +64,7 @@ export function TransactionForm({ companyId, userId, companyCurrency }: Transact
             if (rate) {
                 setExchangeRate(rate)
             } else {
-                toast.error('Could not fetch exchange rate')
+                toast.error('No se pudo obtener la tasa de cambio')
             }
             setFetchingRate(false)
         }
@@ -93,7 +93,7 @@ export function TransactionForm({ companyId, userId, companyCurrency }: Transact
         if (result?.error) {
             toast.error(result.error)
         } else {
-            toast.success('Transaction added successfully')
+            toast.success('Transacción agregada exitosamente')
             setOpen(false)
         }
     }
@@ -103,15 +103,15 @@ export function TransactionForm({ companyId, userId, companyCurrency }: Transact
             <DialogTrigger asChild>
                 <Button>
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Transaction
+                    Agregar Transacción
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
                 <form action={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>Add Transaction</DialogTitle>
+                        <DialogTitle>Agregar Transacción</DialogTitle>
                         <DialogDescription>
-                            Record a transaction in any currency.
+                            Registra una transacción en cualquier moneda.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
@@ -120,25 +120,25 @@ export function TransactionForm({ companyId, userId, companyCurrency }: Transact
                         {/* Type & Project */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="type">Type</Label>
+                                <Label htmlFor="type">Tipo</Label>
                                 <Select name="type" required defaultValue="expense">
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select type" />
+                                        <SelectValue placeholder="Seleccionar tipo" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="income">Income</SelectItem>
-                                        <SelectItem value="expense">Expense</SelectItem>
+                                        <SelectItem value="income">Ingreso</SelectItem>
+                                        <SelectItem value="expense">Gasto</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="projectId">Project</Label>
+                                <Label htmlFor="projectId">Proyecto</Label>
                                 <Select name="projectId" defaultValue="none">
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select Project" />
+                                        <SelectValue placeholder="Seleccionar Proyecto" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="none">General (No Project)</SelectItem>
+                                        <SelectItem value="none">General (Sin Proyecto)</SelectItem>
                                         {projects.map(p => (
                                             <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                                         ))}
@@ -151,7 +151,7 @@ export function TransactionForm({ companyId, userId, companyCurrency }: Transact
                         <div className="space-y-4 border rounded-lg p-4 bg-slate-50">
                             <div className="grid grid-cols-5 gap-2 items-end">
                                 <div className="col-span-2 space-y-2">
-                                    <Label>Amount</Label>
+                                    <Label>Monto</Label>
                                     <Input
                                         type="number"
                                         step="0.01"
@@ -163,10 +163,10 @@ export function TransactionForm({ companyId, userId, companyCurrency }: Transact
                                     />
                                 </div>
                                 <div className="col-span-3 space-y-2">
-                                    <Label>Currency</Label>
+                                    <Label>Moneda</Label>
                                     <Select value={currency} onValueChange={setCurrency}>
                                         <SelectTrigger className="bg-white">
-                                            <SelectValue placeholder="Currency" />
+                                            <SelectValue placeholder="Moneda" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {CURRENCIES.map(c => (
@@ -184,11 +184,11 @@ export function TransactionForm({ companyId, userId, companyCurrency }: Transact
                                 <div className="text-sm bg-blue-50 text-blue-800 p-2 rounded flex flex-col gap-1 border border-blue-100">
                                     <div className="flex items-center gap-2 font-medium">
                                         <ArrowRightLeft className="w-3 h-3" />
-                                        <span>Conversion Preview</span>
+                                        <span>Vista Previa de Conversión</span>
                                         {fetchingRate && <Loader2 className="w-3 h-3 animate-spin" />}
                                     </div>
                                     <div className="flex justify-between items-center text-xs opacity-90">
-                                        <span>Rate: 1 {currency} = {exchangeRate.toFixed(4)} {companyCurrency}</span>
+                                        <span>Tasa: 1 {currency} = {exchangeRate.toFixed(4)} {companyCurrency}</span>
                                     </div>
                                     <div className="font-bold text-lg border-t border-blue-200 pt-1 mt-1">
                                         ≈ {formatCurrency(convertedAmount, companyCurrency)}
@@ -199,7 +199,7 @@ export function TransactionForm({ companyId, userId, companyCurrency }: Transact
 
                         {/* Date */}
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="date" className="text-right">Date</Label>
+                            <Label htmlFor="date" className="text-right">Fecha</Label>
                             <Input
                                 id="date"
                                 name="date"
@@ -212,11 +212,11 @@ export function TransactionForm({ companyId, userId, companyCurrency }: Transact
 
                         {/* Category */}
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="category" className="text-right">Category</Label>
+                            <Label htmlFor="category" className="text-right">Categoría</Label>
                             <Input
                                 id="category"
                                 name="category"
-                                placeholder="e.g. Rent, Sales"
+                                placeholder="Ej: Renta, Ventas"
                                 className="col-span-3"
                                 required
                             />
@@ -224,11 +224,11 @@ export function TransactionForm({ companyId, userId, companyCurrency }: Transact
 
                         {/* Description */}
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="description" className="text-right">Description</Label>
+                            <Label htmlFor="description" className="text-right">Descripción</Label>
                             <Input
                                 id="description"
                                 name="description"
-                                placeholder="Optional details"
+                                placeholder="Detalles opcionales"
                                 className="col-span-3"
                             />
                         </div>
@@ -236,7 +236,7 @@ export function TransactionForm({ companyId, userId, companyCurrency }: Transact
                     <DialogFooter>
                         <Button type="submit" disabled={loading || fetchingRate}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {loading ? 'Saving...' : 'Save Transaction'}
+                            {loading ? 'Guardando...' : 'Guardar Transacción'}
                         </Button>
                     </DialogFooter>
                 </form>

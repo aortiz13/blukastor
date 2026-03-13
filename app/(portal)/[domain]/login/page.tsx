@@ -320,7 +320,7 @@ export default function LoginPage() {
                                             required
                                             className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
                                             style={{ '--tw-ring-color': primaryColor + '40', borderColor: 'rgb(229,231,235)' } as any}
-                                            placeholder="Email"
+                                            placeholder="Correo electrónico"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                         />
@@ -354,7 +354,7 @@ export default function LoginPage() {
                                     disabled={isLoading || !email}
                                     className="flex w-full justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
                                 >
-                                    Enviar Magic Link
+                                    Enviar Enlace Mágico
                                 </button>
                             </>
                         )}
@@ -380,7 +380,7 @@ export default function LoginPage() {
                                         <div className="space-y-3">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Email
+                                                    Correo electrónico
                                                 </label>
                                                 <input
                                                     type="email"

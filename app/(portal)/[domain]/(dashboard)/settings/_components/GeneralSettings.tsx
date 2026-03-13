@@ -29,10 +29,10 @@ export function GeneralSettings({ company }: GeneralSettingsProps) {
             if (result.error) {
                 toast.error(result.error)
             } else {
-                toast.success('Settings updated successfully')
+                toast.success('Configuración actualizada exitosamente')
             }
         } catch (error) {
-            toast.error('Failed to update settings')
+            toast.error('Error al actualizar la configuración')
         }
         setLoading(false)
     }
@@ -41,17 +41,17 @@ export function GeneralSettings({ company }: GeneralSettingsProps) {
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>General Settings</CardTitle>
+                    <CardTitle>Configuración General</CardTitle>
                     <CardDescription>
-                        Manage your company's general preferences and defaults.
+                        Administra las preferencias y valores predeterminados de tu empresa.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="currency">Base Currency</Label>
+                        <Label htmlFor="currency">Moneda Base</Label>
                         <Select value={currency} onValueChange={setCurrency} disabled={loading}>
                             <SelectTrigger id="currency" className="w-[280px]">
-                                <SelectValue placeholder="Select currency" />
+                                <SelectValue placeholder="Seleccionar moneda" />
                             </SelectTrigger>
                             <SelectContent>
                                 {CURRENCIES.map((c) => (
@@ -63,15 +63,15 @@ export function GeneralSettings({ company }: GeneralSettingsProps) {
                             </SelectContent>
                         </Select>
                         <p className="text-sm text-muted-foreground">
-                            This is the currency used for all your financial reports and dashboards.
-                            Transactions in other currencies will be automatically converted to this base currency.
+                            Esta es la moneda utilizada para todos tus reportes financieros y paneles.
+                            Las transacciones en otras monedas se convertirán automáticamente a esta moneda base.
                         </p>
                     </div>
 
                     <div className="flex justify-end pt-4">
                         <Button onClick={handleSave} disabled={loading || currency === company.currency}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Save Changes
+                            Guardar Cambios
                         </Button>
                     </div>
                 </CardContent>

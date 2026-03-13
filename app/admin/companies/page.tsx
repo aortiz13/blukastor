@@ -28,7 +28,7 @@ export default async function CompaniesPage() {
         .order('created_at', { ascending: false })
 
     if (error) {
-        return <div className="p-8 text-red-500">Error loading companies: {error.message}</div>
+        return <div className="p-8 text-red-500">Error cargando empresas: {error.message}</div>
     }
 
     // Calculate metrics

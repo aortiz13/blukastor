@@ -11,7 +11,7 @@ export default async function EscalationPage() {
         .order('created_at', { ascending: false })
 
     if (error) {
-        return <div className="p-8 text-red-500">Error loading escalation queue: {error.message}</div>
+        return <div className="p-8 text-red-500">Error cargando cola de escalación: {error.message}</div>
     }
 
     return (

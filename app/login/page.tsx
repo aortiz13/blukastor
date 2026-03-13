@@ -27,7 +27,7 @@ export default function RootLoginPage() {
         if (error) {
             setMessage('Error: ' + error.message)
         } else {
-            setMessage('Check your email for the magic link!')
+            setMessage('¡Revisa tu correo para el enlace mágico!')
         }
     }
 
@@ -63,7 +63,7 @@ export default function RootLoginPage() {
                         <div className="space-y-2">
                             <input
                                 type="email"
-                                placeholder="Email"
+                                placeholder="Correo electrónico"
                                 required
                                 className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 value={email}
@@ -71,7 +71,7 @@ export default function RootLoginPage() {
                             />
                             <input
                                 type="password"
-                                placeholder="Password"
+                                placeholder="Contraseña"
                                 required
                                 className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 value={password}
@@ -97,7 +97,7 @@ export default function RootLoginPage() {
                         disabled={isLoading}
                         className="flex w-full justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 uppercase"
                     >
-                        Enviar Magic Link
+                        Enviar Enlace Mágico
                     </button>
                 </div>
 

@@ -115,19 +115,50 @@ export default async function AcceptPortalInvitePage({
             .insert({
                 contact_id: contactId,
                 company_id: companyId,
-                relation: invite.role === 'admin' ? 'admin' : invite.role === 'viewer' ? 'viewer' : 'member',
+                relation: invite.role === 'admin' ? 'admin' : 'member',
                 verified: true,
                 invite_status: 'accepted',
             })
     }
 
-    // 4. Delete the invite (consumed)
+    // 4. Create admin profile (wa.admins) for portal access if admin/member role
+    if (['admin', 'member'].includes(invite.role)) {
+        // Check if admin profile already exists
+        const { data: existingAdmin } = await serviceClient
+            .schema('wa')
+            .from('admins')
+            .select('auth_user_id')
+            .eq('auth_user_id', user.id)
+            .eq('client_company_id', companyId)
+            .maybeSingle()
+
+        if (!existingAdmin) {
+            const attributes: any = {}
+            if (invite.role === 'member' && invite.permissions) {
+                attributes.permissions = invite.permissions
+            }
+
+            await serviceClient
+                .schema('wa')
+                .from('admins')
+                .insert({
+                    auth_user_id: user.id,
+                    client_company_id: companyId,
+                    role: invite.role,
+                    scope: 'instance',
+                    attributes,
+                    note: `Invited via portal invite ${invite.id}`,
+                })
+        }
+    }
+
+    // 5. Delete the invite (consumed)
     await serviceClient
         .from('portal_invites')
         .delete()
         .eq('id', invite.id)
 
-    // 5. Redirect to the company's portal
+    // 6. Redirect to the company's portal
     const domain = company?.custom_domain || companyId
     redirect(`/${domain}/dashboard`)
 }

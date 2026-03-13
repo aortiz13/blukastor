@@ -158,6 +158,7 @@ export function ProjectDetailClient({
                             canEdit={true}
                             saveEndpoint={`/api/projects/${id}/branding`}
                             companyIdOverride={id}
+                            mode="project"
                         />
                     </div>
                 </TabsContent>

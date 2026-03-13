@@ -6,7 +6,7 @@ import {
     Upload, Palette, Globe, Loader2, Type, Building2,
     Share2, MapPin, Settings, Image, Save,
     Instagram, Facebook, Linkedin, Twitter, Youtube, MessageCircle,
-    Eye, X as XIcon
+    Eye, X as XIcon, Lock
 } from 'lucide-react'
 
 interface CorporateBrandingFormProps {
@@ -14,6 +14,8 @@ interface CorporateBrandingFormProps {
     canEdit: boolean
     saveEndpoint?: string
     companyIdOverride?: string
+    isSuperAdmin?: boolean
+    mode?: 'corporate' | 'project'
 }
 
 const GOOGLE_FONTS: { value: string; category: string }[] = [
@@ -304,9 +306,13 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
     { id: 'config', label: 'Configuración', icon: <Settings className="w-4 h-4" /> },
 ]
 
+const PROJECT_TABS: TabId[] = ['logos', 'colors', 'typography', 'identity', 'social']
+
 // ─── Main Component ─────────────────────────────────────────────────
 
-export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, companyIdOverride }: CorporateBrandingFormProps) {
+export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, companyIdOverride, isSuperAdmin = false, mode = 'corporate' }: CorporateBrandingFormProps) {
+    const isProjectMode = mode === 'project'
+    const visibleTabs = isProjectMode ? TABS.filter(t => PROJECT_TABS.includes(t.id)) : TABS
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState<TabId>('logos')
@@ -371,10 +377,11 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
         setLoading(true)
         try {
             const endpoint = saveEndpoint || '/api/corporate/company-branding'
+            const payload = companyId ? { ...fields, companyId } : fields
             const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(fields)
+                body: JSON.stringify(payload)
             })
             const data = await res.json()
             if (!res.ok) throw new Error(data.error)
@@ -680,6 +687,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                             <ImageUploadField label="Favicon" value={faviconUrl} onChange={setFaviconUrl} assetType="favicon" companyId={companyId} hint="Ícono del navegador — 32×32px o 64×64px" disabled={disabled} />
                         </div>
 
+                        {!isProjectMode && (<>
                         <div className="p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl">
                             <p className="text-xs font-semibold text-indigo-700 mb-1">📐 Dimensiones recomendadas para portadas</p>
                             <p className="text-xs text-indigo-600">Desktop: <strong>1200×1600px</strong> (Vertical/Cuadrada) · Mobile: <strong>768×1024px</strong> (Vertical)</p>
@@ -689,6 +697,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                             <ImageUploadField label="Portada Desktop" value={coverImageUrl} onChange={setCoverImageUrl} assetType="cover" companyId={companyId} hint="1200×1600px · Lado izquierdo del login" disabled={disabled} />
                             <ImageUploadField label="Portada Mobile" value={coverImageMobileUrl} onChange={setCoverImageMobileUrl} assetType="cover_mobile" companyId={companyId} hint="768×1024px · Se muestra en dispositivos móviles" disabled={disabled} />
                         </div>
+                        </>)}
 
                         <SaveButton onClick={() => saveFields({
                             logo_url: logoUrl, logo_dark_url: logoDarkUrl, logo_icon_url: logoIconUrl,
@@ -706,13 +715,15 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                             <div className="flex-1 flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: accentColor }}>Acento</div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <ColorField label="Color Primario" value={primaryColor} onChange={setPrimaryColor} disabled={disabled} hint="Botones principales, enlaces activos, sidebar del portal y elementos destacados." />
+                            <ColorField label="Color Primario" value={primaryColor} onChange={setPrimaryColor} disabled={disabled} hint={isProjectMode ? 'Color principal de la marca.' : 'Botones principales, enlaces activos, sidebar del portal y elementos destacados.'} />
                             <ColorField label="Color Secundario" value={secondaryColor} onChange={setSecondaryColor} disabled={disabled} hint="Bordes, botones secundarios, badges y elementos de apoyo visual." />
                             <ColorField label="Color de Acento" value={accentColor} onChange={setAccentColor} disabled={disabled} hint="Notificaciones, indicadores de estado, alertas y elementos que requieren atención." />
-                            <ColorField label="Fondo Formulario Login" value={loginBgColor} onChange={setLoginBgColor} disabled={disabled} hint="Color de fondo del panel derecho en la pantalla de inicio de sesión del portal." />
+                            {!isProjectMode && (
+                                <ColorField label="Fondo Formulario Login" value={loginBgColor} onChange={setLoginBgColor} disabled={disabled} hint="Color de fondo del panel derecho en la pantalla de inicio de sesión del portal." />
+                            )}
                         </div>
 
-                        <SaveButton onClick={() => saveFields({ primary_color: primaryColor, secondary_color: secondaryColor, accent_color: accentColor, login_bg_color: loginBgColor })} loading={loading} canEdit={canEdit} />
+                        <SaveButton onClick={() => saveFields({ primary_color: primaryColor, secondary_color: secondaryColor, accent_color: accentColor, ...(isProjectMode ? {} : { login_bg_color: loginBgColor }) })} loading={loading} canEdit={canEdit} />
                     </div>
                 )
 
@@ -798,7 +809,10 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
 
                         <div className="p-3 bg-amber-50/50 border border-amber-100 rounded-xl">
                             <p className="text-xs text-amber-700">
-                                <strong>💡 Tip:</strong> Las fuentes seleccionadas se aplicarán automáticamente al portal de clientes de tu empresa al guardar.
+                                <strong>💡 Tip:</strong> {isProjectMode
+                                    ? 'Las fuentes seleccionadas definen la identidad tipográfica de tu marca.'
+                                    : 'Las fuentes seleccionadas se aplicarán automáticamente al portal de clientes de tu empresa al guardar.'
+                                }
                             </p>
                         </div>
 
@@ -937,12 +951,21 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                                     id="powered-by-corp"
                                     checked={poweredByVisible}
                                     onChange={(e) => setPoweredByVisible(e.target.checked)}
-                                    disabled={disabled}
+                                    disabled={disabled || !isSuperAdmin}
                                     className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 disabled:opacity-50"
                                 />
                                 <label htmlFor="powered-by-corp" className="text-sm font-semibold text-gray-700">
                                     Mostrar &quot;Powered by Blukastor&quot; en el portal de clientes
                                 </label>
+                                {!isSuperAdmin && (
+                                    <div className="relative group">
+                                        <Lock className="w-4 h-4 text-amber-500 cursor-help" />
+                                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 bg-gray-900 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2 shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
+                                            Solo el equipo de Blukastor puede modificar esta opción. Contacta a soporte para desactivar la marca de agua.
+                                            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900" />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -989,7 +1012,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                 {/* Tab Navigation */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
                     <div className="flex overflow-x-auto scrollbar-hide">
-                        {TABS.map((tab) => (
+                        {visibleTabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
@@ -1005,24 +1028,26 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                     </div>
                 </div>
 
-                {/* Mobile Preview Toggle */}
-                <div className="lg:hidden mb-4">
-                    <button
-                        onClick={() => setMobilePreviewOpen(!mobilePreviewOpen)}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-600 transition"
-                    >
-                        <Eye className="w-4 h-4" />
-                        {mobilePreviewOpen ? 'Ocultar vista previa' : 'Ver vista previa'}
-                    </button>
-                    {mobilePreviewOpen && (
-                        <div className="mt-3 bg-gradient-to-br from-gray-50 to-slate-100 rounded-2xl border border-gray-200 p-4 space-y-5">
-                            <LoginPreviewDesktop />
-                            <PortalPreviewDesktop />
-                            {(activeTab === 'typography') && <TypographyPreview />}
-                            {(activeTab === 'colors') && <ColorSwatchPreview />}
-                        </div>
-                    )}
-                </div>
+                {/* Mobile Preview Toggle — corporate mode only */}
+                {!isProjectMode && (
+                    <div className="lg:hidden mb-4">
+                        <button
+                            onClick={() => setMobilePreviewOpen(!mobilePreviewOpen)}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-600 transition"
+                        >
+                            <Eye className="w-4 h-4" />
+                            {mobilePreviewOpen ? 'Ocultar vista previa' : 'Ver vista previa'}
+                        </button>
+                        {mobilePreviewOpen && (
+                            <div className="mt-3 bg-gradient-to-br from-gray-50 to-slate-100 rounded-2xl border border-gray-200 p-4 space-y-5">
+                                <LoginPreviewDesktop />
+                                <PortalPreviewDesktop />
+                                {(activeTab === 'typography') && <TypographyPreview />}
+                                {(activeTab === 'colors') && <ColorSwatchPreview />}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Active Tab Content */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
@@ -1038,7 +1063,8 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                 </div>
             </div>
 
-            {/* ── RIGHT COLUMN: Sticky Preview ── */}
+            {/* ── RIGHT COLUMN: Sticky Preview — corporate mode only ── */}
+            {!isProjectMode && (
             <div className="hidden lg:block lg:w-[38%]">
                 <div className="sticky top-0 space-y-4">
                     <div className="bg-gradient-to-br from-gray-50 to-slate-100 rounded-2xl border border-gray-200 p-5">
@@ -1102,6 +1128,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                     )}
                 </div>
             </div>
+            )}
         </div>
     )
 }

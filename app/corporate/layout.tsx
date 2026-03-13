@@ -4,6 +4,8 @@ import { headers } from 'next/headers'
 import { CorporateSidebar } from '@/components/layout/corporate-sidebar'
 import { getCorporateAdminProfile, resolveActiveCompany } from '@/lib/actions/corporate-helpers'
 
+export const dynamic = 'force-dynamic'
+
 export default async function CorporateLayout({
     children,
 }: {
@@ -86,6 +88,11 @@ export default async function CorporateLayout({
         availableCompanies = admins.map(a => ({ id: a.company_id, name: a.company_name }))
     }
 
+    // Determine current user's role and permissions for the active company
+    const currentAdmin = admins.find(a => a.company_id === activeCompany.companyId) || admins[0]
+    const userRole = isSuperAdmin ? 'admin' : currentAdmin?.role || 'member'
+    const userPermissions = userRole === 'member' ? (currentAdmin?.attributes?.permissions || null) : null
+
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden">
             <CorporateSidebar
@@ -95,6 +102,8 @@ export default async function CorporateLayout({
                 primaryColor={companyBranding?.primary_color || '#6366f1'}
                 isSuperAdmin={isSuperAdmin}
                 availableCompanies={availableCompanies}
+                userRole={userRole}
+                userPermissions={userPermissions}
             />
             <main className="flex-1 overflow-y-auto relative focus:outline-none">
                 <div className="py-6">

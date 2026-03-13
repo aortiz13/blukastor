@@ -15,10 +15,18 @@ import {
     Building2,
     ChevronDown,
     Palette,
+    Bot,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+
+interface MemberPermissions {
+    agents: string[]
+    view_finance: boolean
+    view_conversations: boolean
+    view_kpis: boolean
+}
 
 interface CorporateSidebarProps {
     companyName: string
@@ -27,16 +35,19 @@ interface CorporateSidebarProps {
     primaryColor?: string
     isSuperAdmin?: boolean
     availableCompanies?: { id: string; name: string }[]
+    userRole?: string
+    userPermissions?: MemberPermissions | null
 }
 
-const corporateNavigation = [
-    { name: 'Dashboard', href: '/corporate/dashboard', icon: LayoutDashboard },
-    { name: 'Usuarios', href: '/corporate/users', icon: Users },
-    { name: 'Cumplimiento (T&C)', href: '/corporate/compliance', icon: FileText },
-    { name: 'Escalamiento Manual', href: '/corporate/escalation', icon: ShieldAlert },
-    { name: 'Membresías', href: '/corporate/memberships', icon: CreditCard },
-    { name: 'Finanzas Globales', href: '/corporate/finance', icon: TrendingUp },
-    { name: 'Branding', href: '/corporate/branding', icon: Palette },
+const corporateNavigation: { name: string; href: string; icon: any; permissionKey: keyof MemberPermissions | null }[] = [
+    { name: 'Dashboard', href: '/corporate/dashboard', icon: LayoutDashboard, permissionKey: 'view_kpis' },
+    { name: 'Usuarios', href: '/corporate/users', icon: Users, permissionKey: null },
+    { name: 'Cumplimiento (T&C)', href: '/corporate/compliance', icon: FileText, permissionKey: null },
+    { name: 'Escalamiento Manual', href: '/corporate/escalation', icon: ShieldAlert, permissionKey: null },
+    { name: 'Membresías', href: '/corporate/memberships', icon: CreditCard, permissionKey: null },
+    { name: 'Finanzas Globales', href: '/corporate/finance', icon: TrendingUp, permissionKey: 'view_finance' },
+    { name: 'Branding', href: '/corporate/branding', icon: Palette, permissionKey: null },
+    { name: 'Agentes', href: '/corporate/agents', icon: Bot, permissionKey: null },
 ]
 
 export function CorporateSidebar({
@@ -46,6 +57,8 @@ export function CorporateSidebar({
     primaryColor = '#6366f1',
     isSuperAdmin = false,
     availableCompanies = [],
+    userRole,
+    userPermissions = null,
 }: CorporateSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
@@ -53,6 +66,19 @@ export function CorporateSidebar({
     const [isCompanyPickerOpen, setIsCompanyPickerOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
     const supabase = createClient()
+
+    // Filter navigation based on member permissions
+    const isMember = userRole === 'member' && userPermissions
+    const filteredNavigation = corporateNavigation.filter(item => {
+        // Admins and super admins see everything
+        if (!isMember) return true
+        // Members: check permission key
+        if (item.permissionKey && userPermissions) {
+            return userPermissions[item.permissionKey] === true
+        }
+        // Items without permission key are always visible
+        return true
+    })
 
     useEffect(() => {
         setMounted(true)
@@ -168,7 +194,7 @@ export function CorporateSidebar({
 
                 {/* Navigation Links */}
                 <nav className="flex-1 px-4 mt-4 space-y-1 overflow-y-auto custom-scrollbar">
-                    {corporateNavigation.map((item) => {
+                    {filteredNavigation.map((item) => {
                         const isActive = mounted && pathname === item.href
                         return (
                             <Link

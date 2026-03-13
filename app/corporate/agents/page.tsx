@@ -1,12 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Palette } from 'lucide-react'
+import { Bot } from 'lucide-react'
 import { getCorporateAdminProfile, resolveActiveCompany } from '@/lib/actions/corporate-helpers'
-import { CorporateBrandingForm } from './corporate-branding-form'
+import { AgentConfigForm } from './agent-config-form'
 
-export const dynamic = 'force-dynamic'
-
-export default async function CorporateBrandingPage() {
+export default async function CorporateAgentsPage() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/corporate/login')
@@ -18,34 +16,32 @@ export default async function CorporateBrandingPage() {
     const activeCompany = resolveActiveCompany(admins, selectedCompanyId)
     if (!activeCompany) return null
 
-    // Fetch full company data
-    const { data: company } = await supabase
-        .from('client_companies')
-        .select('*')
-        .eq('id', activeCompany.companyId)
-        .single()
+    // Fetch agents for this company
+    const { data: agents } = await supabase
+        .from('company_prompts')
+        .select('id, agent_type, agent_name, personality_traits, target_audience')
+        .eq('company_id', activeCompany.companyId)
+        .eq('active', true)
+        .order('agent_type')
 
-    if (!company) return <div className="p-8 text-red-500">Error: No se encontró la empresa.</div>
-
-    // Check if current user has edit permissions (owner/admin, not viewer)
+    // Check if current user has edit permissions
     const adminProfile = admins.find(a => a.company_id === activeCompany.companyId) || admins[0]
     const canEdit = adminProfile?.role !== 'viewer'
-    const isSuperAdmin = admins.some(a => a.scope === 'global' || a.role === 'super_admin')
 
     return (
         <div className="space-y-4">
             {/* Header */}
             <div>
                 <div className="flex items-center gap-3 mb-2">
-                    <div className="p-3 bg-pink-100 rounded-2xl">
-                        <Palette className="w-6 h-6 text-pink-600" />
+                    <div className="p-3 bg-violet-100 rounded-2xl">
+                        <Bot className="w-6 h-6 text-violet-600" />
                     </div>
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                            Branding & Personalización
+                            Configuración de Agentes
                         </h1>
                         <p className="text-gray-500 mt-0.5">
-                            Personaliza la apariencia de tu portal y la identidad de tu empresa
+                            Personaliza el nombre, personalidad y audiencia de tus agentes virtuales
                         </p>
                     </div>
                 </div>
@@ -53,11 +49,15 @@ export default async function CorporateBrandingPage() {
 
             {!canEdit && (
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 text-sm">
-                    <strong>Solo lectura:</strong> Tu rol de Viewer no permite editar la configuración de branding. Contacta al administrador de tu empresa.
+                    <strong>Solo lectura:</strong> Tu rol de Viewer no permite editar la configuración de agentes. Contacta al administrador de tu empresa.
                 </div>
             )}
 
-            <CorporateBrandingForm initialData={company} canEdit={canEdit} isSuperAdmin={isSuperAdmin} />
+            <AgentConfigForm
+                agents={agents || []}
+                canEdit={canEdit}
+                companyId={activeCompany.companyId}
+            />
         </div>
     )
 }

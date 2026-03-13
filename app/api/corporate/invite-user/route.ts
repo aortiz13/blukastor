@@ -46,14 +46,22 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json()
-        const { email, role: inviteRole, channel } = body
+        const { email, role: inviteRole, channel, permissions } = body
 
         if (!channel || !['email', 'link'].includes(channel)) {
             return NextResponse.json({ error: 'Invalid channel' }, { status: 400 })
         }
-        if (!inviteRole || !['admin', 'member', 'viewer'].includes(inviteRole)) {
+        if (!inviteRole || !['admin', 'member'].includes(inviteRole)) {
             return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
         }
+
+        // If member role, permissions should be provided
+        const memberPermissions = inviteRole === 'member' ? (permissions || {
+            agents: [],
+            view_finance: false,
+            view_conversations: false,
+            view_kpis: false,
+        }) : {}
         if (channel === 'email' && !email) {
             return NextResponse.json({ error: 'Email required for email invitations' }, { status: 400 })
         }
@@ -88,6 +96,7 @@ export async function POST(request: Request) {
                 token,
                 role: inviteRole,
                 channel,
+                permissions: memberPermissions,
                 expires_at: expiresAt.toISOString(),
                 created_by: user.id,
             })

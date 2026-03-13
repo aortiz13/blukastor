@@ -17,7 +17,8 @@ import {
     Search,
     DollarSign,
     Briefcase,
-    Target
+    Target,
+    Palette
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -50,6 +51,7 @@ export function Sidebar({ domain, companyName, logoUrl, primaryColor, userName }
     ]
 
     const bottomItems = [
+        { label: 'Branding', icon: Palette, href: `/branding` },
         { label: 'Mi Perfil', icon: User, href: `/profile` },
         { label: 'Ajustes', icon: Settings, href: `/settings` },
     ]

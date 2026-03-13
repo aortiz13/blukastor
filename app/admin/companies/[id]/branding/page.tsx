@@ -66,6 +66,7 @@ export default async function CompanyBrandingPage({ params }: PageProps) {
                 canEdit={true}
                 saveEndpoint={`/api/admin/companies/${id}/branding`}
                 companyIdOverride={id}
+                isSuperAdmin={true}
             />
         </div>
     )

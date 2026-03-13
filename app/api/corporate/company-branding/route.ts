@@ -107,6 +107,11 @@ export async function POST(request: Request) {
         // Corporate admins cannot change custom_domain
         delete updates.custom_domain
 
+        // Only super_admins can change powered_by_visible
+        if (resolved.role !== 'super_admin' && updates.frontend_config?.portal) {
+            delete updates.frontend_config.portal.powered_by_visible
+        }
+
         if (Object.keys(updates).length === 0) {
             return NextResponse.json({ error: 'No branding fields to update' }, { status: 400 })
         }

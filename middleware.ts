@@ -75,7 +75,15 @@ export default async function middleware(request: NextRequest) {
 
     // B. Admin/App Subdomain Logic (admin.root.com or app.root.com)
     if (hostname === `admin.${rootDomain}` || hostname === `app.${rootDomain}` || hostname === `admin.${normalizedRoot}` || hostname === `app.${normalizedRoot}`) {
-        rewriteUrl = new URL(`${path === '/' ? '/dashboard' : path}`, request.url)
+        if (path === '/') {
+            rewriteUrl = new URL('/dashboard', request.url)
+        } else if (path.startsWith('/admin') || path.startsWith('/dashboard') || path.startsWith('/login') || path.startsWith('/reset-password')) {
+            // Admin-specific paths: pass through directly
+            return supabaseResponse
+        } else {
+            // Portal paths: rewrite to include hostname as [domain] segment
+            rewriteUrl = new URL(`/${hostname}${fullPath}`, request.url)
+        }
     }
     // C. Tenant Logic (anything else)
     else {

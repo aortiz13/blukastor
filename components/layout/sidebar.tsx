@@ -41,19 +41,21 @@ export function Sidebar({ domain, companyName, logoUrl, primaryColor, userName }
         router.push('/login')
     }
 
+    const basePath = `/${domain}`
+
     const navItems = [
-        { label: 'Finanzas', icon: DollarSign, href: `/finance` },
-        { label: 'Agentes Virtuales', icon: MessageSquare, href: `/chat` },
-        { label: 'Proyectos', icon: Briefcase, href: `/projects` },
-        { label: 'Mis Equipos', icon: Users, href: `/my-teams` },
-        { label: 'Metas', icon: Target, href: `/goals` },
-        { label: 'Contenido', icon: ChevronRight, href: `/content` }, // Placeholder for extra nav
+        { label: 'Finanzas', icon: DollarSign, href: `${basePath}/finance` },
+        { label: 'Agentes Virtuales', icon: MessageSquare, href: `${basePath}/chat` },
+        { label: 'Proyectos', icon: Briefcase, href: `${basePath}/projects` },
+        { label: 'Mis Equipos', icon: Users, href: `${basePath}/my-teams` },
+        { label: 'Metas', icon: Target, href: `${basePath}/goals` },
+        { label: 'Contenido', icon: ChevronRight, href: `${basePath}/content` }, // Placeholder for extra nav
     ]
 
     const bottomItems = [
-        { label: 'Branding', icon: Palette, href: `/branding` },
-        { label: 'Mi Perfil', icon: User, href: `/profile` },
-        { label: 'Ajustes', icon: Settings, href: `/settings` },
+        { label: 'Branding', icon: Palette, href: `${basePath}/branding` },
+        { label: 'Mi Perfil', icon: User, href: `${basePath}/profile` },
+        { label: 'Ajustes', icon: Settings, href: `${basePath}/settings` },
     ]
 
     return (
@@ -74,7 +76,7 @@ export function Sidebar({ domain, companyName, logoUrl, primaryColor, userName }
 
             {/* Header / Logo */}
             <div className={cn("p-6 flex items-center", isCollapsed ? "justify-center px-2" : "gap-3")}>
-                <Link href={`/`} className={cn("flex items-center group", isCollapsed ? "justify-center" : "gap-3")}>
+                <Link href={basePath} className={cn("flex items-center group", isCollapsed ? "justify-center" : "gap-3")}>
                     <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100 transition-all group-hover:scale-105 shrink-0">
                         {logoUrl ? (
                             <img src={logoUrl} alt={companyName} className="w-full h-full object-contain" />

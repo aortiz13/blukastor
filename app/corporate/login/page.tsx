@@ -26,6 +26,7 @@ export default function CorporateLoginPage() {
     const [message, setMessage] = useState('')
     const [messageType, setMessageType] = useState<'error' | 'success' | 'info'>('info')
     const [branding, setBranding] = useState<CompanyBranding | null>(null)
+    const [forgotMode, setForgotMode] = useState(false)
     const supabase = createClient()
 
     // Detect custom domain and fetch branding
@@ -111,6 +112,38 @@ export default function CorporateLoginPage() {
         }
     }
 
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!email) {
+            setMessage('Ingresa tu email primero.')
+            setMessageType('error')
+            return
+        }
+        setIsLoading(true)
+        setMessage('')
+
+        try {
+            const res = await fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            })
+            const data = await res.json()
+
+            if (!res.ok) {
+                setMessage(data.error || 'Error al enviar el correo')
+                setMessageType('error')
+            } else {
+                setMessage(data.message)
+                setMessageType('success')
+            }
+        } catch (err: any) {
+            setMessage(err.message)
+            setMessageType('error')
+        }
+        setIsLoading(false)
+    }
+
     // Resolved branding values
     const companyName = branding?.name
     const logoUrl = branding?.logo_url || branding?.logo_dark_url
@@ -119,7 +152,7 @@ export default function CorporateLoginPage() {
     const loginBgUrl = branding?.login_background_url || branding?.cover_image_url
     const welcomeText = branding?.login_welcome_text || branding?.tagline
     const loginTitle = companyName ? `Portal ${companyName}` : 'Portal Corporativo'
-    const loginSubtitle = welcomeText || 'Acceso exclusivo para clientes corporativos'
+    const loginSubtitle = forgotMode ? 'Recupera tu acceso' : (welcomeText || 'Acceso exclusivo para clientes corporativos')
 
     return (
         <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -183,83 +216,146 @@ export default function CorporateLoginPage() {
 
                 {/* Card */}
                 <div className="bg-white/[0.07] backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
-                    <form onSubmit={handlePasswordLogin} className="space-y-5">
-                        {/* Email Input */}
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Mail size={18} className="text-indigo-300/50" />
+                    {forgotMode ? (
+                        /* Forgot Password Mode */
+                        <form onSubmit={handleForgotPassword} className="space-y-5">
+                            {/* Email Input */}
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <Mail size={18} className="text-indigo-300/50" />
+                                </div>
+                                <input
+                                    type="email"
+                                    placeholder="Email corporativo"
+                                    required
+                                    className="w-full pl-12 pr-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
                             </div>
-                            <input
-                                type="email"
-                                placeholder="Email corporativo"
-                                required
-                                className="w-full pl-12 pr-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </div>
 
-                        {/* Password Input */}
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Lock size={18} className="text-indigo-300/50" />
+                            <p className="text-indigo-200/40 text-xs text-center">
+                                Te enviaremos un enlace para restablecer tu contraseña
+                            </p>
+
+                            {/* Submit Button */}
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full flex items-center justify-center gap-2 py-3.5 text-white font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                style={{
+                                    background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                                    boxShadow: `0 10px 25px -5px ${primaryColor}40`,
+                                }}
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="animate-spin" size={20} />
+                                ) : (
+                                    'Enviar enlace de recuperación'
+                                )}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => { setForgotMode(false); setMessage('') }}
+                                className="w-full text-center text-sm text-indigo-300/50 hover:text-indigo-300/80 transition-colors font-medium"
+                            >
+                                ← Volver al inicio de sesión
+                            </button>
+                        </form>
+                    ) : (
+                        /* Normal Login Mode */
+                        <>
+                            <form onSubmit={handlePasswordLogin} className="space-y-5">
+                                {/* Email Input */}
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <Mail size={18} className="text-indigo-300/50" />
+                                    </div>
+                                    <input
+                                        type="email"
+                                        placeholder="Email corporativo"
+                                        required
+                                        className="w-full pl-12 pr-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Password Input */}
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <Lock size={18} className="text-indigo-300/50" />
+                                    </div>
+                                    <input
+                                        type="password"
+                                        placeholder="Contraseña"
+                                        required
+                                        className="w-full pl-12 pr-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Forgot Password Link */}
+                                <div className="flex justify-end -mt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setForgotMode(true); setMessage('') }}
+                                        className="text-xs text-indigo-300/50 hover:text-indigo-300/80 transition-colors font-medium"
+                                    >
+                                        ¿Olvidaste tu contraseña?
+                                    </button>
+                                </div>
+
+                                {/* Submit Button */}
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full flex items-center justify-center gap-2 py-3.5 text-white font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                    style={{
+                                        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                                        boxShadow: `0 10px 25px -5px ${primaryColor}40`,
+                                    }}
+                                >
+                                    {isLoading ? (
+                                        <Loader2 className="animate-spin" size={20} />
+                                    ) : (
+                                        <>
+                                            Ingresar al Portal
+                                            <ArrowRight size={18} />
+                                        </>
+                                    )}
+                                </button>
+                            </form>
+
+                            {/* Divider */}
+                            <div className="relative my-6">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t border-white/10" />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-transparent px-3 text-white/30 tracking-wider">o también</span>
+                                </div>
                             </div>
-                            <input
-                                type="password"
-                                placeholder="Contraseña"
-                                required
-                                className="w-full pl-12 pr-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </div>
 
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full flex items-center justify-center gap-2 py-3.5 text-white font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                            style={{
-                                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-                                boxShadow: `0 10px 25px -5px ${primaryColor}40`,
-                            }}
-                        >
-                            {isLoading ? (
-                                <Loader2 className="animate-spin" size={20} />
-                            ) : (
-                                <>
-                                    Ingresar al Portal
-                                    <ArrowRight size={18} />
-                                </>
-                            )}
-                        </button>
-                    </form>
-
-                    {/* Divider */}
-                    <div className="relative my-6">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-white/10" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-transparent px-3 text-white/30 tracking-wider">o también</span>
-                        </div>
-                    </div>
-
-                    {/* Magic Link Button */}
-                    <button
-                        onClick={handleMagicLink}
-                        disabled={isMagicLinkLoading}
-                        className="w-full flex items-center justify-center gap-2 py-3 border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white rounded-xl transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isMagicLinkLoading ? (
-                            <Loader2 className="animate-spin" size={18} />
-                        ) : (
-                            <>
-                                <Sparkles size={16} style={{ color: primaryColor }} />
-                                Enviar Enlace Mágico
-                            </>
-                        )}
-                    </button>
+                            {/* Magic Link Button */}
+                            <button
+                                onClick={handleMagicLink}
+                                disabled={isMagicLinkLoading}
+                                className="w-full flex items-center justify-center gap-2 py-3 border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white rounded-xl transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isMagicLinkLoading ? (
+                                    <Loader2 className="animate-spin" size={18} />
+                                ) : (
+                                    <>
+                                        <Sparkles size={16} style={{ color: primaryColor }} />
+                                        Enviar Enlace Mágico
+                                    </>
+                                )}
+                            </button>
+                        </>
+                    )}
 
                     {/* Message */}
                     {message && (

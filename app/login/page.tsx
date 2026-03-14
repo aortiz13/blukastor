@@ -9,6 +9,7 @@ export default function RootLoginPage() {
     const [password, setPassword] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState('')
+    const [forgotMode, setForgotMode] = useState(false)
     const supabase = createClient()
 
     const handleMagicLink = async (e: React.FormEvent) => {
@@ -50,55 +51,127 @@ export default function RootLoginPage() {
         }
     }
 
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!email) {
+            setMessage('Error: Ingresa tu correo electrónico primero')
+            return
+        }
+        setIsLoading(true)
+        setMessage('')
+
+        try {
+            const res = await fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            })
+            const data = await res.json()
+
+            if (!res.ok) {
+                setMessage('Error: ' + (data.error || 'Error al enviar el correo'))
+            } else {
+                setMessage('✅ ' + data.message)
+            }
+        } catch (err: any) {
+            setMessage('Error: ' + err.message)
+        }
+        setIsLoading(false)
+    }
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-900">
             <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-2xl">
                 <div className="text-center">
                     <h1 className="text-3xl font-extrabold text-gray-900">Blukastor Admin</h1>
-                    <p className="mt-2 text-sm text-gray-600">Acceso de Gestión del Sistema</p>
+                    <p className="mt-2 text-sm text-gray-600">
+                        {forgotMode ? 'Recuperar Contraseña' : 'Acceso de Gestión del Sistema'}
+                    </p>
                 </div>
 
                 <div className="mt-8 space-y-6">
-                    <form onSubmit={handlePasswordLogin} className="space-y-4">
-                        <div className="space-y-2">
-                            <input
-                                type="email"
-                                placeholder="Correo electrónico"
-                                required
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                            <input
-                                type="password"
-                                placeholder="Contraseña"
-                                required
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="flex w-full items-center justify-center rounded-lg bg-blue-600 py-3 font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
-                        >
-                            {isLoading ? <Loader2 className="mr-2 animate-spin" size={20} /> : 'Entrar con Contraseña'}
-                        </button>
-                    </form>
+                    {forgotMode ? (
+                        /* Forgot Password Mode */
+                        <form onSubmit={handleForgotPassword} className="space-y-4">
+                            <div className="space-y-2">
+                                <input
+                                    type="email"
+                                    placeholder="Correo electrónico"
+                                    required
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="flex w-full items-center justify-center rounded-lg bg-blue-600 py-3 font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
+                            >
+                                {isLoading ? <Loader2 className="mr-2 animate-spin" size={20} /> : 'Enviar enlace de recuperación'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { setForgotMode(false); setMessage('') }}
+                                className="flex w-full justify-center text-sm text-blue-600 hover:text-blue-800 font-medium transition"
+                            >
+                                ← Volver al inicio de sesión
+                            </button>
+                        </form>
+                    ) : (
+                        /* Normal Login Mode */
+                        <>
+                            <form onSubmit={handlePasswordLogin} className="space-y-4">
+                                <div className="space-y-2">
+                                    <input
+                                        type="email"
+                                        placeholder="Correo electrónico"
+                                        required
+                                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="Contraseña"
+                                        required
+                                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setForgotMode(true); setMessage('') }}
+                                        className="text-sm text-blue-600 hover:text-blue-800 font-medium transition"
+                                    >
+                                        ¿Olvidaste tu contraseña?
+                                    </button>
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="flex w-full items-center justify-center rounded-lg bg-blue-600 py-3 font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    {isLoading ? <Loader2 className="mr-2 animate-spin" size={20} /> : 'Entrar con Contraseña'}
+                                </button>
+                            </form>
 
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center"><span className="w-full border-t"></span></div>
-                        <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-gray-500">O también</span></div>
-                    </div>
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center"><span className="w-full border-t"></span></div>
+                                <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-gray-500">O también</span></div>
+                            </div>
 
-                    <button
-                        onClick={handleMagicLink}
-                        disabled={isLoading}
-                        className="flex w-full justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 uppercase"
-                    >
-                        Enviar Enlace Mágico
-                    </button>
+                            <button
+                                onClick={handleMagicLink}
+                                disabled={isLoading}
+                                className="flex w-full justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 uppercase"
+                            >
+                                Enviar Enlace Mágico
+                            </button>
+                        </>
+                    )}
                 </div>
 
                 {message && (

@@ -33,6 +33,7 @@ export default function LoginPage() {
 
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState('')
+    const [forgotMode, setForgotMode] = useState(false)
     const supabase = createClient()
 
     useEffect(() => {
@@ -79,6 +80,34 @@ export default function LoginPage() {
         } else {
             window.location.href = '/'
         }
+    }
+
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!email) {
+            setMessage('Error: Ingresa tu correo electrónico primero')
+            return
+        }
+        setIsLoading(true)
+        setMessage('')
+
+        try {
+            const res = await fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            })
+            const data = await res.json()
+
+            if (!res.ok) {
+                setMessage('Error: ' + (data.error || 'Error al enviar el correo'))
+            } else {
+                setMessage('✅ ' + data.message)
+            }
+        } catch (err: any) {
+            setMessage('Error: ' + err.message)
+        }
+        setIsLoading(false)
     }
 
     const handleRequestOtp = async (e: React.FormEvent) => {
@@ -313,49 +342,98 @@ export default function LoginPage() {
                         {/* Email Login */}
                         {loginMethod === 'email' && (
                             <>
-                                <form onSubmit={handlePasswordLogin} className="space-y-4">
-                                    <div className="space-y-3">
-                                        <input
-                                            type="email"
-                                            required
-                                            className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
-                                            style={{ '--tw-ring-color': primaryColor + '40', borderColor: 'rgb(229,231,235)' } as any}
-                                            placeholder="Correo electrónico"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                        />
-                                        <input
-                                            type="password"
-                                            required
-                                            className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
-                                            style={{ '--tw-ring-color': primaryColor + '40' } as any}
-                                            placeholder="Contraseña"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                        />
-                                    </div>
-                                    <button
-                                        type="submit"
-                                        disabled={isLoading}
-                                        className="flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
-                                        style={{ backgroundColor: primaryColor }}
-                                    >
-                                        {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Entrar con Contraseña'}
-                                    </button>
-                                </form>
+                                {forgotMode ? (
+                                    /* Forgot Password Mode */
+                                    <form onSubmit={handleForgotPassword} className="space-y-4">
+                                        <div className="space-y-3">
+                                            <input
+                                                type="email"
+                                                required
+                                                className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
+                                                style={{ '--tw-ring-color': primaryColor + '40', borderColor: 'rgb(229,231,235)' } as any}
+                                                placeholder="Correo electrónico"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-400 text-center">
+                                            Te enviaremos un enlace para restablecer tu contraseña
+                                        </p>
+                                        <button
+                                            type="submit"
+                                            disabled={isLoading}
+                                            className="flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                                            style={{ backgroundColor: primaryColor }}
+                                        >
+                                            {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Enviar enlace de recuperación'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setForgotMode(false); setMessage('') }}
+                                            className="flex w-full justify-center text-sm font-medium transition"
+                                            style={{ color: primaryColor }}
+                                        >
+                                            ← Volver al inicio de sesión
+                                        </button>
+                                    </form>
+                                ) : (
+                                    /* Normal Email Login Mode */
+                                    <>
+                                        <form onSubmit={handlePasswordLogin} className="space-y-4">
+                                            <div className="space-y-3">
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
+                                                    style={{ '--tw-ring-color': primaryColor + '40', borderColor: 'rgb(229,231,235)' } as any}
+                                                    placeholder="Correo electrónico"
+                                                    value={email}
+                                                    onChange={(e) => setEmail(e.target.value)}
+                                                />
+                                                <input
+                                                    type="password"
+                                                    required
+                                                    className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
+                                                    style={{ '--tw-ring-color': primaryColor + '40' } as any}
+                                                    placeholder="Contraseña"
+                                                    value={password}
+                                                    onChange={(e) => setPassword(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="flex justify-end -mt-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setForgotMode(true); setMessage('') }}
+                                                    className="text-xs font-medium transition hover:opacity-80"
+                                                    style={{ color: primaryColor }}
+                                                >
+                                                    ¿Olvidaste tu contraseña?
+                                                </button>
+                                            </div>
+                                            <button
+                                                type="submit"
+                                                disabled={isLoading}
+                                                className="flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                                                style={{ backgroundColor: primaryColor }}
+                                            >
+                                                {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Entrar con Contraseña'}
+                                            </button>
+                                        </form>
 
-                                <div className="relative">
-                                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-200"></span></div>
-                                    <div className="relative flex justify-center text-xs uppercase"><span className="px-3 text-gray-400" style={{ backgroundColor: company.login_bg_color || '#ffffff' }}>O también</span></div>
-                                </div>
+                                        <div className="relative">
+                                            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-200"></span></div>
+                                            <div className="relative flex justify-center text-xs uppercase"><span className="px-3 text-gray-400" style={{ backgroundColor: company.login_bg_color || '#ffffff' }}>O también</span></div>
+                                        </div>
 
-                                <button
-                                    onClick={handleMagicLink}
-                                    disabled={isLoading || !email}
-                                    className="flex w-full justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
-                                >
-                                    Enviar Enlace Mágico
-                                </button>
+                                        <button
+                                            onClick={handleMagicLink}
+                                            disabled={isLoading || !email}
+                                            className="flex w-full justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+                                        >
+                                            Enviar Enlace Mágico
+                                        </button>
+                                    </>
+                                )}
                             </>
                         )}
 

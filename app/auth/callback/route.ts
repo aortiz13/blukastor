@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
+    const type = searchParams.get('type')
     // if "next" is in search params, use it as the redirection URL
     const next = searchParams.get('next') ?? '/'
 
@@ -11,6 +12,10 @@ export async function GET(request: Request) {
         const supabase = await createClient()
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error) {
+            // If this is a password recovery flow, redirect to the reset page
+            if (type === 'recovery') {
+                return NextResponse.redirect(`${origin}/reset-password`)
+            }
             return NextResponse.redirect(`${origin}${next}`)
         }
     }
@@ -18,3 +23,4 @@ export async function GET(request: Request) {
     // return the user to an error page with instructions
     return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }
+

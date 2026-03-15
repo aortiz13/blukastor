@@ -67,6 +67,7 @@ export default async function ProjectDetailPage({
             transactions={transactions}
             companyCurrency={companyCurrency}
             chatContactId={chatContactId}
+            chatCompanyId={companyId}
             companyContext={companyContext}
             teamMembers={teamMembers || []}
             teamInvites={teamInvites || []}

@@ -23,6 +23,7 @@ interface ProjectDetailClientProps {
     transactions: any[]
     companyCurrency: string
     chatContactId: string | null
+    chatCompanyId: string
     companyContext: any | null
     teamMembers: any[]
     teamInvites: any[]
@@ -55,6 +56,7 @@ export function ProjectDetailClient({
     transactions,
     companyCurrency,
     chatContactId,
+    chatCompanyId,
     companyContext,
     teamMembers,
     teamInvites,
@@ -179,7 +181,7 @@ export function ProjectDetailClient({
             {chatContactId && (
                 <FloatingChat
                     contactId={chatContactId}
-                    companyId={id}
+                    companyId={chatCompanyId}
                     projectName={project.name}
                     primaryColor={project.primary_color}
                     activeSection={activeTab}

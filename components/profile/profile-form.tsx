@@ -45,15 +45,18 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
             const res = await fetch(`/api/profile?contact_id=${contactId}`)
             if (res.ok) {
                 const data = await res.json()
-                setProfile(data.profile || {})
-                setOriginalProfile(data.profile || {})
+                const fetchedProfile = data.profile || {}
+                // Always use the auth email, not whatever is in the profile data
+                if (authEmail) fetchedProfile.email = authEmail
+                setProfile(fetchedProfile)
+                setOriginalProfile(fetchedProfile)
                 setCompletion(data.completion || 0)
             }
         } catch (err) {
             console.error('Error fetching profile:', err)
         }
         setIsLoading(false)
-    }, [contactId])
+    }, [contactId, authEmail])
 
     useEffect(() => {
         fetchProfile()

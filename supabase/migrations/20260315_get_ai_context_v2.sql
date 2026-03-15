@@ -38,12 +38,12 @@ BEGIN
     LIMIT 1;
 
     -- 3. Company (tenant) info
+    -- Note: companies table uses 'name' (not 'company_name') and has no 'industry' column
     SELECT jsonb_build_object(
         'id', c.id,
         'name', c.name,
-        'company_name', c.company_name,
+        'company_name', c.name,
         'company_kind', c.company_kind,
-        'industry', c.industry,
         'currency', c.currency
     ) INTO v_company
     FROM public.companies c
@@ -60,7 +60,7 @@ BEGIN
     SELECT COALESCE(jsonb_agg(jsonb_build_object(
         'entity_id', ucl.company_id,
         'entity_name', comp.name,
-        'entity_kind', COALESCE(ucl.company_kind, comp.company_kind, 'other'),
+        'entity_kind', COALESCE(comp.company_kind, 'other'),
         'relation', ucl.relation,
         'verified', COALESCE(ucl.verified, false)
     )), '[]'::jsonb) INTO v_entities

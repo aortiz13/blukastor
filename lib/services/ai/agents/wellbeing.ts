@@ -1,10 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { PromptBuilder } from '../prompt-builder'
-import type { AIContext, AgentConfig, ProjectScope, FinanceAgentResponse } from '@/lib/types/ai'
+import type { AIContext, AgentConfig, FinanceAgentResponse } from '@/lib/types/ai'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
-export class FinanceAgent {
+export class WellbeingAgent {
     private model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
     private promptBuilder = new PromptBuilder()
 
@@ -18,7 +18,7 @@ export class FinanceAgent {
 
         // 1. Build dynamic system prompt
         const now = new Date()
-        const systemPrompt = this.promptBuilder.buildFinancePrompt({
+        const systemPrompt = this.promptBuilder.buildWellbeingPrompt({
             companyName: context.company?.name || context.company?.company_name || 'Personalized Coach',
             agentConfig: agentConfig || null,
             projectScope: context.projectScope || null,
@@ -51,7 +51,7 @@ export class FinanceAgent {
             const parsed = JSON.parse(responseText) as FinanceAgentResponse
 
             // Ensure required fields
-            parsed.intent = parsed.intent || 'conversacional_finanzas'
+            parsed.intent = parsed.intent || 'bienestar_habitos'
             parsed.ops = parsed.ops || []
             parsed.confidence = parsed.confidence || 1.0
             parsed.next_agent_hint = parsed.next_agent_hint || null
@@ -62,33 +62,28 @@ export class FinanceAgent {
                 outputTokens: usage?.candidatesTokenCount || 0,
                 latencyMs,
                 modelName: 'gemini-2.0-flash',
-                agentType: 'finance',
+                agentType: 'wellbeing',
             }
 
             return parsed
 
         } catch (e: any) {
-            console.error("FinanceAgent: Error processing message", {
-                message: e?.message,
-                status: e?.status,
-                statusText: e?.statusText,
-                stack: e?.stack?.substring(0, 500),
-            })
+            console.error("WellbeingAgent: Error processing message", e)
             const latencyMs = Date.now() - startTime
 
             return {
-                assistant_reply: "Lo siento, tuve un problema procesando tu consulta financiera. ¿Podrías intentar de nuevo? 💰",
-                intent: "finance",
+                assistant_reply: "Lo siento, tuve un problema procesando tu consulta. ¿Podrías intentar de nuevo? 🌟",
+                intent: "bienestar_habitos",
                 confidence: 0,
                 ops: [],
-                next_agent_hint: 'finance_coach',
+                next_agent_hint: 'default_coach',
                 meta: { provider: 'llm', model: 'gemini-2.0-flash', tokens_used: 0 },
                 _tokenUsage: {
                     inputTokens: 0,
                     outputTokens: 0,
                     latencyMs,
                     modelName: 'gemini-2.0-flash',
-                    agentType: 'finance',
+                    agentType: 'wellbeing',
                 },
             }
         }

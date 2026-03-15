@@ -48,7 +48,7 @@ export class RouterService {
         }
 
         // 3. Forced Routing by Hint (Memory)
-        if (agentHint && agentHint !== 'default') {
+        if (agentHint && agentHint !== 'wellbeing') {
             return {
                 action: 'route',
                 target: agentHint,

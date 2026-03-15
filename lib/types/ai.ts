@@ -43,16 +43,16 @@ export interface AgentConfig {
     target_audience: string | null
 }
 
-export type AgentType = 'onboarding' | 'goals' | 'business' | 'finance' | 'default'
+export type AgentType = 'onboarding' | 'goals' | 'business' | 'finance' | 'wellbeing'
 
 // Maps n8n agent_hint values to web app agent types
 export const AGENT_HINT_MAP: Record<string, AgentType> = {
     'finance_coach': 'finance',
     'business_coach': 'business',
     'goals': 'goals',
-    'default_coach': 'default',
+    'default_coach': 'wellbeing',
     'onboarding': 'onboarding',
-    'support_human': 'default', // fallback
+    'support_human': 'wellbeing', // fallback
 }
 
 export interface RouterDecision {

@@ -6,6 +6,7 @@ import { OnboardingAgent } from './agents/onboarding';
 import { GoalsAgent } from './agents/goals';
 import { BusinessAgent } from './agents/business';
 import { FinanceAgent } from './agents/finance';
+import { WellbeingAgent } from './agents/wellbeing';
 import { MultimodalService } from './multimodal';
 import { OperationExecutor } from './tools/executor';
 import { logLLMInvocation } from './log-invocation';
@@ -147,9 +148,23 @@ export class OrchestratorService {
                     mediaUrl
                 );
                 break;
+            case 'wellbeing':
+                // Wellbeing agent gets agentConfig + project scope
+                agentResponse = await new WellbeingAgent().execute(
+                    message,
+                    context,
+                    agentConfigs['wellbeing'] || agentConfigs['default'] || null,
+                    mediaUrl
+                );
+                break;
             default:
-                // Fallback to onboarding if no specific target or unknown
-                agentResponse = await new OnboardingAgent().execute(message, context);
+                // Fallback to wellbeing (default coach)
+                agentResponse = await new WellbeingAgent().execute(
+                    message,
+                    context,
+                    agentConfigs['wellbeing'] || agentConfigs['default'] || null,
+                    mediaUrl
+                );
         }
 
         console.log('Agent response received:', agentResponse.assistant_reply);
@@ -186,8 +201,7 @@ export class OrchestratorService {
                 await serviceClient
                     .from('user_context')
                     .update({ agent_hint: hintValue })
-                    .eq('contact_id', contactId)
-                    .eq('context_company_id', companyId);
+                    .eq('contact_id', contactId);
             } catch (e) {
                 console.warn('Orchestrator: Error setting agent_hint:', e);
             }

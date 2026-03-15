@@ -34,6 +34,10 @@ export class WellbeingAgent {
 
         // 4. Call Gemini with JSON mode
         try {
+            console.log('WellbeingAgent: GEMINI_API_KEY set:', !!process.env.GEMINI_API_KEY)
+            console.log('WellbeingAgent: System prompt length:', systemPrompt.length)
+            console.log('WellbeingAgent: Calling Gemini...')
+
             const result = await this.model.generateContent({
                 contents: [{ role: "user", parts: [{ text: userPrompt }] }],
                 systemInstruction: systemPrompt,
@@ -68,11 +72,12 @@ export class WellbeingAgent {
             return parsed
 
         } catch (e: any) {
-            console.error("WellbeingAgent: Error processing message", e)
+            console.error("WellbeingAgent: Error processing message", e?.message, e?.stack?.substring(0, 500))
             const latencyMs = Date.now() - startTime
+            const errorDetail = e?.message || 'Unknown error'
 
             return {
-                assistant_reply: "Lo siento, tuve un problema procesando tu consulta. ¿Podrías intentar de nuevo? 🌟",
+                assistant_reply: `[DEBUG] Error en WellbeingAgent: ${errorDetail}. ¿Podrías intentar de nuevo? 🌟`,
                 intent: "bienestar_habitos",
                 confidence: 0,
                 ops: [],

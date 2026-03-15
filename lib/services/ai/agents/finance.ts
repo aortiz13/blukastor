@@ -34,6 +34,11 @@ export class FinanceAgent {
 
         // 4. Call Gemini with JSON mode
         try {
+            console.log('FinanceAgent: GEMINI_API_KEY set:', !!process.env.GEMINI_API_KEY)
+            console.log('FinanceAgent: System prompt length:', systemPrompt.length)
+            console.log('FinanceAgent: User prompt length:', userPrompt.length)
+            console.log('FinanceAgent: Calling Gemini...')
+
             const result = await this.model.generateContent({
                 contents: [{ role: "user", parts: [{ text: userPrompt }] }],
                 systemInstruction: systemPrompt,
@@ -75,9 +80,10 @@ export class FinanceAgent {
                 stack: e?.stack?.substring(0, 500),
             })
             const latencyMs = Date.now() - startTime
+            const errorDetail = e?.message || 'Unknown error'
 
             return {
-                assistant_reply: "Lo siento, tuve un problema procesando tu consulta financiera. ¿Podrías intentar de nuevo? 💰",
+                assistant_reply: `[DEBUG] Error en FinanceAgent: ${errorDetail}. ¿Podrías intentar de nuevo? 💰`,
                 intent: "finance",
                 confidence: 0,
                 ops: [],

@@ -56,9 +56,24 @@ export default async function middleware(request: NextRequest) {
         // Since Blukastor DB stores `domain` as `empresa.autoflowai.io` we should leave hostname intact.
     }
 
-    // 3. Prevent Infinite Loops
-    if (path.startsWith(`/${hostname}`)) {
-        return supabaseResponse
+    // 3. Handle RSC prefetch requests that already include the [domain] segment in the path.
+    // Client-side Next.js navigation sends fetches to hrefs like /app.asktitto.com/goals,
+    // which already contain the domain prefix. We detect this and rewrite properly to the
+    // internal [domain] route, stripping the double-domain and re-applying the rewrite.
+    if (path.startsWith(`/${hostname}/`) || path === `/${hostname}`) {
+        // The path already has the domain prefix from client-side href.
+        // Just pass it through as-is — it already maps to /[domain]/... route structure.
+        const rewriteResponse = NextResponse.rewrite(
+            new URL(`${path}${searchParams.length > 0 ? `?${searchParams}` : ''}`, request.url),
+            { request: { headers: request.headers } }
+        )
+        supabaseResponse.headers.forEach((value, key) => {
+            rewriteResponse.headers.set(key, value)
+        })
+        supabaseResponse.cookies.getAll().forEach((cookie) => {
+            rewriteResponse.cookies.set(cookie.name, cookie.value)
+        })
+        return rewriteResponse
     }
 
     let rewriteUrl: URL | null = null;
@@ -99,6 +114,9 @@ export default async function middleware(request: NextRequest) {
         })
         supabaseResponse.headers.forEach((value, key) => {
             rewriteResponse.headers.set(key, value)
+        })
+        supabaseResponse.cookies.getAll().forEach((cookie) => {
+            rewriteResponse.cookies.set(cookie.name, cookie.value)
         })
         return rewriteResponse
     }

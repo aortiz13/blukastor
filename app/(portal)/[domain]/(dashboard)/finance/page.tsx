@@ -8,6 +8,7 @@ import { TransactionForm } from './_components/TransactionForm'
 import { TransactionTable } from './_components/TransactionTable'
 import { ProjectFilter } from './_components/ProjectFilter'
 import { ReceiptUpload } from './_components/ReceiptUpload'
+import { ExcelBulkUpload } from './_components/ExcelBulkUpload'
 import { CashFlowChart } from './_components/charts/CashFlowChart'
 import { ExpensePieChart } from './_components/charts/ExpensePieChart'
 import { NetWorthChart } from './_components/charts/NetWorthChart'
@@ -67,6 +68,7 @@ export default async function FinancePage({
                 <h2 className="text-3xl font-bold tracking-tight">Panel Financiero</h2>
                 <div className="flex items-center space-x-2">
                     <ProjectFilter projects={projects || []} />
+                    <ExcelBulkUpload companyId={company.id} userId={userId} companyCurrency={companyCurrency} />
                     <ReceiptUpload companyId={company.id} userId={userId} companyCurrency={companyCurrency} />
                     <TransactionForm companyId={company.id} userId={userId} companyCurrency={companyCurrency} />
                 </div>

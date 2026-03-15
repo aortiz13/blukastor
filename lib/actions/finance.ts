@@ -272,6 +272,95 @@ export async function createTransaction(formData: FormData) {
     return { success: true }
 }
 
+export async function createBulkTransactions(
+    companyId: string,
+    userId: string,
+    transactions: {
+        amount: number
+        date: string
+        type: 'income' | 'expense'
+        description: string
+        category: string
+        currency: string
+    }[]
+) {
+    console.log('[Finance] createBulkTransactions called:', transactions.length, 'rows')
+    const supabase = await createClient()
+    const adminDb = createServiceClient()
+
+    // 1. Auth check
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+        return { error: 'Unauthorized: Please log in' }
+    }
+
+    // 2. Resolve contact ID once for all transactions
+    const { data: contactResult, error: contactError } = await adminDb.rpc('resolve_contact_id', {
+        p_user_id: user.id,
+        p_company_id: companyId
+    })
+
+    let contactId: string | null = contactResult
+
+    if (contactError) {
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/resolve_contact_id`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
+                    'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`
+                },
+                body: JSON.stringify({ p_user_id: user.id, p_company_id: companyId })
+            }
+        )
+        if (response.ok) {
+            contactId = await response.json()
+        }
+    }
+
+    if (!contactId) {
+        return { error: 'Profile not found. Please contact an administrator.' }
+    }
+
+    // 3. Build insert array
+    const insertData = transactions
+        .filter(t => t.amount > 0 && t.date)
+        .map(t => ({
+            amount: t.amount,
+            date: t.date,
+            category: t.category || 'Otros',
+            description: t.description || '',
+            transaction_type: t.type,
+            context_company_id: companyId,
+            contact_id: contactId,
+            scope: 'company',
+            status: 'confirmed',
+            original_currency: t.currency,
+            original_amount: t.amount,
+            exchange_rate: 1,
+        }))
+
+    if (insertData.length === 0) {
+        return { error: 'No hay transacciones válidas para importar' }
+    }
+
+    // 4. Batch insert
+    const { error } = await adminDb
+        .from('financial_transactions')
+        .insert(insertData)
+
+    if (error) {
+        console.error('Error creating bulk transactions:', error)
+        return { error: error.message }
+    }
+
+    console.log('[Finance] Bulk transactions created:', insertData.length)
+    revalidatePath('/finance')
+    return { success: true, count: insertData.length }
+}
+
 export async function getUniqueCategories(companyId: string) {
     const supabase = await createClient()
     const { data } = await supabase

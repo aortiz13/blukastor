@@ -18,6 +18,7 @@ interface Contact {
     tags: string[] | null
     nickname: string | null
     user_id: string | null
+    has_portal_access: boolean
 }
 
 interface Membership {
@@ -62,7 +63,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
     })
 
     // Only contacts with phone can be invited
-    const selectableContacts = filtered.filter(c => c.phone && !c.user_id)
+    const selectableContacts = filtered.filter(c => c.phone && !c.has_portal_access)
     const allSelectableSelected = selectableContacts.length > 0 && selectableContacts.every(c => selected.has(c.id))
 
     const toggleSelect = (id: string) => {
@@ -220,7 +221,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                                 onChange={() => toggleSelect(contact.id)}
                                                 className="w-4 h-4 accent-gray-900 rounded cursor-pointer"
                                             />
-                                        ) : contact.user_id ? (
+                                        ) : contact.has_portal_access ? (
                                             <div className="w-4 h-4 flex items-center justify-center" title="Ya registrado en el portal">
                                                 <Check size={14} className="text-green-500" />
                                             </div>
@@ -236,7 +237,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                             <div>
                                                 <div className="flex items-center gap-1.5">
                                                     <p className="font-bold text-gray-900 text-sm">{contact.push_name || contact.nickname || 'Sin nombre'}</p>
-                                                    {contact.user_id && (
+                                                    {contact.has_portal_access && (
                                                         <span className="px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[9px] font-bold uppercase">Portal</span>
                                                     )}
                                                 </div>

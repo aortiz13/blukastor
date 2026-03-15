@@ -106,7 +106,10 @@ export default async function CorporateUsersPage() {
             </div>
 
             <UsersClient
-                    contacts={contacts || []}
+                    contacts={(contacts || []).map(c => ({
+                        ...c,
+                        has_portal_access: !!c.user_id && c.user_id !== '00000000-0000-0000-0000-000000000000',
+                    }))}
                     membershipMap={membershipMap}
                     companyName={activeCompany.companyName}
                     companyPortalUrl={companyPortalUrl}

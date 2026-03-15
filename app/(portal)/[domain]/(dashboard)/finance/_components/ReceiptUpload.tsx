@@ -108,10 +108,10 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
             }
 
             setPreviewUrl(imageForOcr)
-            setProgress(30)
+            setProgress(20)
 
-            // Upload file to storage
-            setProgressLabel('Subiendo recibo...')
+            // Upload file to storage + Gemini Vision extraction
+            setProgressLabel('Subiendo recibo y analizando con IA...')
             const uploadFormData = new FormData()
             uploadFormData.append('file', file)
             uploadFormData.append('companyId', companyId)
@@ -127,42 +127,61 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
 
             const uploadData = await uploadRes.json()
             setReceiptUrl(uploadData.receiptUrl)
-            setProgress(50)
+            setProgress(70)
 
-            // Run Tesseract.js OCR client-side
-            setProgressLabel('Ejecutando OCR (extrayendo texto)...')
-            const Tesseract = (await import('tesseract.js')).default
+            // Check if Gemini Vision extracted data successfully
+            const geminiData = uploadData.extractedData
+            const geminiHasAmount = geminiData && geminiData.amount && geminiData.amount > 0
 
-            const result = await Tesseract.recognize(
-                imageForOcr!,
-                'spa+eng', // Spanish + English
-                {
-                    logger: (m: any) => {
-                        if (m.status === 'recognizing text') {
-                            setProgress(50 + Math.round((m.progress || 0) * 40))
+            if (geminiHasAmount) {
+                // Gemini Vision succeeded — use AI-extracted data
+                console.log('[OCR] Gemini Vision data:', geminiData)
+                setProgressLabel('Datos extraídos con IA ✓')
+
+                setAmount(String(geminiData.amount))
+                if (geminiData.date) setDate(geminiData.date)
+                if (geminiData.vendor) setVendor(geminiData.vendor)
+                if (geminiData.description) setDescription(geminiData.description)
+                if (geminiData.type) setType(geminiData.type)
+                if (geminiData.currency && geminiData.currency !== currency) {
+                    setCurrency(geminiData.currency)
+                }
+            } else {
+                // Fallback: Run Tesseract.js OCR client-side
+                console.log('[OCR] Gemini did not extract amount, falling back to Tesseract...')
+                setProgressLabel('Ejecutando OCR local (extrayendo texto)...')
+
+                const Tesseract = (await import('tesseract.js')).default
+
+                const result = await Tesseract.recognize(
+                    imageForOcr!,
+                    'spa+eng', // Spanish + English
+                    {
+                        logger: (m: any) => {
+                            if (m.status === 'recognizing text') {
+                                setProgress(70 + Math.round((m.progress || 0) * 20))
+                            }
                         }
                     }
-                }
-            )
+                )
 
-            setProgress(90)
-            setProgressLabel('Analizando datos del recibo...')
+                setProgressLabel('Analizando datos del recibo...')
 
-            const ocrText = result.data.text
-            console.log('[OCR] Extracted text:', ocrText)
+                const ocrText = result.data.text
+                console.log('[OCR] Tesseract text:', ocrText)
 
-            // Parse the extracted text
-            const parsed = parseReceiptText(ocrText)
-            console.log('[OCR] Parsed data:', parsed)
+                // Parse the extracted text with improved regex
+                const parsed = parseReceiptText(ocrText)
+                console.log('[OCR] Parsed data:', parsed)
 
-            // Pre-fill form fields
-            if (parsed.total) setAmount(String(parsed.total))
-            if (parsed.date) setDate(parsed.date)
-            if (parsed.vendor) setVendor(parsed.vendor)
-            if (parsed.description) setDescription(parsed.description)
+                if (parsed.total) setAmount(String(parsed.total))
+                if (parsed.date) setDate(parsed.date)
+                if (parsed.vendor) setVendor(parsed.vendor)
+                if (parsed.description) setDescription(parsed.description)
+            }
 
-            // Auto-detect today if no date found
-            if (!parsed.date) {
+            // Auto-detect today if no date was found
+            if (!date) {
                 setDate(new Date().toISOString().split('T')[0])
             }
 
@@ -175,7 +194,7 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
             toast.error('Error al procesar el recibo. Inténtalo de nuevo.')
             setStep('upload')
         }
-    }, [companyId])
+    }, [companyId, currency, date])
 
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault()

@@ -215,7 +215,14 @@ export function ProfileForm({ contactId, companyId }: { contactId: string; compa
                                     value={profile[key] || ''}
                                     onChange={(e) => handleFieldChange(key, e.target.value)}
                                     placeholder={placeholder}
-                                    className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 transition-all"
+                                    readOnly={key === 'email'}
+                                    disabled={key === 'email'}
+                                    className={cn(
+                                        'w-full border rounded-xl pl-10 pr-4 py-3 text-sm transition-all',
+                                        key === 'email'
+                                            ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'
+                                            : 'bg-white border-gray-200 text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300'
+                                    )}
                                 />
                             )}
                             {profile[key] && profile[key] !== originalProfile[key] && (

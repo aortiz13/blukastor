@@ -1,12 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { NextResponse } from 'next/server'
 
 /**
  * POST /api/auth/change-password
  * Allows an authenticated user to change their password.
+ * Uses the service role admin client to ensure the password is actually persisted.
  */
 export async function POST(request: Request) {
     try {
+        // Use the cookie-based client only to verify the user is authenticated
         const supabase = await createClient()
         const { data: { user } } = await supabase.auth.getUser()
 
@@ -23,7 +26,9 @@ export async function POST(request: Request) {
             )
         }
 
-        const { error } = await supabase.auth.updateUser({
+        // Use the service role client to actually update the password
+        const adminClient = createServiceClient()
+        const { error } = await adminClient.auth.admin.updateUserById(user.id, {
             password: newPassword,
         })
 

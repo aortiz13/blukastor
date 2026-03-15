@@ -1,16 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCompanyByDomain } from '@/lib/data/companies'
-import { headers } from 'next/headers'
 import { Target, Flag, Sparkles, ArrowRight } from 'lucide-react'
 import { getCompanyGoals } from '@/lib/actions/goals'
 import { GoalFormDialog } from './_components/GoalFormDialog'
 import { GoalCard } from './_components/GoalCard'
 
-export default async function GoalsPage() {
+export default async function GoalsPage({
+    params,
+}: {
+    params: Promise<{ domain: string }>
+}) {
+    const { domain: rawDomain } = await params
+    const domain = decodeURIComponent(rawDomain)
     const supabase = await createClient()
-    const headersList = await headers()
-    const host = headersList.get('host') || ''
-    const domain = host.split('.')[0]
 
     const company = await getCompanyByDomain(supabase, domain)
     if (!company) {

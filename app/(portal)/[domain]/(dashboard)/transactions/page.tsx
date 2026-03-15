@@ -2,13 +2,15 @@ import { createClient } from '@/lib/supabase/server'
 import { Plus, Search, Filter, Download, ArrowUpRight, ArrowDownRight, MoreHorizontal, Receipt } from 'lucide-react'
 import { getCompanyByDomain } from '@/lib/data/companies'
 import { formatCurrency } from '@/lib/utils/currency'
-import { headers } from 'next/headers'
 
-export default async function TransactionsPage() {
+export default async function TransactionsPage({
+    params,
+}: {
+    params: Promise<{ domain: string }>
+}) {
+    const { domain: rawDomain } = await params
+    const domain = decodeURIComponent(rawDomain)
     const supabase = await createClient()
-    const headersList = await headers()
-    const host = headersList.get('host') || ''
-    const domain = host.split('.')[0]
 
     // Fetch company to get base currency
     const company = await getCompanyByDomain(supabase, domain)

@@ -1,70 +1,91 @@
-import { createClient } from '@/lib/supabase/server'
+import { GoogleGenerativeAI } from "@google/generative-ai"
+import { PromptBuilder } from '../prompt-builder'
+import type { AIContext, AgentConfig, ProjectScope, FinanceAgentResponse } from '@/lib/types/ai'
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
 export class FinanceAgent {
-    async execute(message: string, context: any, mediaUrl?: string) {
-        console.log("FinanceAgent: Delegating to Supabase Edge Function 'finance-agent'...", { hasMedia: !!mediaUrl });
-        const supabase = await createClient();
+    private model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
+    private promptBuilder = new PromptBuilder()
 
-        // 1. Prepare History for Edge Function
-        // Edge Function expects: { messages: [ {role, content}, ... ] }
-        // context.recentHistory usually contains [{ role: 'user', content: ... }, ...]
+    async execute(
+        message: string,
+        context: AIContext,
+        agentConfig?: AgentConfig | null,
+        mediaUrl?: string
+    ): Promise<FinanceAgentResponse & { _tokenUsage?: any }> {
+        const startTime = Date.now()
 
-        let messages = [];
-        if (context.recentHistory && Array.isArray(context.recentHistory)) {
-            messages = context.recentHistory.map((m: any) => ({
-                role: m.role === 'me' ? 'user' : (m.role === 'model' ? 'assistant' : m.role),
-                // Ensure content is string if it was an object in history (though usually history is text)
-                content: typeof m.content === 'object' ? JSON.stringify(m.content) : (m.content || "")
-            }));
-        }
+        // 1. Build dynamic system prompt
+        const now = new Date()
+        const systemPrompt = this.promptBuilder.buildFinancePrompt({
+            companyName: context.company?.name || context.company?.company_name || 'Personalized Coach',
+            agentConfig: agentConfig || null,
+            projectScope: context.projectScope || null,
+            currentDate: now.toISOString().split('T')[0],
+            currentTime: now.toISOString().split('T')[1].substring(0, 5),
+        })
 
-        // Append current message
-        // If mediaUrl is present, send structured content
-        let currentMessageContent: any = message;
-        if (mediaUrl) {
-            currentMessageContent = [
-                { type: 'text', text: message },
-                { type: 'image_url', image_url: { url: mediaUrl } }
-            ];
-        }
+        // 2. Build context payload
+        const contextPayload = this.promptBuilder.buildContextPayload(context)
 
-        messages.push({ role: 'user', content: currentMessageContent });
+        // 3. Build user message with context
+        const userPrompt = `${contextPayload}\n\n---\n\nMensaje del Usuario:\n"${message}"`
 
+        // 4. Call Gemini with JSON mode
         try {
-            // 2. Invoke Edge Function
-            const { data, error } = await supabase.functions.invoke('finance-agent', {
-                body: { messages, mediaUrl }  // <-- pasar mediaUrl explícitamente
-            });
+            const result = await this.model.generateContent({
+                contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+                systemInstruction: systemPrompt,
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    temperature: 0.3,
+                }
+            })
 
-            if (error) {
-                console.error("FinanceAgent: Edge Function Error:", error);
-                throw error;
+            const usage = result.response.usageMetadata
+            const latencyMs = Date.now() - startTime
+            const responseText = result.response.text()
+
+            // 5. Parse JSON response
+            const parsed = JSON.parse(responseText) as FinanceAgentResponse
+
+            // Ensure required fields
+            parsed.intent = parsed.intent || 'conversacional_finanzas'
+            parsed.ops = parsed.ops || []
+            parsed.confidence = parsed.confidence || 1.0
+            parsed.next_agent_hint = parsed.next_agent_hint || null
+
+            // Add token usage metadata
+            parsed._tokenUsage = {
+                inputTokens: usage?.promptTokenCount || 0,
+                outputTokens: usage?.candidatesTokenCount || 0,
+                latencyMs,
+                modelName: 'gemini-2.0-flash',
+                agentType: 'finance',
             }
 
-            console.log("FinanceAgent: Edge Function Response:", data);
-
-            // 3. Format response for Orchestrator
-            // Edge Function returns: { role: 'assistant', content: "..." }
-            // Orchestrator expects: { assistant_reply, intent, ops, ... }
-
-            return {
-                assistant_reply: data.content,
-                intent: 'finance',
-                ops: [], // Edge Function executes tools internally, so no ops for Orchestrator to run
-                _tokenUsage: {
-                    agentType: 'finance',
-                    modelName: 'gemini-1.5-flash', // Assumed
-                    success: true
-                }
-            };
+            return parsed
 
         } catch (e: any) {
-            console.error("FinanceAgent: Execution Failed", e);
+            console.error("FinanceAgent: Error processing message", e)
+            const latencyMs = Date.now() - startTime
+
             return {
-                assistant_reply: "Lo siento, tuve un problema conectando con mi cerebro financiero. ¿Podrías intentar de nuevo?",
+                assistant_reply: "Lo siento, tuve un problema procesando tu consulta financiera. ¿Podrías intentar de nuevo? 💰",
                 intent: "finance",
+                confidence: 0,
                 ops: [],
-            };
+                next_agent_hint: 'finance_coach',
+                meta: { provider: 'llm', model: 'gemini-2.0-flash', tokens_used: 0 },
+                _tokenUsage: {
+                    inputTokens: 0,
+                    outputTokens: 0,
+                    latencyMs,
+                    modelName: 'gemini-2.0-flash',
+                    agentType: 'finance',
+                },
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import { MemoryService } from './memory';
 import { RouterService } from './router';
 import { OnboardingAgent } from './agents/onboarding';
@@ -8,11 +9,21 @@ import { FinanceAgent } from './agents/finance';
 import { MultimodalService } from './multimodal';
 import { OperationExecutor } from './tools/executor';
 import { logLLMInvocation } from './log-invocation';
+import type { AgentConfig } from '@/lib/types/ai';
+import { AGENT_HINT_MAP } from '@/lib/types/ai';
 
 export class OrchestratorService {
     constructor(private supabaseClient?: any) { }
 
-    async processMessage(contactId: string, companyId: string, message: string, mediaData?: { type: string, base64: string, mime: string }, forceAgent?: string, mediaUrl?: string) {
+    async processMessage(
+        contactId: string,
+        companyId: string,
+        message: string,
+        mediaData?: { type: string, base64: string, mime: string },
+        forceAgent?: string,
+        mediaUrl?: string,
+        projectId?: string
+    ) {
         const supabase = this.supabaseClient || await createClient();
         const memory = new MemoryService(supabase);
         const router = new RouterService();
@@ -51,9 +62,43 @@ export class OrchestratorService {
             }
         }
 
-        // 1. Fetch Context
+        // 1. Fetch Context (enriched, with optional project scope)
         console.log('Orchestrator: Fetching context...');
-        const context = await memory.fetchContext(contactId, companyId);
+        const context = await memory.fetchContext(contactId, companyId, projectId);
+
+        // 1.5. Fetch Agent Config from company_prompts (dynamic personalization)
+        let agentConfigs: Record<string, AgentConfig> = {};
+        try {
+            const serviceClient = createServiceClient();
+            // Resolve the tenant ID (parent company for projects)
+            let agentSourceId = companyId;
+            const { data: projectRow } = await serviceClient
+                .from('companies')
+                .select('client_company_id')
+                .eq('id', companyId)
+                .single();
+            if (projectRow?.client_company_id) {
+                agentSourceId = projectRow.client_company_id;
+            }
+
+            const { data: prompts } = await serviceClient
+                .from('company_prompts')
+                .select('agent_type, agent_name, personality_traits, target_audience')
+                .eq('company_id', agentSourceId)
+                .eq('active', true);
+
+            if (prompts) {
+                for (const p of prompts) {
+                    agentConfigs[p.agent_type] = {
+                        agent_name: p.agent_name || 'Nova',
+                        personality_traits: p.personality_traits,
+                        target_audience: p.target_audience,
+                    };
+                }
+            }
+        } catch (e) {
+            console.warn('Orchestrator: Error fetching agent configs:', e);
+        }
 
         // 2. Decide Action (Heuristic Router)
         let decision;
@@ -62,7 +107,6 @@ export class OrchestratorService {
             decision = { action: 'route', target: forceAgent };
         } else {
             console.log('Orchestrator: Deciding action...');
-            // If we have a mediaUrl, we might want to hint the router or just rely on the text message.
             decision = await router.decide(enhancedMessage, context);
 
             // Force routing if multimodal suggested an intent
@@ -82,7 +126,9 @@ export class OrchestratorService {
         console.log('Orchestrator: Routing to agent:', decision.target);
         // 3. Route to specialized Agent
         let agentResponse;
-        switch (decision.target) {
+        const targetAgent = decision.target as string;
+
+        switch (targetAgent) {
             case 'onboarding':
                 agentResponse = await new OnboardingAgent().execute(message, context);
                 break;
@@ -93,8 +139,13 @@ export class OrchestratorService {
                 agentResponse = await new BusinessAgent().execute(message, context);
                 break;
             case 'finance':
-                // Pass mediaUrl to FinanceAgent
-                agentResponse = await new FinanceAgent().execute(message, context, mediaUrl);
+                // Finance agent gets agentConfig + project scope
+                agentResponse = await new FinanceAgent().execute(
+                    message,
+                    context,
+                    agentConfigs['finance'] || null,
+                    mediaUrl
+                );
                 break;
             default:
                 // Fallback to onboarding if no specific target or unknown
@@ -123,6 +174,23 @@ export class OrchestratorService {
         if (agentResponse.ops && agentResponse.ops.length > 0) {
             console.log('Orchestrator: Executing ops:', agentResponse.ops.length);
             await executor.execute(agentResponse.ops, contactId, companyId);
+        }
+
+        // 4.5. Handle next_agent_hint (update agent routing for next message)
+        if (agentResponse.next_agent_hint) {
+            try {
+                const hintValue = agentResponse.next_agent_hint;
+                console.log('Orchestrator: Setting next_agent_hint:', hintValue);
+
+                const serviceClient = createServiceClient();
+                await serviceClient
+                    .from('user_context')
+                    .update({ agent_hint: hintValue })
+                    .eq('contact_id', contactId)
+                    .eq('context_company_id', companyId);
+            } catch (e) {
+                console.warn('Orchestrator: Error setting agent_hint:', e);
+            }
         }
 
         // 5. Save To Memory (Chat History)

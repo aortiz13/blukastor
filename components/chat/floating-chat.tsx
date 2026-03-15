@@ -14,9 +14,10 @@ interface FloatingChatProps {
     activeSection?: string
     agentId?: string
     chatLabel?: string
+    projectId?: string
 }
 
-export function FloatingChat({ contactId, companyId, projectName, primaryColor = '#6366f1', activeSection, agentId, chatLabel }: FloatingChatProps) {
+export function FloatingChat({ contactId, companyId, projectName, primaryColor = '#6366f1', activeSection, agentId, chatLabel, projectId }: FloatingChatProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [messages, setMessages] = useState<Message[]>([])
     const [input, setInput] = useState('')
@@ -129,7 +130,7 @@ export function FloatingChat({ contactId, companyId, projectName, primaryColor =
         scrollToBottom()
 
         try {
-            const result = await processAIChatMessage(contactId, companyId, text, agentId)
+            const result = await processAIChatMessage(contactId, companyId, text, agentId, undefined, projectId)
             if (result.success) {
                 setMessages((prev) => [...prev, {
                     id: 'temp-ai-' + Date.now(), content: result.data.assistant_reply,

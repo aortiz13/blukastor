@@ -185,6 +185,7 @@ export function ProjectDetailClient({
                     activeSection={activeTab}
                     agentId={TAB_AGENT_MAP[activeTab] || 'onboarding'}
                     chatLabel={TAB_CHAT_LABELS[activeTab] || 'General'}
+                    projectId={id}
                 />
             )}
         </div>

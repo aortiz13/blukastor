@@ -1,5 +1,6 @@
 import type { AIContext } from '@/lib/types/ai'
 import type { AgentType, RouterDecision } from '@/lib/types/ai'
+import { AGENT_HINT_MAP } from '@/lib/types/ai'
 
 export type { AgentType, RouterDecision }
 
@@ -14,7 +15,11 @@ export class RouterService {
     async decide(message: string, context: AIContext): Promise<RouterDecision> {
         const cleanMessage = message.trim().toLowerCase();
         const profilePercent = context.userContext?.profile_completion_percent || 0;
-        const agentHint = context.userContext?.agent_hint as AgentType;
+        const rawHint = context.userContext?.agent_hint as string;
+        // Map n8n-style hints (e.g. "finance_coach") to web app agent types
+        const agentHint = rawHint
+            ? (AGENT_HINT_MAP[rawHint] || rawHint as AgentType)
+            : undefined;
         const pushName = context.contact?.push_name || context.userContext?.preferred_name || 'Usuario';
 
         // 1. Greetings

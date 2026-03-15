@@ -18,7 +18,7 @@ export default async function PortalBrandingPage({
     // Check authentication
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-        redirect(`/login?next=${encodeURIComponent(`/${domain}/branding`)}`)
+        redirect(`/login?next=${encodeURIComponent('/branding')}`)
     }
 
     // Fetch company (needed for companyId context)

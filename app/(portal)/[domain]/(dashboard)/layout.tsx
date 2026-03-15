@@ -19,7 +19,7 @@ export default async function DashboardLayout({
 
     // Redirect user to login with return path
     if (!user) {
-        redirect(`/login?next=${encodeURIComponent(`/${domain}/dashboard`)}`)
+        redirect(`/login?next=${encodeURIComponent('/dashboard')}`)
     }
 
     // Get user display name

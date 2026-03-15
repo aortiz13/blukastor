@@ -41,7 +41,7 @@ export default async function MyTeamsPage({
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect(`/${domain}/login`)
+    if (!user) redirect('/login')
 
     const company = await getCompanyByDomain(supabase, domain)
     if (!company) return <div>Empresa no encontrada</div>
@@ -101,7 +101,7 @@ export default async function MyTeamsPage({
                     const KindIcon = kind.icon
 
                     return (
-                        <Link key={team.project_id} href={`/${domain}/projects/${team.project_id}`}>
+                        <Link key={team.project_id} href={`/projects/${team.project_id}`}>
                             <Card className="hover:shadow-md transition-all cursor-pointer h-full border-gray-100 group hover:border-gray-200">
                                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
                                     <div className="flex-1 min-w-0">

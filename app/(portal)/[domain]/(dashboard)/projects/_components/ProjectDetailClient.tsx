@@ -67,7 +67,7 @@ export function ProjectDetailClient({
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center gap-4 mb-2">
-                <Link href={`/${domain}/projects`} className="text-sm text-muted-foreground hover:text-gray-900 transition-colors">
+                <Link href="/projects" className="text-sm text-muted-foreground hover:text-gray-900 transition-colors">
                     ← Volver a Proyectos
                 </Link>
             </div>
@@ -131,7 +131,7 @@ export function ProjectDetailClient({
                                 <h3 className="text-lg font-bold">Resumen Financiero</h3>
                                 <p className="text-sm text-muted-foreground">Gestiona los ingresos y egresos de este proyecto.</p>
                             </div>
-                            <Link href={`/${domain}/finance?projectId=${id}`}>
+                            <Link href={`/finance?projectId=${id}`}>
                                 <Button>Registrar Transacción</Button>
                             </Link>
                         </div>

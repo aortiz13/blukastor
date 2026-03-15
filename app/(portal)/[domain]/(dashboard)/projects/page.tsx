@@ -18,7 +18,7 @@ export default async function ProjectsPage({
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect(`/${domain}/login`)
+    if (!user) redirect('/login')
 
     const company = await getCompanyByDomain(supabase, domain)
     if (!company) return <div>Empresa no encontrada</div>
@@ -36,7 +36,7 @@ export default async function ProjectsPage({
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {projects.map((project: any) => (
-                    <Link key={project.id} href={`/${domain}/projects/${project.id}`}>
+                    <Link key={project.id} href={`/projects/${project.id}`}>
                         <Card className="hover:shadow-md transition-shadow cursor-pointer h-full border-gray-100">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">

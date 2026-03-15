@@ -38,7 +38,7 @@ export function ProjectForm({ companyId, domain }: ProjectFormProps) {
             const project = await createProject(companyId, name, description)
             toast.success('Proyecto creado con éxito')
             setOpen(false)
-            router.push(`/${domain}/projects/${project.id}`)
+            router.push(`/projects/${project.id}`)
         } catch (error: any) {
             toast.error(error.message || 'Error al crear proyecto')
         } finally {

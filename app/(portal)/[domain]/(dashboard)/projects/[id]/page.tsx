@@ -15,7 +15,7 @@ export default async function ProjectDetailPage({
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect(`/${domain}/login`)
+    if (!user) redirect('/login')
 
     const project = await getProject(id)
     if (!project) return <div>Proyecto no encontrado</div>

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Lock, Eye, EyeOff, Loader2, CheckCircle2, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export function ChangePasswordForm() {
+export function ChangePasswordForm({ authEmail }: { authEmail?: string }) {
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
@@ -57,7 +57,12 @@ export function ChangePasswordForm() {
                 </div>
                 <div>
                     <h3 className="text-lg font-bold text-gray-900">Cambiar Contraseña</h3>
-                    <p className="text-gray-400 text-xs">Actualiza tu contraseña de acceso</p>
+                    <p className="text-gray-400 text-xs">
+                        {authEmail
+                            ? <>Cambiar contraseña para <span className="font-semibold text-gray-600">{authEmail}</span></>
+                            : 'Actualiza tu contraseña de acceso'
+                        }
+                    </p>
                 </div>
             </div>
 

@@ -106,7 +106,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ domain
     return (
         <div className="max-w-4xl mx-auto py-8 px-4">
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                <ProfileForm contactId={contact.id} companyId={contact.company_id} />
+                <ProfileForm contactId={contact.id} companyId={contact.company_id} authEmail={user.email} />
             </div>
         </div>
     )

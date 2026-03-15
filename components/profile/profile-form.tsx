@@ -31,7 +31,7 @@ const PROFILE_FIELDS: { key: keyof ProfileData; label: string; icon: any; placeh
     { key: 'bio', label: 'Acerca de mí', icon: FileText, placeholder: 'Una breve descripción sobre ti...', colSpan: true },
 ]
 
-export function ProfileForm({ contactId, companyId }: { contactId: string; companyId: string }) {
+export function ProfileForm({ contactId, companyId, authEmail }: { contactId: string; companyId: string; authEmail?: string }) {
     const [profile, setProfile] = useState<ProfileData>({})
     const [originalProfile, setOriginalProfile] = useState<ProfileData>({})
     const [isLoading, setIsLoading] = useState(true)
@@ -248,7 +248,7 @@ export function ProfileForm({ contactId, companyId }: { contactId: string; compa
             </div>
 
             {/* Password Change */}
-            <ChangePasswordForm />
+            <ChangePasswordForm authEmail={authEmail} />
         </div>
     )
 }

@@ -64,7 +64,7 @@ export default async function CorporateProfilePage() {
     return (
         <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                <ProfileForm contactId={contactId} companyId={activeCompany.companyId} />
+                <ProfileForm contactId={contactId} companyId={activeCompany.companyId} authEmail={user.email} />
             </div>
         </div>
     )

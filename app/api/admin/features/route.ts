@@ -73,6 +73,10 @@ export async function POST(request: Request) {
             'business': {
                 name: 'Nova Business',
                 message: 'You are Nova, a business development consultant. You assist entrepreneurs in identifying opportunities, optimizing operations, and scaling their ventures effectively.'
+            },
+            'wellbeing': {
+                name: 'Nova Wellbeing',
+                message: 'You are Nova, a wellbeing and personal development coach. You help users improve their emotional health, manage stress, build healthy habits, and achieve a balanced lifestyle.'
             }
         }
 

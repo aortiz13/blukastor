@@ -81,6 +81,7 @@ export default function NewCompanyPage() {
         { key: 'agent:goals', name: 'Goals Agent', description: 'Objetivos y metas' },
         { key: 'agent:business', name: 'Business Agent', description: 'Consultoría de negocio' },
         { key: 'agent:content', name: 'Content Agent', description: 'Creación de contenido' },
+        { key: 'agent:wellbeing', name: 'Wellbeing Agent', description: 'Coach de bienestar personal' },
         { key: 'module:content_manager', name: 'Content Manager', description: 'Gestión de contenido' },
         { key: 'module:analytics', name: 'Analytics', description: 'Análisis y reportes' },
     ]

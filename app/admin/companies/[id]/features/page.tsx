@@ -52,6 +52,7 @@ export default async function CompanyFeaturesPage({ params }: PageProps) {
                 { key: 'agent:goals', name: 'Goals Agent', description: 'Objetivos, metas y seguimiento de progreso' },
                 { key: 'agent:business', name: 'Business Agent', description: 'Consultoría de negocio y estrategia' },
                 { key: 'agent:content', name: 'Content Agent', description: 'Creación y gestión de contenido' },
+                { key: 'agent:wellbeing', name: 'Wellbeing Agent', description: 'Coach de bienestar personal y desarrollo' },
             ]
         },
         {

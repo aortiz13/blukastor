@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Building2, Users, Settings, Palette, Zap, UserCog, Phone, Mail, Calendar, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Building2, Users, Palette, Zap, UserCog, Phone, Mail, Calendar, ExternalLink } from 'lucide-react'
 import { CompanyActions } from './company-actions'
 
 interface PageProps {
@@ -251,17 +251,7 @@ export default async function CompanyDetailPage({ params }: PageProps) {
                         </div>
                     </Link>
 
-                    <Link href={`/admin/companies/${company.id}/agents`} className="block bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition group">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-purple-100 rounded-xl group-hover:bg-purple-200 transition">
-                                <Settings className="w-6 h-6 text-purple-600" />
-                            </div>
-                            <div>
-                                <p className="font-bold text-gray-900">Agentes</p>
-                                <p className="text-xs text-gray-500">Personalizar prompts</p>
-                            </div>
-                        </div>
-                    </Link>
+
                 </div>
             </div>
         </div>

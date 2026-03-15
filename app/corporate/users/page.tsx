@@ -19,7 +19,7 @@ export default async function CorporateUsersPage() {
     // Fetch all contacts for this company
     const { data: contacts, error } = await supabase
         .from('contacts')
-        .select('id, phone, push_name, real_name, first_seen, last_seen, tags, nickname, trial_started_at, trial_days')
+        .select('id, phone, push_name, real_name, first_seen, last_seen, tags, nickname, trial_started_at, trial_days, user_id')
         .eq('client_company_id', activeCompany.companyId)
         .order('first_seen', { ascending: false })
 

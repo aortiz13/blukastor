@@ -17,6 +17,7 @@ interface Contact {
     last_seen: string | null
     tags: string[] | null
     nickname: string | null
+    user_id: string | null
 }
 
 interface Membership {
@@ -61,7 +62,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
     })
 
     // Only contacts with phone can be invited
-    const selectableContacts = filtered.filter(c => c.phone)
+    const selectableContacts = filtered.filter(c => c.phone && !c.user_id)
     const allSelectableSelected = selectableContacts.length > 0 && selectableContacts.every(c => selected.has(c.id))
 
     const toggleSelect = (id: string) => {
@@ -219,6 +220,10 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                                 onChange={() => toggleSelect(contact.id)}
                                                 className="w-4 h-4 accent-gray-900 rounded cursor-pointer"
                                             />
+                                        ) : contact.user_id ? (
+                                            <div className="w-4 h-4 flex items-center justify-center" title="Ya registrado en el portal">
+                                                <Check size={14} className="text-green-500" />
+                                            </div>
                                         ) : (
                                             <div className="w-4 h-4" />
                                         )}
@@ -229,7 +234,12 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                                 {(contact.push_name || contact.phone || '?').charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <p className="font-bold text-gray-900 text-sm">{contact.push_name || contact.nickname || 'Sin nombre'}</p>
+                                                <div className="flex items-center gap-1.5">
+                                                    <p className="font-bold text-gray-900 text-sm">{contact.push_name || contact.nickname || 'Sin nombre'}</p>
+                                                    {contact.user_id && (
+                                                        <span className="px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[9px] font-bold uppercase">Portal</span>
+                                                    )}
+                                                </div>
                                                 {contact.real_name && (
                                                     <p className="text-xs text-gray-400">{contact.real_name}</p>
                                                 )}

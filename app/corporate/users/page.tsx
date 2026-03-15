@@ -1,9 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCorporateAdminProfile, resolveActiveCompany } from '@/lib/actions/corporate-helpers'
-import { Users, Search, Phone, Calendar, Tag, ChevronRight } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import Link from 'next/link'
+import { Users, Phone, Tag } from 'lucide-react'
 import { InviteUserButton } from './invite-user-modal'
+import UsersClient from './users-client'
 
 export default async function CorporateUsersPage() {
     const supabase = await createClient()
@@ -106,95 +105,12 @@ export default async function CorporateUsersPage() {
                 </div>
             </div>
 
-            {/* Search */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3">
-                <Search size={20} className="text-gray-400 ml-2" />
-                <input
-                    type="text"
-                    placeholder="Buscar por nombre, teléfono o tags..."
-                    className="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium"
+            <UsersClient
+                    contacts={contacts || []}
+                    membershipMap={membershipMap}
+                    companyName={activeCompany.companyName}
+                    companyPortalUrl={companyPortalUrl}
                 />
-            </div>
-
-            {/* Users Table */}
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                <table className="w-full text-left">
-                    <thead>
-                        <tr className="bg-gray-50 border-b border-gray-100">
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Usuario</th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Teléfono</th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Primera Visita</th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Última Actividad</th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Membresía</th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tags</th>
-                            <th className="px-6 py-4 w-10"></th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                        {contacts?.map((contact) => {
-                            const membership = membershipMap[contact.id]
-                            return (
-                                <tr key={contact.id} className="hover:bg-gray-50/50 transition-colors cursor-pointer group">
-                                    <td className="px-6 py-4">
-                                        <Link href={`/corporate/users/${contact.id}`} className="flex items-center gap-3">
-                                            <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm">
-                                                {(contact.push_name || contact.phone).charAt(0).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-gray-900 text-sm">{contact.push_name || contact.nickname || 'Sin nombre'}</p>
-                                                {contact.real_name && (
-                                                    <p className="text-xs text-gray-400">{contact.real_name}</p>
-                                                )}
-                                            </div>
-                                        </Link>
-                                    </td>
-                                    <td className="px-6 py-4 font-mono text-sm text-gray-600">{contact.phone}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">
-                                        {contact.first_seen ? new Date(contact.first_seen).toLocaleDateString() : '—'}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">
-                                        {contact.last_seen ? new Date(contact.last_seen).toLocaleDateString() : '—'}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {membership ? (
-                                            <span className={cn(
-                                                "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                                                membership.status === 'active' ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
-                                            )}>
-                                                {membership.plan}
-                                            </span>
-                                        ) : (
-                                            <span className="text-xs text-gray-300">—</span>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-wrap gap-1">
-                                            {contact.tags?.slice(0, 3).map((tag: string) => (
-                                                <span key={tag} className="px-2 py-0.5 rounded-full bg-gray-100 text-[10px] text-gray-500 font-medium">
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <Link href={`/corporate/users/${contact.id}`} className="text-gray-300 group-hover:text-gray-500 transition-colors">
-                                            <ChevronRight size={16} />
-                                        </Link>
-                                    </td>
-                                </tr>
-                            )
-                        })}
-                    </tbody>
-                </table>
-
-                {(!contacts || contacts.length === 0) && (
-                    <div className="text-center py-12">
-                        <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-600 font-medium">No hay usuarios registrados</p>
-                        <p className="text-gray-400 text-sm">Los usuarios aparecerán aquí cuando interactúen con el sistema</p>
-                    </div>
-                )}
-            </div>
         </div>
     )
 }

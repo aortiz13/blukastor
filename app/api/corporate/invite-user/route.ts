@@ -115,14 +115,14 @@ export async function POST(request: Request) {
             .eq('id', companyId)
             .single()
 
-        const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'https://admin.autoflowai.io'
+        const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'autoflowai.io'
 
         // Members/Admins → corporate portal, Clients → company client portal
         let inviteUrl: string
         if (inviteRole === 'client' && company?.custom_domain) {
             inviteUrl = `https://${company.custom_domain}/portal-invite/${token}`
         } else {
-            inviteUrl = `${rootDomain}/portal-invite/${token}`
+            inviteUrl = `https://admin.${rootDomain}/portal-invite/${token}`
         }
 
         // Send email if channel is email

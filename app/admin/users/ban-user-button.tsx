@@ -32,7 +32,7 @@ export function BanUserButton() {
     const [phone, setPhone] = useState('')
     const [clientCompanyId, setClientCompanyId] = useState('')
     const [reason, setReason] = useState('')
-    const [bannedBy, setBannedBy] = useState('')
+
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [companies, setCompanies] = useState<ClientCompany[]>([])
@@ -61,7 +61,6 @@ export function BanUserButton() {
                     phone,
                     client_company_id: clientCompanyId,
                     reason: reason || undefined,
-                    banned_by: bannedBy || undefined,
                 }),
             })
 
@@ -75,7 +74,6 @@ export function BanUserButton() {
             setPhone('')
             setClientCompanyId('')
             setReason('')
-            setBannedBy('')
             router.refresh()
         } catch (err: any) {
             setError(err.message)
@@ -161,18 +159,7 @@ export function BanUserButton() {
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                    Banneado por
-                                </label>
-                                <input
-                                    type="text"
-                                    value={bannedBy}
-                                    onChange={(e) => setBannedBy(e.target.value)}
-                                    placeholder="Tu nombre o email"
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition"
-                                />
-                            </div>
+
 
                             <div className="flex gap-3 pt-2">
                                 <button

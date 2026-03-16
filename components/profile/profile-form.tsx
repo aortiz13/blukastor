@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState, useCallback } from 'react'
 import {
     User, Mail, MapPin, Briefcase, Sparkles, Loader2,
-    Building2, FileText, Save, CheckCircle2, Pencil
+    Building2, FileText, Save, CheckCircle2, Pencil,
+    Phone, Crown, CalendarClock, ShieldCheck
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ChangePasswordForm } from './change-password-form'
@@ -21,6 +22,14 @@ interface ProfileData {
     bio?: string
 }
 
+interface MembershipData {
+    plan: string
+    status: string
+    started_at: string
+    expires_at: string
+    company_name: string
+}
+
 export function ProfileForm({ contactId, companyId, authEmail }: { contactId: string; companyId: string; authEmail?: string }) {
     const { t } = useTranslation()
     const [profile, setProfile] = useState<ProfileData>({})
@@ -29,6 +38,8 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
     const [isSaving, setIsSaving] = useState(false)
     const [saved, setSaved] = useState(false)
     const [completion, setCompletion] = useState(0)
+    const [phone, setPhone] = useState<string | null>(null)
+    const [membership, setMembership] = useState<MembershipData | null>(null)
     const supabase = createClient()
 
     const PROFILE_FIELDS: { key: keyof ProfileData; labelKey: string; icon: any; placeholderKey: string; colSpan?: boolean }[] = [
@@ -52,6 +63,8 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
                 setProfile(fetchedProfile)
                 setOriginalProfile(fetchedProfile)
                 setCompletion(data.completion || 0)
+                setPhone(data.contact?.phone || null)
+                setMembership(data.membership || null)
             }
         } catch (err) {
             console.error('Error fetching profile:', err)
@@ -193,6 +206,28 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
 
             {/* Fields Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Phone field (read-only) */}
+                {phone && (
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">
+                            {t('profile.phone')}
+                        </label>
+                        <div className="relative group">
+                            <Phone
+                                size={16}
+                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                            />
+                            <input
+                                type="text"
+                                value={phone}
+                                readOnly
+                                disabled
+                                className="w-full bg-gray-100 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-500 cursor-not-allowed"
+                            />
+                        </div>
+                    </div>
+                )}
+
                 {PROFILE_FIELDS.map(({ key, labelKey, icon: Icon, placeholderKey, colSpan }) => (
                     <div key={key} className={cn('space-y-1.5', colSpan && 'md:col-span-2')}>
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">
@@ -234,6 +269,80 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
                     </div>
                 ))}
             </div>
+
+            {/* Membership Card */}
+            {membership && (
+                <div className="bg-gradient-to-br from-indigo-50 via-violet-50 to-purple-50 rounded-2xl border border-violet-100 overflow-hidden">
+                    <div className="bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-3 flex items-center gap-2">
+                        <Crown className="text-amber-300" size={18} />
+                        <h3 className="text-white font-bold text-sm">{t('profile.membership')}</h3>
+                    </div>
+                    <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Plan */}
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-white rounded-lg shadow-sm">
+                                <ShieldCheck className="text-violet-500" size={18} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('profile.plan')}</p>
+                                <p className="text-sm font-bold text-gray-900">{membership.plan}</p>
+                            </div>
+                        </div>
+                        {/* Status */}
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                                <span className={cn(
+                                    'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold',
+                                    membership.status === 'active'
+                                        ? 'bg-emerald-100 text-emerald-700'
+                                        : membership.status === 'expired'
+                                            ? 'bg-red-100 text-red-700'
+                                            : 'bg-amber-100 text-amber-700'
+                                )}>
+                                    <span className={cn(
+                                        'w-1.5 h-1.5 rounded-full',
+                                        membership.status === 'active'
+                                            ? 'bg-emerald-500'
+                                            : membership.status === 'expired'
+                                                ? 'bg-red-500'
+                                                : 'bg-amber-500'
+                                    )} />
+                                    {membership.status === 'active' ? t('profile.statusActive')
+                                        : membership.status === 'expired' ? t('profile.statusExpired')
+                                            : membership.status}
+                                </span>
+                            </div>
+                        </div>
+                        {/* Start date */}
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-white rounded-lg shadow-sm">
+                                <CalendarClock className="text-indigo-500" size={18} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('profile.startDate')}</p>
+                                <p className="text-sm font-semibold text-gray-700">
+                                    {new Date(membership.started_at).toLocaleDateString()}
+                                </p>
+                            </div>
+                        </div>
+                        {/* Expiration date */}
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-white rounded-lg shadow-sm">
+                                <CalendarClock className="text-amber-500" size={18} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('profile.expiresAt')}</p>
+                                <p className={cn(
+                                    'text-sm font-semibold',
+                                    new Date(membership.expires_at) < new Date() ? 'text-red-600' : 'text-gray-700'
+                                )}>
+                                    {new Date(membership.expires_at).toLocaleDateString()}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* AI Auto-fill hint */}
             <div className="p-4 bg-violet-50 rounded-2xl border border-violet-100 flex gap-4 items-start">

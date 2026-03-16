@@ -37,6 +37,13 @@ export async function GET(request: Request) {
             .eq('contact_id', contactId)
             .single()
 
+        // Fetch membership status
+        const { data: membership } = await serviceClient
+            .from('membership_status_v2')
+            .select('plan, status, started_at, expires_at, company_name')
+            .eq('contact_id', contactId)
+            .maybeSingle()
+
         return NextResponse.json({
             contact: {
                 push_name: contact.push_name,
@@ -47,6 +54,7 @@ export async function GET(request: Request) {
             profile: ctx?.profile || {},
             preferred_name: ctx?.preferred_name || null,
             completion: ctx?.profile_completion_percent || 0,
+            membership: membership || null,
         })
     } catch (error: any) {
         console.error('Error GET /api/profile:', error)

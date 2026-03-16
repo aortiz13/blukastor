@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { CreditCard, TrendingUp, Users, ArrowUpRight, ArrowDownRight, Package, Calendar, RefreshCcw } from 'lucide-react'
+import { CreditCard, TrendingUp, Users, ArrowDownRight } from 'lucide-react'
 import { BulkActivateButton } from './BulkActivateButton'
+import { MembershipsTable } from './MembershipsTable'
 
 export default async function MembershipsPage() {
     const supabase = await createClient()
@@ -25,9 +26,10 @@ export default async function MembershipsPage() {
     }) || []
 
     const activeMembers = withStatus.filter(m => m.effectiveStatus === 'active').length
+    const cancelledMembers = withStatus.filter(m => m.status === 'cancelled').length
     const expiredMembers = withStatus.filter(m => m.effectiveStatus === 'expired').length
     const totalMembers = withStatus.length
-    const churnRate = totalMembers > 0 ? ((expiredMembers / totalMembers) * 100).toFixed(1) : '0'
+    const churnRate = totalMembers > 0 ? ((cancelledMembers / totalMembers) * 100).toFixed(1) : '0'
 
     return (
         <div className="space-y-8">
@@ -49,7 +51,7 @@ export default async function MembershipsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
                     { label: 'Suscripciones Activas', value: activeMembers, icon: Users, sub: `${totalMembers} total`, color: 'blue' },
-                    { label: 'Tasa de Cancelación (Churn)', value: `${churnRate}%`, icon: ArrowDownRight, sub: `${expiredMembers} expiradas`, color: 'red' },
+                    { label: 'Tasa de Cancelación (Churn)', value: `${churnRate}%`, icon: ArrowDownRight, sub: `${cancelledMembers} canceladas`, color: 'red' },
                     { label: 'Total Membresías', value: totalMembers, icon: CreditCard, sub: `${activeMembers} activas`, color: 'green' },
                 ].map((stat) => (
                     <div key={stat.label} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
@@ -70,75 +72,8 @@ export default async function MembershipsPage() {
                 ))}
             </div>
 
-            {/* Plan Breakdown */}
-            <div className="grid grid-cols-1 gap-8">
-                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="p-6 border-b border-gray-50 flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <Package size={20} className="text-primary" />
-                            Próximas Renovaciones
-                        </h3>
-                        <div className="flex gap-2">
-                            <button className="text-xs font-bold px-3 py-1.5 bg-gray-100 rounded-lg hover:bg-gray-200 transition">Esta Semana</button>
-                            <button className="text-xs font-bold px-3 py-1.5 text-gray-400">Próximo Mes</button>
-                        </div>
-                    </div>
-
-                    <table className="w-full text-left font-medium">
-                        <thead>
-                            <tr className="bg-gray-50/50">
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Usuario</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Plan</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Expira en</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Estado</th>
-                                <th className="px-6 py-4 text-right"></th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                            {withStatus.slice(0, 10).map((m, index) => (
-                                    <tr key={`${m.id}-${index}`} className="hover:bg-gray-50/30 transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div>
-                                                    <p className="text-sm font-bold text-gray-900">{m.contact_real_name || m.contact_push_name || 'Sin nombre'}</p>
-                                                    <p className="text-[10px] text-gray-400">{m.contact_phone}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="bg-primary/5 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                                                {m.plan}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-xs">
-                                            <div className={cn("flex items-center gap-1.5 font-bold", m.daysLeft > 0 ? 'text-green-600' : 'text-red-500')}>
-                                                <Calendar size={14} />
-                                                <span>{m.daysLeft} días</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={cn(
-                                                "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                                                m.effectiveStatus === 'active' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'
-                                            )}>
-                                                {m.effectiveStatus === 'active' ? 'Activa' : 'Expirada'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button className="p-2 text-gray-400 hover:text-primary transition-colors">
-                                                <RefreshCcw size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                        </tbody>
-                    </table>
-
-                    <div className="p-4 bg-gray-50/50 text-center">
-                        <button className="text-xs font-bold text-gray-500 hover:text-black transition">Ver todas las suscripciones ({totalMembers})</button>
-                    </div>
-                </div>
-            </div>
+            {/* Memberships Table */}
+            <MembershipsTable memberships={withStatus} />
         </div>
     )
 }

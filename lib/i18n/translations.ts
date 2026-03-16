@@ -12,7 +12,7 @@ type TranslationDict = Record<string, string>
 const es: TranslationDict = {
     // Navigation
     'nav.finance': 'Finanzas',
-    'nav.agents': 'Agentes Virtuales',
+    'nav.agents': 'Agentes IA',
     'nav.projects': 'Proyectos',
     'nav.myTeams': 'Mis Equipos',
     'nav.goals': 'Metas',
@@ -38,6 +38,96 @@ const es: TranslationDict = {
     'settings.save': 'Guardar Cambios',
     'settings.saved': 'Configuración actualizada exitosamente',
     'settings.error': 'Error al actualizar la configuración',
+
+    // Finance page
+    'finance.title': 'Panel Financiero',
+    'finance.totalIncome': 'Ingresos Totales',
+    'finance.expenses': 'Gastos',
+    'finance.netIncome': 'Ingreso Neto',
+    'finance.filteredByProject': 'Filtrado por Proyecto',
+    'finance.allProjects': 'Todos los Proyectos',
+    'finance.recentTransactions': 'Transacciones Recientes',
+    'finance.importExcel': 'Importar Excel',
+    'finance.uploadReceipt': 'Subir Recibo',
+    'finance.addTransaction': 'Agregar Transacción',
+
+    // Finance charts
+    'chart.cashFlow': 'Flujo de Caja Mensual',
+    'chart.cashFlowDesc': 'Ingresos vs Gastos a lo largo del tiempo',
+    'chart.income': 'Ingresos',
+    'chart.expense': 'Gastos',
+    'chart.month': 'Mes',
+    'chart.expenseByCategory': 'Gastos por Categoría',
+    'chart.expenseByCategoryDesc': 'Hacia dónde va el dinero',
+    'chart.netWorth': 'Evolución del Patrimonio Neto',
+    'chart.netWorthDesc': 'Ingreso neto acumulado a lo largo del tiempo',
+    'chart.incomeBySource': 'Ingresos por Fuente',
+    'chart.incomeBySourceDesc': 'Distribución de ingresos por proyecto o empresa',
+
+    // Transactions page
+    'transactions.title': 'Transacciones',
+    'transactions.subtitle': 'Sigue tus ingresos y egresos registrados por Nova.',
+    'transactions.export': 'Exportar',
+    'transactions.newTransaction': 'Nueva Transacción',
+    'transactions.totalIncome': 'Ingresos Totales',
+    'transactions.totalExpenses': 'Gastos Totales',
+    'transactions.searchPlaceholder': 'Buscar por descripción, categoría o fecha...',
+    'transactions.description': 'Descripción',
+    'transactions.category': 'Categoría',
+    'transactions.amount': 'Monto',
+    'transactions.date': 'Fecha',
+    'transactions.noDescription': 'Sin descripción',
+    'transactions.personal': 'Personal',
+    'transactions.general': 'General',
+    'transactions.empty': 'Sin movimientos registrados',
+    'transactions.emptyHint': '¿Qué tal si le cuentas a Nova sobre tu último gasto?',
+    'transactions.errorLoading': 'Error cargando transacciones',
+
+    // Goals page
+    'goals.title': 'Metas y OKRs',
+    'goals.subtitle': 'Sigue tus objetivos estratégicos y resultados clave con Nova.',
+    'goals.objectives': 'objetivos',
+    'goals.completed': 'completados',
+    'goals.defineFirst': '¡Define tu primer objetivo!',
+    'goals.defineFirstHint': 'Empieza definiendo qué quieres lograr en los próximos 90 días. Nova te ayudará a mantener el foco.',
+    'goals.activeGoals': 'objetivo(s) activo(s). Nova puede ayudarte a definir resultados clave para avanzar más rápido.',
+    'goals.allCompleted': '¡Felicidades! Todos tus objetivos están completados. ¿Listos para los siguientes?',
+    'goals.createFirst': 'Crear primer objetivo',
+    'goals.talkToNova': 'Hablar con Nova',
+    'goals.defineYourFirst': 'Define tu primer objetivo',
+    'goals.whatToAchieve': '¿Qué quieres lograr en los próximos 90 días?',
+    'goals.couldNotLoad': 'No se pudo cargar la empresa.',
+
+    // My Teams page
+    'teams.title': 'Mis Equipos',
+    'teams.subtitle': 'Todos los proyectos y equipos a los que perteneces.',
+    'teams.teams': 'Equipos',
+    'teams.asOwner': 'Como Owner',
+    'teams.collaborator': 'Colaborador',
+    'teams.member': 'miembro',
+    'teams.members': 'miembros',
+    'teams.noTeams': 'No perteneces a ningún equipo aún',
+    'teams.noTeamsHint': 'Cuando alguien te invite a un proyecto, aparecerá aquí.',
+    'teams.kindBusiness': 'Empresa',
+    'teams.kindFamily': 'Familia',
+    'teams.kindProject': 'Proyecto',
+    'teams.kindPersonal': 'Personal',
+    'teams.kindOther': 'Otro',
+    'teams.roleOwner': 'Propietario',
+    'teams.roleEditor': 'Editor',
+    'teams.roleViewer': 'Visualizador',
+
+    // Branding page
+    'branding.title': 'Mi Marca Personal',
+    'branding.subtitle': 'Configura tu identidad de marca personal',
+    'branding.errorNotFound': 'Error: No se encontró la empresa.',
+
+    // Profile page
+    'profile.errorNotFound': 'Error: Contact not found',
+    'profile.errorHint': 'No se pudo encontrar tu registro de contacto. Por favor, contacta a soporte.',
+
+    // Projects
+    'projects.notFound': 'Empresa no encontrada',
 
     // Invite modals
     'invite.title': 'Invitar Usuario',
@@ -91,9 +181,6 @@ const es: TranslationDict = {
     'invite.fillRequired': 'Por favor completa todos los campos requeridos',
     'invite.success': 'Usuario invitado exitosamente',
     'invite.selectModule': 'Selecciona al menos un módulo',
-    'invite.cancelInvite': '¿Estás seguro de cancelar esta invitación?',
-    'invite.removeMember': '¿Estás seguro de eliminar a este miembro del proyecto?',
-    'invite.cancelBtn': 'Cancelar',
 
     // Corporate modules
     'module.dashboard': 'Dashboard',
@@ -116,7 +203,7 @@ const es: TranslationDict = {
 const en: TranslationDict = {
     // Navigation
     'nav.finance': 'Finance',
-    'nav.agents': 'Virtual Agents',
+    'nav.agents': 'AI Agents',
     'nav.projects': 'Projects',
     'nav.myTeams': 'My Teams',
     'nav.goals': 'Goals',
@@ -142,6 +229,96 @@ const en: TranslationDict = {
     'settings.save': 'Save Changes',
     'settings.saved': 'Settings updated successfully',
     'settings.error': 'Error updating settings',
+
+    // Finance page
+    'finance.title': 'Financial Dashboard',
+    'finance.totalIncome': 'Total Income',
+    'finance.expenses': 'Expenses',
+    'finance.netIncome': 'Net Income',
+    'finance.filteredByProject': 'Filtered by Project',
+    'finance.allProjects': 'All Projects',
+    'finance.recentTransactions': 'Recent Transactions',
+    'finance.importExcel': 'Import Excel',
+    'finance.uploadReceipt': 'Upload Receipt',
+    'finance.addTransaction': 'Add Transaction',
+
+    // Finance charts
+    'chart.cashFlow': 'Monthly Cash Flow',
+    'chart.cashFlowDesc': 'Income vs Expenses over time',
+    'chart.income': 'Income',
+    'chart.expense': 'Expenses',
+    'chart.month': 'Month',
+    'chart.expenseByCategory': 'Expenses by Category',
+    'chart.expenseByCategoryDesc': 'Where the money goes',
+    'chart.netWorth': 'Net Worth Evolution',
+    'chart.netWorthDesc': 'Cumulative net income over time',
+    'chart.incomeBySource': 'Income by Source',
+    'chart.incomeBySourceDesc': 'Income distribution by project or company',
+
+    // Transactions page
+    'transactions.title': 'Transactions',
+    'transactions.subtitle': 'Track your income and expenses recorded by Nova.',
+    'transactions.export': 'Export',
+    'transactions.newTransaction': 'New Transaction',
+    'transactions.totalIncome': 'Total Income',
+    'transactions.totalExpenses': 'Total Expenses',
+    'transactions.searchPlaceholder': 'Search by description, category, or date...',
+    'transactions.description': 'Description',
+    'transactions.category': 'Category',
+    'transactions.amount': 'Amount',
+    'transactions.date': 'Date',
+    'transactions.noDescription': 'No description',
+    'transactions.personal': 'Personal',
+    'transactions.general': 'General',
+    'transactions.empty': 'No transactions recorded',
+    'transactions.emptyHint': 'How about telling Nova about your latest expense?',
+    'transactions.errorLoading': 'Error loading transactions',
+
+    // Goals page
+    'goals.title': 'Goals & OKRs',
+    'goals.subtitle': 'Track your strategic objectives and key results with Nova.',
+    'goals.objectives': 'objectives',
+    'goals.completed': 'completed',
+    'goals.defineFirst': 'Define your first objective!',
+    'goals.defineFirstHint': 'Start by defining what you want to achieve in the next 90 days. Nova will help you stay focused.',
+    'goals.activeGoals': 'active goal(s). Nova can help you define key results to move faster.',
+    'goals.allCompleted': 'Congratulations! All your goals are completed. Ready for the next ones?',
+    'goals.createFirst': 'Create first goal',
+    'goals.talkToNova': 'Talk to Nova',
+    'goals.defineYourFirst': 'Define your first goal',
+    'goals.whatToAchieve': 'What do you want to achieve in the next 90 days?',
+    'goals.couldNotLoad': 'Could not load company.',
+
+    // My Teams page
+    'teams.title': 'My Teams',
+    'teams.subtitle': 'All the projects and teams you belong to.',
+    'teams.teams': 'Teams',
+    'teams.asOwner': 'As Owner',
+    'teams.collaborator': 'Collaborator',
+    'teams.member': 'member',
+    'teams.members': 'members',
+    'teams.noTeams': 'You don\'t belong to any team yet',
+    'teams.noTeamsHint': 'When someone invites you to a project, it will appear here.',
+    'teams.kindBusiness': 'Business',
+    'teams.kindFamily': 'Family',
+    'teams.kindProject': 'Project',
+    'teams.kindPersonal': 'Personal',
+    'teams.kindOther': 'Other',
+    'teams.roleOwner': 'Owner',
+    'teams.roleEditor': 'Editor',
+    'teams.roleViewer': 'Viewer',
+
+    // Branding page
+    'branding.title': 'My Personal Brand',
+    'branding.subtitle': 'Configure your personal brand identity',
+    'branding.errorNotFound': 'Error: Company not found.',
+
+    // Profile page
+    'profile.errorNotFound': 'Error: Contact not found',
+    'profile.errorHint': 'Could not find your contact record. Please contact support.',
+
+    // Projects
+    'projects.notFound': 'Company not found',
 
     // Invite modals
     'invite.title': 'Invite User',
@@ -195,9 +372,6 @@ const en: TranslationDict = {
     'invite.fillRequired': 'Please complete all required fields',
     'invite.success': 'User invited successfully',
     'invite.selectModule': 'Select at least one module',
-    'invite.cancelInvite': 'Are you sure you want to cancel this invitation?',
-    'invite.removeMember': 'Are you sure you want to remove this project member?',
-    'invite.cancelBtn': 'Cancel',
 
     // Corporate modules
     'module.dashboard': 'Dashboard',

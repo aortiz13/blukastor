@@ -3,6 +3,7 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils/currency"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 
 interface ProjectIncomeChartProps {
     data: { name: string, value: number }[]
@@ -10,11 +11,12 @@ interface ProjectIncomeChartProps {
 }
 
 export function ProjectIncomeChart({ data, currency }: ProjectIncomeChartProps) {
+    const { t } = useTranslation()
     return (
         <Card className="col-span-3 lg:col-span-3">
             <CardHeader>
-                <CardTitle>Ingresos por Fuente</CardTitle>
-                <CardDescription>Distribución de ingresos por proyecto o empresa</CardDescription>
+                <CardTitle>{t('chart.incomeBySource')}</CardTitle>
+                <CardDescription>{t('chart.incomeBySourceDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={350}>

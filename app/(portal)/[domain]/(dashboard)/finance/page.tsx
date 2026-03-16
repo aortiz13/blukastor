@@ -1,9 +1,7 @@
 import { getCompanyByDomain } from '@/lib/data/companies'
 import { createClient } from '@/lib/supabase/server'
 import { getFinancialStats, getTransactions, getProjects, getUniqueCategories, getDashboardChartsData } from '@/lib/actions/finance'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { DollarSign, TrendingUp, TrendingDown } from 'lucide-react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { TransactionForm } from './_components/TransactionForm'
 import { TransactionTable } from './_components/TransactionTable'
 import { ProjectFilter } from './_components/ProjectFilter'
@@ -13,6 +11,7 @@ import { CashFlowChart } from './_components/charts/CashFlowChart'
 import { ExpensePieChart } from './_components/charts/ExpensePieChart'
 import { NetWorthChart } from './_components/charts/NetWorthChart'
 import { ProjectIncomeChart } from './_components/charts/ProjectIncomeChart'
+import { FinancePageClient, TransactionsCardHeader } from './_components/FinancePageClient'
 
 export default async function FinancePage({
     params,
@@ -34,11 +33,11 @@ export default async function FinancePage({
     const company = await getCompanyByDomain(supabase, domain)
     console.log('[FinancePage] Resolved Company:', company?.id, company?.name)
 
-    if (!company) return <div>Empresa no encontrada</div>
+    if (!company) return <div>Company not found</div>
 
     // Prepare search params for transactions
     const transactionParams = {
-        limit: 100, // Fetch more for the table
+        limit: 100,
         projectId,
         startDate: resolvedSearchParams?.startDate as string,
         endDate: resolvedSearchParams?.endDate as string,
@@ -63,63 +62,19 @@ export default async function FinancePage({
     const companyCurrency = company.currency || 'USD'
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Panel Financiero</h2>
-                <div className="flex items-center space-x-2">
+        <FinancePageClient
+            companyCurrency={companyCurrency}
+            stats={stats}
+            projectId={projectId}
+            toolbar={
+                <>
                     <ProjectFilter projects={projects || []} />
                     <ExcelBulkUpload companyId={company.id} userId={userId} companyCurrency={companyCurrency} />
                     <ReceiptUpload companyId={company.id} userId={userId} companyCurrency={companyCurrency} />
                     <TransactionForm companyId={company.id} userId={userId} companyCurrency={companyCurrency} />
-                </div>
-            </div>
-
-            {/* KPI Cards */}
-            <div className="grid gap-4 md:grid-cols-3">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Ingresos Totales ({companyCurrency})</CardTitle>
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-green-600">
-                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: companyCurrency }).format(stats.revenue)}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                            {projectId ? 'Filtrado por Proyecto' : 'Todos los Proyectos'}
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Gastos ({companyCurrency})</CardTitle>
-                        <TrendingDown className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-red-600">
-                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: companyCurrency }).format(stats.expenses)}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                            {projectId ? 'Filtered by Project' : 'All Projects'}
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Ingreso Neto ({companyCurrency})</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className={`text-2xl font-bold ${stats.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: companyCurrency }).format(stats.netIncome)}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                            {projectId ? 'Filtered by Project' : 'All Projects'}
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-
+                </>
+            }
+        >
             {/* Charts Section 1: Cash Flow & Expenses */}
             <div className="grid gap-4 md:grid-cols-7">
                 {chartData && <CashFlowChart data={chartData.cashFlowData} currency={companyCurrency} />}
@@ -132,10 +87,10 @@ export default async function FinancePage({
                 {chartData && <ProjectIncomeChart data={chartData.projectData} currency={companyCurrency} />}
             </div>
 
-            {/* Recent Transactions Table (Full Width) */}
+            {/* Recent Transactions Table */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Transacciones Recientes</CardTitle>
+                    <TransactionsCardHeader />
                 </CardHeader>
                 <CardContent>
                     <TransactionTable
@@ -145,6 +100,6 @@ export default async function FinancePage({
                     />
                 </CardContent>
             </Card>
-        </div>
+        </FinancePageClient>
     )
 }

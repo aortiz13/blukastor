@@ -3,6 +3,7 @@
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils/currency"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 
 interface CashFlowChartProps {
     data: { name: string, income: number, expense: number }[]
@@ -10,11 +11,12 @@ interface CashFlowChartProps {
 }
 
 export function CashFlowChart({ data, currency }: CashFlowChartProps) {
+    const { t } = useTranslation()
     return (
         <Card className="col-span-4">
             <CardHeader>
-                <CardTitle>Flujo de Caja Mensual</CardTitle>
-                <CardDescription>Ingresos vs Gastos a lo largo del tiempo</CardDescription>
+                <CardTitle>{t('chart.cashFlow')}</CardTitle>
+                <CardDescription>{t('chart.cashFlowDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
                 <ResponsiveContainer width="100%" height={350}>
@@ -36,11 +38,11 @@ export function CashFlowChart({ data, currency }: CashFlowChartProps) {
                         />
                         <Tooltip
                             formatter={(value: any) => formatCurrency(Number(value), currency)}
-                            labelFormatter={(label) => `Mes: ${label}`}
+                            labelFormatter={(label) => `${t('chart.month')}: ${label}`}
                         />
                         <Legend />
-                        <Bar dataKey="income" name="Ingresos" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="expense" name="Gastos" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="income" name={t('chart.income')} fill="#22c55e" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="expense" name={t('chart.expense')} fill="#ef4444" radius={[4, 4, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
             </CardContent>

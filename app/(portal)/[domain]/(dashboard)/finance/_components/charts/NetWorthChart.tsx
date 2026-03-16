@@ -4,6 +4,7 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils/currency"
 import { format } from "date-fns"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 
 interface NetWorthChartProps {
     data: { date: string, value: number }[]
@@ -11,11 +12,12 @@ interface NetWorthChartProps {
 }
 
 export function NetWorthChart({ data, currency }: NetWorthChartProps) {
+    const { t } = useTranslation()
     return (
         <Card className="col-span-4 lg:col-span-4">
             <CardHeader>
-                <CardTitle>Evolución del Patrimonio Neto</CardTitle>
-                <CardDescription>Ingreso neto acumulado a lo largo del tiempo</CardDescription>
+                <CardTitle>{t('chart.netWorth')}</CardTitle>
+                <CardDescription>{t('chart.netWorthDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
                 <ResponsiveContainer width="100%" height={350}>

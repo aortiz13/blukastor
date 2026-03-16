@@ -10,7 +10,7 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // Resolve admin's company
+        // Verify admin access
         const { data: admins } = await supabase
             .from('admin_profiles')
             .select('company_id, role, scope')
@@ -18,21 +18,6 @@ export async function GET(request: Request) {
 
         if (!admins || admins.length === 0) {
             return NextResponse.json({ error: 'No admin access' }, { status: 403 })
-        }
-
-        const isSuperAdmin = admins.some((a: any) => a.scope === 'global' || a.role === 'super_admin')
-        let companyId: string | null = null
-        if (isSuperAdmin) {
-            const { cookies } = await import('next/headers')
-            const cookieStore = await cookies()
-            companyId = cookieStore.get('corporate_company_id')?.value || null
-        }
-        if (!companyId) {
-            const instanceAdmin = admins.find((a: any) => a.company_id)
-            companyId = instanceAdmin?.company_id || null
-        }
-        if (!companyId) {
-            return NextResponse.json({ error: 'No company found' }, { status: 403 })
         }
 
         const { searchParams } = new URL(request.url)
@@ -43,24 +28,46 @@ export async function GET(request: Request) {
 
         const serviceClient = createServiceClient()
 
-        // Fetch contact
-        const { data: contact } = await serviceClient
+        // Try to find the contact — could be wa.contacts.id or auth.users.id (user_id)
+        let contact: any = null
+
+        // 1. Try direct lookup by contact id
+        const { data: directContact } = await serviceClient
+            .schema('wa')
             .from('contacts')
             .select('*')
             .eq('id', contactId)
-            .eq('client_company_id', companyId)
-            .single()
+            .maybeSingle()
+
+        if (directContact) {
+            contact = directContact
+        } else {
+            // 2. Try lookup by auth user_id
+            const { data: userContact } = await serviceClient
+                .schema('wa')
+                .from('contacts')
+                .select('*')
+                .eq('user_id', contactId)
+                .limit(1)
+                .maybeSingle()
+
+            if (userContact) {
+                contact = userContact
+            }
+        }
 
         if (!contact) {
             return NextResponse.json({ error: 'Contact not found' }, { status: 404 })
         }
+
+        const companyId = contact.client_company_id
 
         // Fetch membership
         const { data: membership } = await serviceClient
             .schema('wa')
             .from('memberships')
             .select('plan, status, started_at, expires_at, notes')
-            .eq('contact_id', contactId)
+            .eq('contact_id', contact.id)
             .eq('client_company_id', companyId)
             .order('started_at', { ascending: false })
             .limit(1)
@@ -70,7 +77,7 @@ export async function GET(request: Request) {
         const { data: compliance } = await serviceClient
             .from('user_compliance')
             .select('terms_accepted, accepted_at')
-            .eq('contact_id', contactId)
+            .eq('contact_id', contact.id)
             .eq('client_company_id', companyId)
             .limit(1)
             .maybeSingle()
@@ -79,7 +86,7 @@ export async function GET(request: Request) {
         const { data: aiStatus } = await serviceClient
             .from('ai_enabled')
             .select('ai_enabled')
-            .eq('contact_id', contactId)
+            .eq('contact_id', contact.id)
             .eq('company_id', companyId)
             .maybeSingle()
 

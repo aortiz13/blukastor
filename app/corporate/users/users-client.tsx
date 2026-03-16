@@ -200,8 +200,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                             <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Primera Visita</th>
                             <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Última Actividad</th>
                             <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Membresía</th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tags</th>
-                            <th className="px-6 py-4 w-10"></th>
+                            <th className="px-6 py-4 w-12"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -270,16 +269,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                             <span className="text-xs text-gray-300">—</span>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-wrap gap-1">
-                                            {contact.tags?.slice(0, 3).map((tag: string) => (
-                                                <span key={tag} className="px-2 py-0.5 rounded-full bg-gray-100 text-[10px] text-gray-500 font-medium">
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-4 py-4 text-right">
                                         <UserActionsMenu
                                             contactId={contact.id}
                                             contactName={contact.push_name || contact.nickname || contact.phone || 'Sin nombre'}

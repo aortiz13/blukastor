@@ -21,22 +21,9 @@ export async function POST(request: Request) {
         }
 
         const isSuperAdmin = admins.some((a: any) => a.scope === 'global' || a.role === 'super_admin')
-        let companyId: string | null = null
-        if (isSuperAdmin) {
-            const { cookies } = await import('next/headers')
-            const cookieStore = await cookies()
-            companyId = cookieStore.get('corporate_company_id')?.value || null
-        }
-        if (!companyId) {
-            const instanceAdmin = admins.find((a: any) => a.company_id)
-            companyId = instanceAdmin?.company_id || null
-        }
-        if (!companyId) {
-            return NextResponse.json({ error: 'No company found' }, { status: 403 })
-        }
 
         const body = await request.json()
-        const { contactId, enabled } = body
+        const { contactId, enabled, companyId: bodyCompanyId } = body
 
         if (!contactId || typeof enabled !== 'boolean') {
             return NextResponse.json({ error: 'contactId and enabled (boolean) required' }, { status: 400 })
@@ -44,24 +31,64 @@ export async function POST(request: Request) {
 
         const serviceClient = createServiceClient()
 
-        // Get phone from contact
-        const { data: contact } = await serviceClient
+        // Try to find the contact — could be wa.contacts.id or auth.users.id (user_id)
+        let contact: any = null
+        let resolvedCompanyId: string | null = bodyCompanyId || null
+
+        // 1. Try direct lookup by contact id
+        const { data: directContact } = await serviceClient
+            .schema('wa')
             .from('contacts')
-            .select('phone')
+            .select('id, phone, client_company_id')
             .eq('id', contactId)
-            .eq('client_company_id', companyId)
-            .single()
+            .maybeSingle()
+
+        if (directContact) {
+            contact = directContact
+            resolvedCompanyId = resolvedCompanyId || directContact.client_company_id
+        } else {
+            // 2. Try lookup by auth user_id (the userId is an auth.users.id)
+            const { data: userContact } = await serviceClient
+                .schema('wa')
+                .from('contacts')
+                .select('id, phone, client_company_id')
+                .eq('user_id', contactId)
+                .limit(1)
+                .maybeSingle()
+
+            if (userContact) {
+                contact = userContact
+                resolvedCompanyId = resolvedCompanyId || userContact.client_company_id
+            }
+        }
 
         if (!contact) {
             return NextResponse.json({ error: 'Contact not found' }, { status: 404 })
+        }
+
+        if (!resolvedCompanyId) {
+            // Fallback: resolve from admin profile
+            if (isSuperAdmin) {
+                const { cookies } = await import('next/headers')
+                const cookieStore = await cookies()
+                resolvedCompanyId = cookieStore.get('corporate_company_id')?.value || null
+            }
+            if (!resolvedCompanyId) {
+                const instanceAdmin = admins.find((a: any) => a.company_id)
+                resolvedCompanyId = instanceAdmin?.company_id || null
+            }
+        }
+
+        if (!resolvedCompanyId) {
+            return NextResponse.json({ error: 'No company found' }, { status: 403 })
         }
 
         // Upsert ai_enabled row
         const { error: upsertError } = await serviceClient
             .from('ai_enabled')
             .upsert({
-                contact_id: contactId,
-                company_id: companyId,
+                contact_id: contact.id,
+                company_id: resolvedCompanyId,
                 ai_enabled: enabled,
                 phone: contact.phone,
                 updated_by: 'corporate_admin',

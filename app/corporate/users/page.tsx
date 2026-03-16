@@ -113,6 +113,7 @@ export default async function CorporateUsersPage() {
                     membershipMap={membershipMap}
                     companyName={activeCompany.companyName}
                     companyPortalUrl={companyPortalUrl}
+                    companyId={activeCompany.companyId}
                 />
         </div>
     )

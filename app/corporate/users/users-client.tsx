@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import {
-    Search, Phone, Calendar, Tag, ChevronRight, Users,
+    Search, Phone, Calendar, Tag, Users,
     MessageCircle, Check, X, Loader2, CheckCircle2, XCircle, AlertCircle
 } from 'lucide-react'
+import UserActionsMenu from './user-actions-menu'
 
 interface Contact {
     id: string
@@ -31,6 +33,7 @@ interface UsersClientProps {
     membershipMap: Record<string, Membership>
     companyName: string
     companyPortalUrl: string
+    companyId: string
 }
 
 interface InviteResult {
@@ -41,7 +44,8 @@ interface InviteResult {
     message?: string
 }
 
-export default function UsersClient({ contacts, membershipMap, companyName, companyPortalUrl }: UsersClientProps) {
+export default function UsersClient({ contacts, membershipMap, companyName, companyPortalUrl, companyId }: UsersClientProps) {
+    const router = useRouter()
     const [search, setSearch] = useState('')
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const [showConfirm, setShowConfirm] = useState(false)
@@ -276,9 +280,12 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <Link href={`/corporate/users/${contact.id}`} className="text-gray-300 group-hover:text-gray-500 transition-colors">
-                                            <ChevronRight size={16} />
-                                        </Link>
+                                        <UserActionsMenu
+                                            contactId={contact.id}
+                                            contactName={contact.push_name || contact.nickname || contact.phone || 'Sin nombre'}
+                                            companyId={companyId}
+                                            onDeleted={() => router.refresh()}
+                                        />
                                     </td>
                                 </tr>
                             )

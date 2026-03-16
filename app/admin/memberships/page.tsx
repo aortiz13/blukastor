@@ -15,9 +15,19 @@ export default async function MembershipsPage() {
         return <div className="p-8 text-red-500">Error cargando membresías: {error.message}</div>
     }
 
-    const totalMRR = memberships?.reduce((acc, m) => acc + (m.price || 0), 0) || 0
-    const activeMembers = memberships?.filter(m => m.effective_status === 'active').length || 0
-    const churnRate = 4.2 // Simulated
+    // Compute effective status: active only if status='active' AND not expired
+    const now = new Date()
+    const withStatus = memberships?.map(m => {
+        const expiresAt = new Date(m.expires_at)
+        const isActive = m.status === 'active' && expiresAt > now
+        const daysLeft = Math.floor((expiresAt.getTime() - now.getTime()) / (1000 * 3600 * 24))
+        return { ...m, effectiveStatus: isActive ? 'active' : 'expired', daysLeft }
+    }) || []
+
+    const activeMembers = withStatus.filter(m => m.effectiveStatus === 'active').length
+    const expiredMembers = withStatus.filter(m => m.effectiveStatus === 'expired').length
+    const totalMembers = withStatus.length
+    const churnRate = totalMembers > 0 ? ((expiredMembers / totalMembers) * 100).toFixed(1) : '0'
 
     return (
         <div className="space-y-8">
@@ -30,7 +40,7 @@ export default async function MembershipsPage() {
                     <BulkActivateButton />
                     <div className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg shadow-green-600/20 flex items-center gap-2">
                         <TrendingUp size={20} />
-                        <span>MRR: ${totalMRR.toLocaleString()}</span>
+                        <span>{activeMembers} activas</span>
                     </div>
                 </div>
             </div>
@@ -38,9 +48,9 @@ export default async function MembershipsPage() {
             {/* Subscription Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                    { label: 'Suscripciones Activas', value: activeMembers, icon: Users, sub: '+5.2%', color: 'blue' },
-                    { label: 'Tasa de Cancelación (Churn)', value: `${churnRate}%`, icon: ArrowDownRight, sub: '-1.1%', color: 'red' },
-                    { label: 'Ingresos Mensuales Estimados', value: `$${totalMRR.toLocaleString()}`, icon: CreditCard, sub: '+8.4%', color: 'green' },
+                    { label: 'Suscripciones Activas', value: activeMembers, icon: Users, sub: `${totalMembers} total`, color: 'blue' },
+                    { label: 'Tasa de Cancelación (Churn)', value: `${churnRate}%`, icon: ArrowDownRight, sub: `${expiredMembers} expiradas`, color: 'red' },
+                    { label: 'Total Membresías', value: totalMembers, icon: CreditCard, sub: `${activeMembers} activas`, color: 'green' },
                 ].map((stat) => (
                     <div key={stat.label} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
                         <div className="flex justify-between items-start mb-4">
@@ -52,10 +62,7 @@ export default async function MembershipsPage() {
                             )}>
                                 <stat.icon size={20} />
                             </div>
-                            <span className={cn(
-                                "text-xs font-bold px-2 py-1 rounded-full",
-                                stat.sub.startsWith('+') ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"
-                            )}>{stat.sub}</span>
+                            <span className="text-xs font-bold px-2 py-1 rounded-full text-gray-500 bg-gray-50">{stat.sub}</span>
                         </div>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{stat.label}</p>
                         <p className="text-2xl font-black text-gray-900 mt-1">{stat.value}</p>
@@ -83,19 +90,17 @@ export default async function MembershipsPage() {
                                 <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Usuario</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Plan</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Expira en</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Monto</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Estado</th>
                                 <th className="px-6 py-4 text-right"></th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {memberships?.slice(0, 10).map((m, index) => {
-                                const daysLeft = Math.floor((new Date(m.expires_at).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
-                                return (
-                                    <tr key={`${m.membership_id}-${index}`} className="hover:bg-gray-50/30 transition-colors group">
+                            {withStatus.slice(0, 10).map((m, index) => (
+                                    <tr key={`${m.id}-${index}`} className="hover:bg-gray-50/30 transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div>
-                                                    <p className="text-sm font-bold text-gray-900">{m.contact_real_name || m.contact_push_name}</p>
+                                                    <p className="text-sm font-bold text-gray-900">{m.contact_real_name || m.contact_push_name || 'Sin nombre'}</p>
                                                     <p className="text-[10px] text-gray-400">{m.contact_phone}</p>
                                                 </div>
                                             </div>
@@ -106,13 +111,18 @@ export default async function MembershipsPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-xs">
-                                            <div className="flex items-center gap-1.5 text-orange-600 font-bold">
+                                            <div className={cn("flex items-center gap-1.5 font-bold", m.daysLeft > 0 ? 'text-green-600' : 'text-red-500')}>
                                                 <Calendar size={14} />
-                                                <span>{daysLeft} días</span>
+                                                <span>{m.daysLeft} días</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-sm font-mono font-bold text-gray-900">
-                                            ${m.price?.toLocaleString()}
+                                        <td className="px-6 py-4">
+                                            <span className={cn(
+                                                "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                                                m.effectiveStatus === 'active' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'
+                                            )}>
+                                                {m.effectiveStatus === 'active' ? 'Activa' : 'Expirada'}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <button className="p-2 text-gray-400 hover:text-primary transition-colors">
@@ -120,13 +130,12 @@ export default async function MembershipsPage() {
                                             </button>
                                         </td>
                                     </tr>
-                                )
-                            })}
+                                ))}
                         </tbody>
                     </table>
 
                     <div className="p-4 bg-gray-50/50 text-center">
-                        <button className="text-xs font-bold text-gray-500 hover:text-black transition">Ver todas las suscripciones (241)</button>
+                        <button className="text-xs font-bold text-gray-500 hover:text-black transition">Ver todas las suscripciones ({totalMembers})</button>
                     </div>
                 </div>
             </div>

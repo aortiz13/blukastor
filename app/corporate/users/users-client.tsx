@@ -187,51 +187,32 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                 <table className="w-full text-left">
                     <thead>
                         <tr className="bg-gray-50 border-b border-gray-100">
-                            <th className="px-4 py-4 w-10">
+                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Usuario</th>
+                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Teléfono</th>
+                            <th className="px-4 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center w-16">
                                 <input
                                     type="checkbox"
                                     checked={allSelectableSelected}
                                     onChange={toggleAll}
                                     className="w-4 h-4 accent-gray-900 rounded cursor-pointer"
+                                    title="Seleccionar todos para WhatsApp"
                                 />
                             </th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Usuario</th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Teléfono</th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Primera Visita</th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Última Actividad</th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Membresía</th>
-                            <th className="px-6 py-4 w-12"></th>
+                            <th className="px-4 py-4 w-12"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {filtered.map((contact) => {
-                            const membership = membershipMap[contact.id]
                             const isSelected = selected.has(contact.id)
                             const canSelect = !!contact.phone
                             return (
                                 <tr
                                     key={contact.id}
                                     className={cn(
-                                        "hover:bg-gray-50/50 transition-colors cursor-pointer group",
+                                        "hover:bg-gray-50/50 transition-colors group",
                                         isSelected && "bg-blue-50/40"
                                     )}
                                 >
-                                    <td className="px-4 py-4">
-                                        {canSelect ? (
-                                            <input
-                                                type="checkbox"
-                                                checked={isSelected}
-                                                onChange={() => toggleSelect(contact.id)}
-                                                className="w-4 h-4 accent-gray-900 rounded cursor-pointer"
-                                            />
-                                        ) : contact.has_portal_access ? (
-                                            <div className="w-4 h-4 flex items-center justify-center" title="Ya registrado en el portal">
-                                                <Check size={14} className="text-green-500" />
-                                            </div>
-                                        ) : (
-                                            <div className="w-4 h-4" />
-                                        )}
-                                    </td>
                                     <td className="px-6 py-4">
                                         <Link href={`/corporate/users/${contact.id}`} className="flex items-center gap-3">
                                             <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm">
@@ -251,22 +232,20 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                         </Link>
                                     </td>
                                     <td className="px-6 py-4 font-mono text-sm text-gray-600">{contact.phone}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">
-                                        {contact.first_seen ? new Date(contact.first_seen).toLocaleDateString() : '—'}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">
-                                        {contact.last_seen ? new Date(contact.last_seen).toLocaleDateString() : '—'}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {membership ? (
-                                            <span className={cn(
-                                                "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                                                membership.status === 'active' ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
-                                            )}>
-                                                {membership.plan}
-                                            </span>
+                                    <td className="px-4 py-4 text-center">
+                                        {canSelect ? (
+                                            <input
+                                                type="checkbox"
+                                                checked={isSelected}
+                                                onChange={() => toggleSelect(contact.id)}
+                                                className="w-4 h-4 accent-gray-900 rounded cursor-pointer"
+                                            />
+                                        ) : contact.has_portal_access ? (
+                                            <div className="w-4 h-4 flex items-center justify-center mx-auto" title="Ya registrado en el portal">
+                                                <Check size={14} className="text-green-500" />
+                                            </div>
                                         ) : (
-                                            <span className="text-xs text-gray-300">—</span>
+                                            <div className="w-4 h-4" />
                                         )}
                                     </td>
                                     <td className="px-4 py-4 text-right">

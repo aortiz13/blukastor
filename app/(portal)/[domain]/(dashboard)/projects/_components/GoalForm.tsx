@@ -24,6 +24,7 @@ import {
 import { Plus, Loader2 } from "lucide-react"
 import { upsertGoal } from '@/lib/actions/projects'
 import { toast } from 'sonner'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface GoalFormProps {
     projectId: string
@@ -34,6 +35,7 @@ interface GoalFormProps {
 export function GoalForm({ projectId, goal, onSuccess }: GoalFormProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const { t } = useTranslation()
 
     async function handleSubmit(formData: FormData) {
         setLoading(true)
@@ -51,11 +53,11 @@ export function GoalForm({ projectId, goal, onSuccess }: GoalFormProps) {
                 priority,
                 deadline: deadline || undefined,
             })
-            toast.success(goal ? 'Meta actualizada' : 'Meta creada')
+            toast.success(goal ? t('goalForm.updated') : t('goalForm.created'))
             setOpen(false)
             if (onSuccess) onSuccess()
         } catch (error: any) {
-            toast.error(error.message || 'Error al guardar meta')
+            toast.error(error.message || t('goalForm.saveError'))
         } finally {
             setLoading(false)
         }
@@ -65,47 +67,47 @@ export function GoalForm({ projectId, goal, onSuccess }: GoalFormProps) {
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {goal ? (
-                    <Button variant="ghost" size="sm">Editar</Button>
+                    <Button variant="ghost" size="sm">{t('goalForm.edit')}</Button>
                 ) : (
                     <Button size="sm">
-                        <Plus className="mr-2 h-4 w-4" /> Nueva Meta
+                        <Plus className="mr-2 h-4 w-4" /> {t('goalForm.newGoal')}
                     </Button>
                 )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <form action={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>{goal ? 'Editar Meta' : 'Crear Nueva Meta'}</DialogTitle>
+                        <DialogTitle>{goal ? t('goalForm.editTitle') : t('goalForm.createTitle')}</DialogTitle>
                         <DialogDescription>
-                            Define objetivos claros para tu proyecto.
+                            {t('goalForm.dialogDesc')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="title">Título</Label>
-                            <Input id="title" name="title" defaultValue={goal?.title} placeholder="Ej: Lanzar MVP, Alcanzar 100 clientes" required />
+                            <Label htmlFor="title">{t('goalForm.title')}</Label>
+                            <Input id="title" name="title" defaultValue={goal?.title} placeholder={t('goalForm.titlePlaceholder')} required />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="description">Descripción</Label>
-                            <Textarea id="description" name="description" defaultValue={goal?.description} placeholder="Detalles sobre cómo alcanzar esta meta" />
+                            <Label htmlFor="description">{t('goalForm.description')}</Label>
+                            <Textarea id="description" name="description" defaultValue={goal?.description} placeholder={t('goalForm.descPlaceholder')} />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="priority">Prioridad</Label>
+                                <Label htmlFor="priority">{t('goalForm.priority')}</Label>
                                 <Select name="priority" defaultValue={goal?.priority || 'medium'}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Seleccionar" />
+                                        <SelectValue placeholder={t('goalForm.selectPriority')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="low">Baja</SelectItem>
-                                        <SelectItem value="medium">Media</SelectItem>
-                                        <SelectItem value="high">Alta</SelectItem>
-                                        <SelectItem value="critical">Crítica</SelectItem>
+                                        <SelectItem value="low">{t('goalForm.low')}</SelectItem>
+                                        <SelectItem value="medium">{t('goalForm.medium')}</SelectItem>
+                                        <SelectItem value="high">{t('goalForm.high')}</SelectItem>
+                                        <SelectItem value="critical">{t('goalForm.critical')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="deadline">Fecha Límite</Label>
+                                <Label htmlFor="deadline">{t('goalForm.deadline')}</Label>
                                 <Input id="deadline" name="deadline" type="date" defaultValue={goal?.deadline ? new Date(goal.deadline).toISOString().split('T')[0] : ''} />
                             </div>
                         </div>
@@ -113,7 +115,7 @@ export function GoalForm({ projectId, goal, onSuccess }: GoalFormProps) {
                     <DialogFooter>
                         <Button type="submit" disabled={loading}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {loading ? 'Guardando...' : 'Guardar Meta'}
+                            {loading ? t('goalForm.saving') : t('goalForm.save')}
                         </Button>
                     </DialogFooter>
                 </form>

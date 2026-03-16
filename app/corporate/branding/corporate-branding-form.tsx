@@ -8,6 +8,7 @@ import {
     Instagram, Facebook, Linkedin, Twitter, Youtube, MessageCircle,
     Eye, X as XIcon, Lock
 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface CorporateBrandingFormProps {
     initialData: Record<string, any>
@@ -151,6 +152,7 @@ function ImageUploadField({ label, value, onChange, assetType, companyId, hint, 
     hint?: string
     disabled?: boolean
 }) {
+    const { t } = useTranslation()
     const [uploading, setUploading] = useState(false)
     const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -159,11 +161,11 @@ function ImageUploadField({ label, value, onChange, assetType, companyId, hint, 
         if (disabled) return
         const allowed = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml', 'image/x-icon']
         if (!allowed.includes(file.type)) {
-            alert('Formato no soportado. Usa PNG, JPG, GIF, WebP o SVG.')
+            alert(t('brandingForm.unsupportedFormat'))
             return
         }
         if (file.size > 5 * 1024 * 1024) {
-            alert('El archivo es demasiado grande. Máximo 5MB.')
+            alert(t('brandingForm.fileTooLarge'))
             return
         }
         setUploading(true)
@@ -177,7 +179,7 @@ function ImageUploadField({ label, value, onChange, assetType, companyId, hint, 
             if (!res.ok) throw new Error(data.error)
             onChange(data.url)
         } catch (err: any) {
-            alert(`Error subiendo: ${err.message}`)
+            alert(`${t('brandingForm.uploadError')}: ${err.message}`)
         } finally {
             setUploading(false)
         }
@@ -221,7 +223,7 @@ function ImageUploadField({ label, value, onChange, assetType, companyId, hint, 
                     <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
                         <div className="flex items-center gap-2 text-indigo-600">
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            <span className="text-sm font-semibold">Subiendo...</span>
+                            <span className="text-sm font-semibold">{t('brandingForm.saving')}</span>
                         </div>
                     </div>
                 )}
@@ -233,13 +235,13 @@ function ImageUploadField({ label, value, onChange, assetType, companyId, hint, 
                         </div>
                         <div className="flex-1 text-left min-w-0">
                             <p className="text-xs text-gray-500 truncate">{value}</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Arrastra otra imagen o haz clic para reemplazar</p>
+                            <p className="text-xs text-gray-400 mt-0.5">{t('brandingForm.dragReplace')}</p>
                         </div>
                         {!disabled && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onChange('') }}
                                 className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition"
-                                title="Eliminar"
+                                title={t('brandingForm.remove')}
                             >
                                 <XIcon className="w-4 h-4" />
                             </button>
@@ -248,8 +250,8 @@ function ImageUploadField({ label, value, onChange, assetType, companyId, hint, 
                 ) : (
                     <div className="py-2">
                         <Upload className="w-6 h-6 text-gray-300 mx-auto mb-1.5" />
-                        <p className="text-sm text-gray-500 font-medium">Arrastra tu imagen aquí</p>
-                        <p className="text-xs text-gray-400 mt-0.5">o haz clic para seleccionar · PNG, JPG, SVG · Max 5MB</p>
+                        <p className="text-sm text-gray-500 font-medium">{t('brandingForm.dragImage')}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{t('brandingForm.clickToSelect')}</p>
                     </div>
                 )}
 
@@ -267,7 +269,7 @@ function ImageUploadField({ label, value, onChange, assetType, companyId, hint, 
                     type="url"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    placeholder="O pega una URL: https://..."
+                    placeholder={t('brandingForm.pasteUrl')}
                     disabled={disabled}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-xs text-gray-600 disabled:bg-gray-50 disabled:text-gray-400"
                 />
@@ -280,6 +282,7 @@ function ImageUploadField({ label, value, onChange, assetType, companyId, hint, 
 // ─── Save Button ────────────────────────────────────────────────────
 
 function SaveButton({ onClick, loading, canEdit }: { onClick: () => void; loading: boolean; canEdit: boolean }) {
+    const { t } = useTranslation()
     if (!canEdit) return null
     return (
         <button
@@ -288,7 +291,7 @@ function SaveButton({ onClick, loading, canEdit }: { onClick: () => void; loadin
             className="mt-6 w-full bg-gray-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
         >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Guardar cambios
+            {t('brandingForm.saveChanges')}
         </button>
     )
 }
@@ -297,13 +300,13 @@ function SaveButton({ onClick, loading, canEdit }: { onClick: () => void; loadin
 
 type TabId = 'logos' | 'colors' | 'typography' | 'identity' | 'social' | 'config'
 
-const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
-    { id: 'logos', label: 'Logos', icon: <Image className="w-4 h-4" /> },
-    { id: 'colors', label: 'Colores', icon: <Palette className="w-4 h-4" /> },
-    { id: 'typography', label: 'Tipografía', icon: <Type className="w-4 h-4" /> },
-    { id: 'identity', label: 'Identidad', icon: <Building2 className="w-4 h-4" /> },
-    { id: 'social', label: 'Redes', icon: <Share2 className="w-4 h-4" /> },
-    { id: 'config', label: 'Configuración', icon: <Settings className="w-4 h-4" /> },
+const TAB_KEYS: { id: TabId; labelKey: string; icon: React.ReactNode }[] = [
+    { id: 'logos', labelKey: 'brandingForm.logos', icon: <Image className="w-4 h-4" /> },
+    { id: 'colors', labelKey: 'brandingForm.colors', icon: <Palette className="w-4 h-4" /> },
+    { id: 'typography', labelKey: 'brandingForm.typography', icon: <Type className="w-4 h-4" /> },
+    { id: 'identity', labelKey: 'brandingForm.identity', icon: <Building2 className="w-4 h-4" /> },
+    { id: 'social', labelKey: 'brandingForm.social', icon: <Share2 className="w-4 h-4" /> },
+    { id: 'config', labelKey: 'brandingForm.config', icon: <Settings className="w-4 h-4" /> },
 ]
 
 const PROJECT_TABS: TabId[] = ['logos', 'colors', 'typography', 'identity', 'social']
@@ -311,10 +314,12 @@ const PROJECT_TABS: TabId[] = ['logos', 'colors', 'typography', 'identity', 'soc
 // ─── Main Component ─────────────────────────────────────────────────
 
 export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, companyIdOverride, isSuperAdmin = false, mode = 'corporate' }: CorporateBrandingFormProps) {
+    const { t } = useTranslation()
     const isProjectMode = mode === 'project'
     const isPortalMode = mode === 'portal'
     const hidePreview = isProjectMode || isPortalMode
-    const visibleTabs = (isProjectMode || isPortalMode) ? TABS.filter(t => PROJECT_TABS.includes(t.id)) : TABS
+    const TABS = TAB_KEYS.map(tab => ({ ...tab, label: t(tab.labelKey) }))
+    const visibleTabs = (isProjectMode || isPortalMode) ? TABS.filter(tb => PROJECT_TABS.includes(tb.id)) : TABS
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState<TabId>('logos')
@@ -388,7 +393,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
             const data = await res.json()
             if (!res.ok) throw new Error(data.error)
             router.refresh()
-            alert('Guardado exitosamente')
+            alert(t('brandingForm.saved'))
         } catch (error: any) {
             alert(`Error: ${error.message}`)
         } finally {
@@ -435,16 +440,16 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                     <Building2 className="w-6 h-6 text-gray-300 mb-2" />
                 )}
                 <h3 className="text-[10px] font-bold text-gray-800 mb-0.5 text-center" style={{ fontFamily: fontHeading }}>
-                    {loginWelcomeText || 'Bienvenido'}
+                    {loginWelcomeText || t('brandingForm.welcome')}
                 </h3>
                 <p className="text-[7px] text-gray-400 mb-2 text-center" style={{ fontFamily: fontBody }}>
-                    Accede a tu cuenta corporativa.
+                    {t('brandingForm.accessAccount')}
                 </p>
                 <div className="w-full space-y-1.5">
                     <div className="h-5 rounded-lg border border-gray-200 bg-gray-50/50 w-full" />
                     <div className="h-5 rounded-lg border border-gray-200 bg-gray-50/50 w-full" />
                     <div className="h-5 rounded-lg w-full flex items-center justify-center text-white text-[8px] font-bold shadow-sm" style={{ backgroundColor: primaryColor }}>
-                        Entrar
+                        {t('brandingForm.enter')}
                     </div>
                 </div>
                 {poweredByVisible && (
@@ -470,16 +475,16 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                     <Building2 className="w-5 h-5 text-gray-300 mb-1.5" />
                 )}
                 <h3 className="text-[9px] font-bold text-gray-800 mb-0.5 text-center" style={{ fontFamily: fontHeading }}>
-                    {loginWelcomeText || 'Bienvenido'}
+                    {loginWelcomeText || t('brandingForm.welcome')}
                 </h3>
                 <p className="text-[6px] text-gray-400 mb-1.5 text-center" style={{ fontFamily: fontBody }}>
-                    Accede a tu cuenta.
+                    {t('brandingForm.accessAccountShort')}
                 </p>
                 <div className="w-full space-y-1">
                     <div className="h-4 rounded-md border border-gray-200 bg-gray-50/50 w-full" />
                     <div className="h-4 rounded-md border border-gray-200 bg-gray-50/50 w-full" />
                     <div className="h-4 rounded-md w-full flex items-center justify-center text-white text-[7px] font-bold" style={{ backgroundColor: primaryColor }}>
-                        Entrar
+                        {t('brandingForm.enter')}
                     </div>
                 </div>
                 {poweredByVisible && (
@@ -504,13 +509,13 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                             )}
                         </div>
                         <div className="min-w-0">
-                            <p className="text-[8px] font-bold text-gray-900 truncate" style={{ fontFamily: fontHeading }}>{initialData.name || 'Empresa'}</p>
+                            <p className="text-[8px] font-bold text-gray-900 truncate" style={{ fontFamily: fontHeading }}>{initialData.name || 'Company'}</p>
                             <p className="text-[5px] text-gray-400 uppercase tracking-wider">Blukastor Portal</p>
                         </div>
                     </div>
                     {/* Nav label */}
                     <div className="px-2.5 pt-2 pb-1">
-                        <p className="text-[5px] font-bold text-gray-400 uppercase tracking-widest">Navegación</p>
+                        <p className="text-[5px] font-bold text-gray-400 uppercase tracking-widest">{t('nav.navigation')}</p>
                     </div>
                     {/* Nav Items */}
                     <div className="px-1.5 space-y-0.5 flex-1">
@@ -539,7 +544,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                             <svg className="w-[10px] h-[10px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
                             </svg>
-                            <span>Cerrar Sesión</span>
+                            <span>{t('nav.signOut')}</span>
                         </div>
                     </div>
                 </div>
@@ -596,7 +601,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                                 <span className="text-[7px] font-bold text-gray-400">{initialData.name?.charAt(0) || 'B'}</span>
                             )}
                         </div>
-                        <span className="text-[8px] font-bold text-gray-900" style={{ fontFamily: fontHeading }}>{initialData.name || 'Empresa'}</span>
+                        <span className="text-[8px] font-bold text-gray-900" style={{ fontFamily: fontHeading }}>{initialData.name || 'Company'}</span>
                     </div>
                     <div className="w-4 h-4 flex flex-col justify-center gap-[2px] px-0.5">
                         <div className="h-[1px] w-full bg-gray-400" />
@@ -642,19 +647,19 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
         <div>
             <div className="flex items-center gap-2 mb-3">
                 <Type className="w-3.5 h-3.5 text-gray-400" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Tipografía</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{t('brandingForm.typography')}</span>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-3">
                 <div>
-                    <p className="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Títulos · {fontHeading}</p>
+                    <p className="text-[9px] text-gray-400 uppercase tracking-wider mb-1">{t('brandingForm.titles')} · {fontHeading}</p>
                     <p className="text-lg font-bold text-gray-900" style={{ fontFamily: fontHeading }}>
-                        Título de ejemplo
+                        {t('brandingForm.sampleTitle')}
                     </p>
                 </div>
                 <div className="border-t border-gray-100 pt-3">
-                    <p className="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Cuerpo · {fontBody}</p>
+                    <p className="text-[9px] text-gray-400 uppercase tracking-wider mb-1">{t('brandingForm.body')} · {fontBody}</p>
                     <p className="text-xs text-gray-600 leading-relaxed" style={{ fontFamily: fontBody }}>
-                        Este es un texto de ejemplo para visualizar cómo se verá el contenido del portal.
+                        {t('brandingForm.sampleBodyShort')}
                     </p>
                 </div>
             </div>
@@ -665,12 +670,12 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
         <div>
             <div className="flex items-center gap-2 mb-3">
                 <Palette className="w-3.5 h-3.5 text-gray-400" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Paleta</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{t('brandingForm.palette')}</span>
             </div>
             <div className="flex rounded-xl overflow-hidden h-12 shadow-sm">
-                <div className="flex-1 flex items-end justify-center pb-1.5 text-white text-[9px] font-bold" style={{ backgroundColor: primaryColor }}>Primario</div>
-                <div className="flex-1 flex items-end justify-center pb-1.5 text-white text-[9px] font-bold" style={{ backgroundColor: secondaryColor }}>Secundario</div>
-                <div className="flex-1 flex items-end justify-center pb-1.5 text-white text-[9px] font-bold" style={{ backgroundColor: accentColor }}>Acento</div>
+                <div className="flex-1 flex items-end justify-center pb-1.5 text-white text-[9px] font-bold" style={{ backgroundColor: primaryColor }}>{t('brandingForm.primary')}</div>
+                <div className="flex-1 flex items-end justify-center pb-1.5 text-white text-[9px] font-bold" style={{ backgroundColor: secondaryColor }}>{t('brandingForm.secondary')}</div>
+                <div className="flex-1 flex items-end justify-center pb-1.5 text-white text-[9px] font-bold" style={{ backgroundColor: accentColor }}>{t('brandingForm.accent')}</div>
             </div>
         </div>
     )
@@ -683,23 +688,23 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                 return (
                     <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <ImageUploadField label="Logo Principal" value={logoUrl} onChange={setLogoUrl} assetType="logo" companyId={companyId} hint="Fondo claro — formato horizontal" disabled={disabled} />
-                            <ImageUploadField label="Logo Oscuro" value={logoDarkUrl} onChange={setLogoDarkUrl} assetType="logo_dark" companyId={companyId} hint="Para fondos oscuros / dark mode" disabled={disabled} />
-                            <ImageUploadField label="Isotipo / Ícono" value={logoIconUrl} onChange={setLogoIconUrl} assetType="icon" companyId={companyId} hint="Versión cuadrada para avatares · 512×512px" disabled={disabled} />
+                            <ImageUploadField label={t('brandingForm.mainLogo')} value={logoUrl} onChange={setLogoUrl} assetType="logo" companyId={companyId} hint={t('brandingForm.lightBgHint')} disabled={disabled} />
+                            <ImageUploadField label={t('brandingForm.darkLogo')} value={logoDarkUrl} onChange={setLogoDarkUrl} assetType="logo_dark" companyId={companyId} hint={t('brandingForm.darkBgHint')} disabled={disabled} />
+                            <ImageUploadField label={t('brandingForm.isotype')} value={logoIconUrl} onChange={setLogoIconUrl} assetType="icon" companyId={companyId} hint={t('brandingForm.squareHint')} disabled={disabled} />
                             {!hidePreview && (
-                                <ImageUploadField label="Favicon" value={faviconUrl} onChange={setFaviconUrl} assetType="favicon" companyId={companyId} hint="Ícono del navegador — 32×32px o 64×64px" disabled={disabled} />
+                                <ImageUploadField label={t('brandingForm.favicon')} value={faviconUrl} onChange={setFaviconUrl} assetType="favicon" companyId={companyId} hint={t('brandingForm.faviconHint')} disabled={disabled} />
                             )}
                         </div>
 
                         {!hidePreview && (<>
                         <div className="p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl">
-                            <p className="text-xs font-semibold text-indigo-700 mb-1">📐 Dimensiones recomendadas para portadas</p>
-                            <p className="text-xs text-indigo-600">Desktop: <strong>1200×1600px</strong> (Vertical/Cuadrada) · Mobile: <strong>768×1024px</strong> (Vertical)</p>
+                            <p className="text-xs font-semibold text-indigo-700 mb-1">{t('brandingForm.coverDimensions')}</p>
+                            <p className="text-xs text-indigo-600">{t('brandingForm.coverDimensionsDesc')}</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <ImageUploadField label="Portada Desktop" value={coverImageUrl} onChange={setCoverImageUrl} assetType="cover" companyId={companyId} hint="1200×1600px · Lado izquierdo del login" disabled={disabled} />
-                            <ImageUploadField label="Portada Mobile" value={coverImageMobileUrl} onChange={setCoverImageMobileUrl} assetType="cover_mobile" companyId={companyId} hint="768×1024px · Se muestra en dispositivos móviles" disabled={disabled} />
+                            <ImageUploadField label={t('brandingForm.coverDesktop')} value={coverImageUrl} onChange={setCoverImageUrl} assetType="cover" companyId={companyId} hint={t('brandingForm.coverDesktopHint')} disabled={disabled} />
+                            <ImageUploadField label={t('brandingForm.coverMobile')} value={coverImageMobileUrl} onChange={setCoverImageMobileUrl} assetType="cover_mobile" companyId={companyId} hint={t('brandingForm.coverMobileHint')} disabled={disabled} />
                         </div>
                         </>)}
 
@@ -714,16 +719,16 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                 return (
                     <div className="space-y-4">
                         <div className="flex rounded-xl overflow-hidden h-10">
-                            <div className="flex-1 flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: primaryColor }}>Primario</div>
-                            <div className="flex-1 flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: secondaryColor }}>Secundario</div>
-                            <div className="flex-1 flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: accentColor }}>Acento</div>
+                            <div className="flex-1 flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: primaryColor }}>{t('brandingForm.primary')}</div>
+                            <div className="flex-1 flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: secondaryColor }}>{t('brandingForm.secondary')}</div>
+                            <div className="flex-1 flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: accentColor }}>{t('brandingForm.accent')}</div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <ColorField label="Color Primario" value={primaryColor} onChange={setPrimaryColor} disabled={disabled} hint={isProjectMode ? 'Color principal de la marca.' : 'Botones principales, enlaces activos, sidebar del portal y elementos destacados.'} />
-                            <ColorField label="Color Secundario" value={secondaryColor} onChange={setSecondaryColor} disabled={disabled} hint="Bordes, botones secundarios, badges y elementos de apoyo visual." />
-                            <ColorField label="Color de Acento" value={accentColor} onChange={setAccentColor} disabled={disabled} hint="Notificaciones, indicadores de estado, alertas y elementos que requieren atención." />
+                            <ColorField label={t('brandingForm.primaryColor')} value={primaryColor} onChange={setPrimaryColor} disabled={disabled} hint={isProjectMode ? t('brandingForm.primaryProjectHint') : t('brandingForm.primaryHint')} />
+                            <ColorField label={t('brandingForm.secondaryColor')} value={secondaryColor} onChange={setSecondaryColor} disabled={disabled} hint={t('brandingForm.secondaryHint')} />
+                            <ColorField label={t('brandingForm.accentColor')} value={accentColor} onChange={setAccentColor} disabled={disabled} hint={t('brandingForm.accentHint')} />
                             {!hidePreview && (
-                                <ColorField label="Fondo Formulario Login" value={loginBgColor} onChange={setLoginBgColor} disabled={disabled} hint="Color de fondo del panel derecho en la pantalla de inicio de sesión del portal." />
+                                <ColorField label={t('brandingForm.loginBgColor')} value={loginBgColor} onChange={setLoginBgColor} disabled={disabled} hint={t('brandingForm.loginBgHint')} />
                             )}
                         </div>
 
@@ -741,13 +746,13 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <div className="flex items-center gap-1.5 mb-1.5">
-                                    <label className="block text-sm font-semibold text-gray-700">Fuente de Títulos</label>
+                                    <label className="block text-sm font-semibold text-gray-700">{t('brandingForm.headingFont')}</label>
                                     <div className="relative group">
                                         <div className="w-4 h-4 rounded-full bg-gray-100 flex items-center justify-center cursor-help text-gray-400 hover:bg-indigo-100 hover:text-indigo-500 transition-colors">
                                             <span className="text-[10px] font-bold leading-none">i</span>
                                         </div>
                                         <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-52 bg-gray-900 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2 shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
-                                            Títulos de páginas, encabezados de secciones, nombre de la empresa en el sidebar y textos destacados del portal.
+                                            {t('brandingForm.headingFontHint')}
                                             <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900" />
                                         </div>
                                     </div>
@@ -767,7 +772,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                                 </select>
                                 <div className="mt-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
                                     <p className="text-2xl font-bold text-gray-900" style={{ fontFamily: fontHeading }}>
-                                        Título de ejemplo
+                                        {t('brandingForm.sampleTitle')}
                                     </p>
                                     <p className="text-sm text-gray-400 mt-1" style={{ fontFamily: fontHeading }}>
                                         ABCDEFGHIJKLM abcdefghijklm 0123456789
@@ -776,13 +781,13 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                             </div>
                             <div>
                                 <div className="flex items-center gap-1.5 mb-1.5">
-                                    <label className="block text-sm font-semibold text-gray-700">Fuente de Cuerpo</label>
+                                    <label className="block text-sm font-semibold text-gray-700">{t('brandingForm.bodyFont')}</label>
                                     <div className="relative group">
                                         <div className="w-4 h-4 rounded-full bg-gray-100 flex items-center justify-center cursor-help text-gray-400 hover:bg-indigo-100 hover:text-indigo-500 transition-colors">
                                             <span className="text-[10px] font-bold leading-none">i</span>
                                         </div>
                                         <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-52 bg-gray-900 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2 shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
-                                            Texto general del portal: descripciones, párrafos, etiquetas de formularios, tablas, navegación y todo el contenido del cuerpo.
+                                            {t('brandingForm.bodyFontHint')}
                                             <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900" />
                                         </div>
                                     </div>
@@ -802,7 +807,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                                 </select>
                                 <div className="mt-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
                                     <p className="text-sm text-gray-700 leading-relaxed" style={{ fontFamily: fontBody }}>
-                                        Este es un texto de ejemplo para visualizar cómo se verá el contenido del portal con esta fuente seleccionada.
+                                        {t('brandingForm.sampleBody')}
                                     </p>
                                     <p className="text-xs text-gray-400 mt-1" style={{ fontFamily: fontBody }}>
                                         ABCDEFGHIJKLM abcdefghijklm 0123456789
@@ -814,8 +819,8 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                         <div className="p-3 bg-amber-50/50 border border-amber-100 rounded-xl">
                             <p className="text-xs text-amber-700">
                                 <strong>💡 Tip:</strong> {isProjectMode
-                                    ? 'Las fuentes seleccionadas definen la identidad tipográfica de tu marca.'
-                                    : 'Las fuentes seleccionadas se aplicarán automáticamente al portal de clientes de tu empresa al guardar.'
+                                    ? t('brandingForm.tipProject')
+                                    : t('brandingForm.tipCorporate')
                                 }
                             </p>
                         </div>
@@ -827,13 +832,13 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
             case 'identity':
                 return (
                     <div className="space-y-4">
-                        <InputField label="Tagline / Slogan" value={tagline} onChange={setTagline} placeholder="Tu frase que define la marca" disabled={disabled} />
-                        <TextareaField label="Descripción de la Empresa" value={description} onChange={setDescription} placeholder="Breve descripción de lo que hace la empresa..." rows={3} disabled={disabled} />
+                        <InputField label={t('brandingForm.tagline')} value={tagline} onChange={setTagline} placeholder={t('brandingForm.taglinePlaceholder')} disabled={disabled} />
+                        <TextareaField label={t('brandingForm.companyDescription')} value={description} onChange={setDescription} placeholder={t('brandingForm.companyDescPlaceholder')} rows={3} disabled={disabled} />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <TextareaField label="Misión" value={mission} onChange={setMission} placeholder="¿Cuál es la misión de la empresa?" rows={3} disabled={disabled} />
-                            <TextareaField label="Visión" value={vision} onChange={setVision} placeholder="¿Cuál es la visión de la empresa?" rows={3} disabled={disabled} />
+                            <TextareaField label={t('brandingForm.missionLabel')} value={mission} onChange={setMission} placeholder={t('brandingForm.missionPlaceholder')} rows={3} disabled={disabled} />
+                            <TextareaField label={t('brandingForm.visionLabel')} value={vision} onChange={setVision} placeholder={t('brandingForm.visionPlaceholder')} rows={3} disabled={disabled} />
                         </div>
-                        <TextareaField label="Valores" value={valuesText} onChange={setValuesText} placeholder="Valores fundamentales de la empresa (separados por comas)" rows={3} disabled={disabled} />
+                        <TextareaField label={t('brandingForm.valuesLabel')} value={valuesText} onChange={setValuesText} placeholder={t('brandingForm.valuesPlaceholder')} rows={3} disabled={disabled} />
 
                         <SaveButton onClick={() => saveFields({ tagline, description, mission, vision, values_text: valuesText })} loading={loading} canEdit={canEdit} />
                     </div>
@@ -842,35 +847,35 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
             case 'social':
                 return (
                     <div className="space-y-4">
-                        <InputField label="Sitio Web" value={websiteUrl} onChange={setWebsiteUrl} placeholder="https://www.miempresa.com" type="url" disabled={disabled} />
+                        <InputField label={t('brandingForm.websiteLabel')} value={websiteUrl} onChange={setWebsiteUrl} placeholder={t('brandingForm.websitePlaceholder')} type="url" disabled={disabled} />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                             <div className="flex items-center gap-2">
                                 <Instagram className="w-5 h-5 text-pink-500 flex-shrink-0" />
-                                <InputField label="Instagram" value={socialInstagram} onChange={setSocialInstagram} placeholder="@miempresa o URL" disabled={disabled} />
+                                <InputField label="Instagram" value={socialInstagram} onChange={setSocialInstagram} placeholder="@company" disabled={disabled} />
                             </div>
                             <div className="flex items-center gap-2">
                                 <Facebook className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                                <InputField label="Facebook" value={socialFacebook} onChange={setSocialFacebook} placeholder="URL de la página" disabled={disabled} />
+                                <InputField label="Facebook" value={socialFacebook} onChange={setSocialFacebook} placeholder="URL" disabled={disabled} />
                             </div>
                             <div className="flex items-center gap-2">
                                 <Linkedin className="w-5 h-5 text-blue-700 flex-shrink-0" />
-                                <InputField label="LinkedIn" value={socialLinkedin} onChange={setSocialLinkedin} placeholder="URL del perfil" disabled={disabled} />
+                                <InputField label="LinkedIn" value={socialLinkedin} onChange={setSocialLinkedin} placeholder="URL" disabled={disabled} />
                             </div>
                             <div className="flex items-center gap-2">
                                 <Twitter className="w-5 h-5 text-gray-900 flex-shrink-0" />
-                                <InputField label="X (Twitter)" value={socialTwitter} onChange={setSocialTwitter} placeholder="@miempresa" disabled={disabled} />
+                                <InputField label="X (Twitter)" value={socialTwitter} onChange={setSocialTwitter} placeholder="@company" disabled={disabled} />
                             </div>
                             <div className="flex items-center gap-2">
                                 <Youtube className="w-5 h-5 text-red-600 flex-shrink-0" />
-                                <InputField label="YouTube" value={socialYoutube} onChange={setSocialYoutube} placeholder="URL del canal" disabled={disabled} />
+                                <InputField label="YouTube" value={socialYoutube} onChange={setSocialYoutube} placeholder="URL" disabled={disabled} />
                             </div>
                             <div className="flex items-center gap-2">
                                 <svg className="w-5 h-5 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V9.25a8.28 8.28 0 004.85 1.55V7.37a4.83 4.83 0 01-1.09-.68z" /></svg>
-                                <InputField label="TikTok" value={socialTiktok} onChange={setSocialTiktok} placeholder="@miempresa" disabled={disabled} />
+                                <InputField label="TikTok" value={socialTiktok} onChange={setSocialTiktok} placeholder="@company" disabled={disabled} />
                             </div>
                             <div className="flex items-center gap-2">
                                 <MessageCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                                <InputField label="WhatsApp" value={socialWhatsapp} onChange={setSocialWhatsapp} placeholder="+56912345678" disabled={disabled} />
+                                <InputField label="WhatsApp" value={socialWhatsapp} onChange={setSocialWhatsapp} placeholder="+15551234567" disabled={disabled} />
                             </div>
                         </div>
 
@@ -891,16 +896,16 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 mb-1">
                                 <MapPin className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm font-bold text-gray-700">Datos Corporativos</span>
+                                <span className="text-sm font-bold text-gray-700">{t('brandingForm.corporateData')}</span>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <InputField label="País" value={country} onChange={setCountry} placeholder="Chile" disabled={disabled} />
-                                <InputField label="RUT / Tax ID" value={taxId} onChange={setTaxId} placeholder="76.123.456-7" disabled={disabled} />
+                                <InputField label={t('brandingForm.countryLabel')} value={country} onChange={setCountry} placeholder="" disabled={disabled} />
+                                <InputField label={t('brandingForm.taxIdLabel')} value={taxId} onChange={setTaxId} placeholder="" disabled={disabled} />
                             </div>
-                            <InputField label="Dirección" value={address} onChange={setAddress} placeholder="Av. Principal 123, Santiago, Chile" disabled={disabled} />
+                            <InputField label={t('brandingForm.addressLabel')} value={address} onChange={setAddress} placeholder="" disabled={disabled} />
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Zona Horaria</label>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('brandingForm.timezoneLabel')}</label>
                                     <select
                                         value={timezone}
                                         onChange={(e) => setTimezone(e.target.value)}
@@ -919,7 +924,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Idioma</label>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('brandingForm.languageLabel')}</label>
                                     <select
                                         value={locale}
                                         onChange={(e) => setLocale(e.target.value)}
@@ -941,14 +946,14 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 mb-1">
                                 <Settings className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm font-bold text-gray-700">Portal de Clientes</span>
+                                <span className="text-sm font-bold text-gray-700">{t('brandingForm.clientPortal')}</span>
                             </div>
                             <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-xl">
                                 <p className="text-xs text-blue-700">
-                                    <strong>ℹ️ Fondo de login:</strong> Se utiliza la <strong>Imagen de Portada</strong> configurada en la sección &quot;Logos&quot; como fondo de la pantalla de login.
+                                    <strong>ℹ️ Login:</strong> {t('brandingForm.loginBgInfo')}
                                 </p>
                             </div>
-                            <InputField label="Texto de Bienvenida (Login)" value={loginWelcomeText} onChange={setLoginWelcomeText} placeholder="Bienvenido al portal de Mi Empresa" disabled={disabled} />
+                            <InputField label={t('brandingForm.welcomeText')} value={loginWelcomeText} onChange={setLoginWelcomeText} placeholder={t('brandingForm.welcomePlaceholder')} disabled={disabled} />
                             <div className="flex items-center gap-3">
                                 <input
                                     type="checkbox"
@@ -959,13 +964,13 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                                     className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 disabled:opacity-50"
                                 />
                                 <label htmlFor="powered-by-corp" className="text-sm font-semibold text-gray-700">
-                                    Mostrar &quot;Powered by Blukastor&quot; en el portal de clientes
+                                    {t('brandingForm.showPoweredBy')}
                                 </label>
                                 {!isSuperAdmin && (
                                     <div className="relative group">
                                         <Lock className="w-4 h-4 text-amber-500 cursor-help" />
                                         <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 bg-gray-900 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2 shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
-                                            Solo el equipo de Blukastor puede modificar esta opción. Contacta a soporte para desactivar la marca de agua.
+                                            {t('brandingForm.poweredByLock')}
                                             <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900" />
                                         </div>
                                     </div>
@@ -979,14 +984,14 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                         <div>
                             <div className="flex items-center gap-2 mb-3">
                                 <Globe className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm font-bold text-gray-700">Dominio Personalizado</span>
+                                <span className="text-sm font-bold text-gray-700">{t('brandingForm.customDomain')}</span>
                             </div>
                             <InputField
-                                label="Dominio"
+                                label={t('brandingForm.domainLabel')}
                                 value={initialData.custom_domain || ''}
                                 onChange={() => { }}
-                                placeholder="No configurado"
-                                hint="El dominio personalizado solo puede ser configurado por el equipo de Blukastor. Contacta a soporte para cambiarlo."
+                                placeholder={t('brandingForm.domainNotConfigured')}
+                                hint={t('brandingForm.domainHint')}
                                 disabled={true}
                             />
                         </div>
@@ -1040,7 +1045,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                             className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-600 transition"
                         >
                             <Eye className="w-4 h-4" />
-                            {mobilePreviewOpen ? 'Ocultar vista previa' : 'Ver vista previa'}
+                            {mobilePreviewOpen ? t('brandingForm.hidePreview') : t('brandingForm.showPreview')}
                         </button>
                         {mobilePreviewOpen && (
                             <div className="mt-3 bg-gradient-to-br from-gray-50 to-slate-100 rounded-2xl border border-gray-200 p-4 space-y-5">
@@ -1076,7 +1081,7 @@ export function CorporateBrandingForm({ initialData, canEdit, saveEndpoint, comp
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Vista previa en vivo</span>
+                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('brandingForm.livePreview')}</span>
                             </div>
                             <div className="flex items-center bg-white rounded-lg border border-gray-200 p-0.5">
                                 <button

@@ -7,6 +7,7 @@ import { Target, Clock, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { deleteGoal } from '@/lib/actions/projects'
 import { toast } from 'sonner'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface GoalListProps {
     projectId: string
@@ -14,12 +15,14 @@ interface GoalListProps {
 }
 
 export function GoalList({ projectId, goals }: GoalListProps) {
+    const { t } = useTranslation()
+
     const handleDelete = async (id: string) => {
         try {
             await deleteGoal(id, projectId)
-            toast.success('Meta eliminada')
+            toast.success(t('goalList.deleted'))
         } catch (error: any) {
-            toast.error('Error al eliminar meta')
+            toast.error(t('goalList.deleteError'))
         }
     }
 
@@ -35,7 +38,7 @@ export function GoalList({ projectId, goals }: GoalListProps) {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <h4 className="font-semibold text-gray-900 truncate">{goal.title}</h4>
-                                <p className="text-sm text-gray-500 line-clamp-1">{goal.description || 'Sin descripción'}</p>
+                                <p className="text-sm text-gray-500 line-clamp-1">{goal.description || t('goalList.noDescription')}</p>
                                 <div className="flex items-center gap-3 mt-2">
                                     <Badge variant="outline" className={`text-[10px] uppercase font-bold ${goal.priority === 'high' || goal.priority === 'critical' ? 'text-red-600 bg-red-50 border-red-100' : 'text-gray-500 bg-gray-50 border-gray-100'
                                         }`}>
@@ -60,7 +63,7 @@ export function GoalList({ projectId, goals }: GoalListProps) {
                                     className="text-red-500 hover:text-red-600 hover:bg-red-50"
                                     onClick={() => handleDelete(goal.id)}
                                 >
-                                    Eliminar
+                                    {t('goalList.delete')}
                                 </Button>
                             </div>
                         </div>
@@ -71,9 +74,9 @@ export function GoalList({ projectId, goals }: GoalListProps) {
             {goals.length === 0 && (
                 <div className="text-center py-20 bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-100">
                     <Target size={48} className="mx-auto mb-4 opacity-10" />
-                    <h5 className="font-bold text-gray-900">Define tus primeras metas</h5>
+                    <h5 className="font-bold text-gray-900">{t('goalList.defineFirst')}</h5>
                     <p className="text-sm text-gray-500 max-w-xs mx-auto mb-6">
-                        Las metas te ayudan a mantener el foco y medir el progreso de tu proyecto.
+                        {t('goalList.defineFirstHint')}
                     </p>
                     <GoalForm projectId={projectId} />
                 </div>

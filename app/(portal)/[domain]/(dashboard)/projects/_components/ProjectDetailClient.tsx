@@ -16,6 +16,7 @@ import { ProjectBusiness } from './ProjectBusiness'
 import { FloatingChat } from '@/components/chat/floating-chat'
 import { CorporateBrandingForm } from '@/app/corporate/branding/corporate-branding-form'
 import { ProjectActions } from './ProjectActions'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface ProjectDetailClientProps {
     domain: string
@@ -28,26 +29,6 @@ interface ProjectDetailClientProps {
     companyContext: any | null
     teamMembers: any[]
     teamInvites: any[]
-}
-
-// Map tab values to agent types
-const TAB_AGENT_MAP: Record<string, string> = {
-    details: 'business',      // Más detalles → business agent (gathers company info)
-    goals: 'goals',
-    finances: 'finance',
-    team: 'onboarding',       // Team → general agent
-    branding: 'onboarding',   // Branding → general agent
-    business: 'business',
-}
-
-// Map tab values to display names for the chat context banner
-const TAB_CHAT_LABELS: Record<string, string> = {
-    details: 'Negocios',
-    goals: 'Metas',
-    finances: 'Finanzas',
-    team: 'General',
-    branding: 'General',
-    business: 'Negocios',
 }
 
 export function ProjectDetailClient({
@@ -63,6 +44,27 @@ export function ProjectDetailClient({
     teamInvites,
 }: ProjectDetailClientProps) {
     const [activeTab, setActiveTab] = useState('details')
+    const { t } = useTranslation()
+
+    // Map tab values to agent types
+    const TAB_AGENT_MAP: Record<string, string> = {
+        details: 'business',
+        goals: 'goals',
+        finances: 'finance',
+        team: 'onboarding',
+        branding: 'onboarding',
+        business: 'business',
+    }
+
+    // Map tab values to display names for the chat context banner
+    const TAB_CHAT_LABELS: Record<string, string> = {
+        details: t('project.chatBusiness'),
+        goals: t('project.chatGoals'),
+        finances: t('project.chatFinance'),
+        team: t('project.chatGeneral'),
+        branding: t('project.chatGeneral'),
+        business: t('project.chatBusiness'),
+    }
 
     const isBusiness = project.company_kind === 'business'
     const id = project.id
@@ -71,14 +73,14 @@ export function ProjectDetailClient({
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center gap-4 mb-2">
                 <Link href="/projects" className="text-sm text-muted-foreground hover:text-gray-900 transition-colors">
-                    ← Volver a Proyectos
+                    {t('project.backToProjects')}
                 </Link>
             </div>
 
             <div className="flex items-center justify-between space-y-2">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">{project.name}</h2>
-                    <p className="text-muted-foreground">{project.description || 'Sin descripción'}</p>
+                    <p className="text-muted-foreground">{project.description || t('project.noDescription')}</p>
                 </div>
                 <div className="flex items-center space-x-2">
                     <Badge
@@ -89,45 +91,45 @@ export function ProjectDetailClient({
                                 : 'text-amber-600 bg-amber-50 border-amber-100'
                         }`}
                     >
-                        {project.is_active ? 'Proyecto Activo' : 'Proyecto Archivado'}
+                        {project.is_active ? t('project.active') : t('project.archived')}
                     </Badge>
                 </div>
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                 <TabsList>
-                    <TabsTrigger value="details">Más detalles</TabsTrigger>
-                    <TabsTrigger value="goals">Metas</TabsTrigger>
-                    <TabsTrigger value="finances">Finanzas</TabsTrigger>
-                    <TabsTrigger value="team">Equipo</TabsTrigger>
+                    <TabsTrigger value="details">{t('project.tabDetails')}</TabsTrigger>
+                    <TabsTrigger value="goals">{t('project.tabGoals')}</TabsTrigger>
+                    <TabsTrigger value="finances">{t('project.tabFinances')}</TabsTrigger>
+                    <TabsTrigger value="team">{t('project.tabTeam')}</TabsTrigger>
                     <TabsTrigger value="branding">
                         <Palette className="w-3.5 h-3.5 mr-1.5" />
-                        Branding
+                        {t('project.tabBranding')}
                     </TabsTrigger>
                     {isBusiness && (
                         <TabsTrigger value="business">
                             <Briefcase className="w-3.5 h-3.5 mr-1.5" />
-                            Negocio
+                            {t('project.tabBusiness')}
                         </TabsTrigger>
                     )}
                     <TabsTrigger value="settings">
                         <Settings className="w-3.5 h-3.5 mr-1.5" />
-                        Configuración
+                        {t('project.tabSettings')}
                     </TabsTrigger>
                 </TabsList>
 
-                {/* Más detalles — deep project info from companies table */}
+                {/* Details */}
                 <TabsContent value="details" className="space-y-4">
                     <ProjectDetails project={project} />
                 </TabsContent>
 
-                {/* Metas */}
+                {/* Goals */}
                 <TabsContent value="goals">
                     <Card className="border-none shadow-none bg-transparent">
                         <CardHeader className="flex flex-row items-center justify-between px-0">
                             <div>
-                                <CardTitle className="text-2xl">Metas del Proyecto</CardTitle>
-                                <CardDescription>Define y sigue los objetivos clave para el éxito del proyecto.</CardDescription>
+                                <CardTitle className="text-2xl">{t('project.goalsTitle')}</CardTitle>
+                                <CardDescription>{t('project.goalsDesc')}</CardDescription>
                             </div>
                             <GoalForm projectId={id} />
                         </CardHeader>
@@ -137,23 +139,23 @@ export function ProjectDetailClient({
                     </Card>
                 </TabsContent>
 
-                {/* Finanzas */}
+                {/* Finances */}
                 <TabsContent value="finances">
                     <div className="space-y-4">
                         <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
                             <div>
-                                <h3 className="text-lg font-bold">Resumen Financiero</h3>
-                                <p className="text-sm text-muted-foreground">Gestiona los ingresos y egresos de este proyecto.</p>
+                                <h3 className="text-lg font-bold">{t('project.financeSummary')}</h3>
+                                <p className="text-sm text-muted-foreground">{t('project.financeDesc')}</p>
                             </div>
                             <Link href={`/finance?projectId=${id}`}>
-                                <Button>Registrar Transacción</Button>
+                                <Button>{t('project.registerTransaction')}</Button>
                             </Link>
                         </div>
                         <ProjectFinance transactions={transactions} companyCurrency={companyCurrency} />
                     </div>
                 </TabsContent>
 
-                {/* Equipo */}
+                {/* Team */}
                 <TabsContent value="team">
                     <ProjectTeam projectId={id} members={teamMembers} invites={teamInvites} />
                 </TabsContent>
@@ -162,9 +164,9 @@ export function ProjectDetailClient({
                 <TabsContent value="branding">
                     <div className="space-y-4">
                         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4">
-                            <h3 className="text-lg font-bold">Branding del Proyecto</h3>
+                            <h3 className="text-lg font-bold">{t('project.brandingTitle')}</h3>
                             <p className="text-sm text-muted-foreground">
-                                Configura la identidad visual exclusiva de este proyecto: logos, colores, tipografía y más.
+                                {t('project.brandingDesc')}
                             </p>
                         </div>
                         <CorporateBrandingForm
@@ -177,7 +179,7 @@ export function ProjectDetailClient({
                     </div>
                 </TabsContent>
 
-                {/* Negocio — conditional */}
+                {/* Business — conditional */}
                 {isBusiness && (
                     <TabsContent value="business">
                         <ProjectBusiness
@@ -188,13 +190,13 @@ export function ProjectDetailClient({
                     </TabsContent>
                 )}
 
-                {/* Configuración */}
+                {/* Settings */}
                 <TabsContent value="settings">
                     <div className="space-y-4">
                         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4">
-                            <h3 className="text-lg font-bold">Configuración del Proyecto</h3>
+                            <h3 className="text-lg font-bold">{t('project.settingsTitle')}</h3>
                             <p className="text-sm text-muted-foreground">
-                                Administra el estado del proyecto. Puedes archivarlo o eliminarlo definitivamente.
+                                {t('project.settingsDesc')}
                             </p>
                         </div>
                         <ProjectActions
@@ -215,7 +217,7 @@ export function ProjectDetailClient({
                     primaryColor={project.primary_color}
                     activeSection={activeTab}
                     agentId={TAB_AGENT_MAP[activeTab] || 'onboarding'}
-                    chatLabel={TAB_CHAT_LABELS[activeTab] || 'General'}
+                    chatLabel={TAB_CHAT_LABELS[activeTab] || t('project.chatGeneral')}
                     projectId={id}
                 />
             )}

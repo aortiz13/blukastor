@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { CreditCard, TrendingUp, Users, ArrowUpRight, ArrowDownRight, Package, Calendar, RefreshCcw } from 'lucide-react'
+import { BulkActivateButton } from './BulkActivateButton'
 
 export default async function MembershipsPage() {
     const supabase = await createClient()
@@ -25,7 +26,8 @@ export default async function MembershipsPage() {
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Gestión de Membresías</h1>
                     <p className="text-gray-500 mt-1">Monitorea renovaciones, churn y rendimiento de planes de suscripción.</p>
                 </div>
-                <div className="flex gap-2 font-bold">
+                <div className="flex gap-2 font-bold items-center">
+                    <BulkActivateButton />
                     <div className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg shadow-green-600/20 flex items-center gap-2">
                         <TrendingUp size={20} />
                         <span>MRR: ${totalMRR.toLocaleString()}</span>

@@ -6,6 +6,7 @@ import {
     Instagram, Facebook, Linkedin, Twitter, Youtube, MessageCircle,
     Sparkles, Eye
 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface ProjectDetailsProps {
     project: any
@@ -25,14 +26,14 @@ function DetailSection({ title, icon, children }: { title: string; icon: React.R
     )
 }
 
-function DetailField({ label, value, icon }: { label: string; value?: string | null; icon?: React.ReactNode }) {
+function DetailField({ label, value, emptyText }: { label: string; value?: string | null; icon?: React.ReactNode; emptyText: string }) {
     return (
         <div className="space-y-1">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</p>
             {value ? (
                 <p className="text-sm text-gray-800 leading-relaxed">{value}</p>
             ) : (
-                <p className="text-sm text-gray-300 italic">Sin información aún</p>
+                <p className="text-sm text-gray-300 italic">{emptyText}</p>
             )}
         </div>
     )
@@ -54,6 +55,8 @@ function SocialLink({ label, url, icon }: { label: string; url?: string | null; 
 }
 
 export function ProjectDetails({ project }: ProjectDetailsProps) {
+    const { t } = useTranslation()
+
     const hasSocials = project.social_instagram || project.social_facebook || project.social_linkedin ||
         project.social_twitter || project.social_youtube || project.social_tiktok || project.social_whatsapp ||
         project.website_url
@@ -72,22 +75,21 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                         <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
                             <Sparkles className="w-8 h-8 text-blue-500" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-800 mb-2">Completa los detalles de tu proyecto</h3>
+                        <h3 className="text-lg font-bold text-gray-800 mb-2">{t('projectDetails.completeDetails')}</h3>
                         <p className="text-sm text-gray-500 max-w-md mb-4">
-                            Usa el chat con tu asistente IA para ir completando la información de este proyecto.
-                            El agente te guiará para definir misión, visión, valores y más.
+                            {t('projectDetails.useChat')}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-4 py-2 rounded-full font-medium">
                             <MessageCircle className="w-3.5 h-3.5" />
-                            Haz clic en el globo de chat para comenzar
+                            {t('projectDetails.clickChat')}
                         </div>
                     </CardContent>
                 </Card>
             )}
 
-            {/* Identidad */}
+            {/* Identity */}
             {hasIdentity && (
-                <DetailSection title="Identidad" icon={<Building2 className="w-4 h-4 text-blue-500" />}>
+                <DetailSection title={t('projectDetails.identity')} icon={<Building2 className="w-4 h-4 text-blue-500" />}>
                     <div className="space-y-4">
                         {project.tagline && (
                             <div className="bg-blue-50/50 border border-blue-100 rounded-xl px-4 py-3">
@@ -95,20 +97,20 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                             </div>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <DetailField label="Descripción" value={project.description} />
-                            <DetailField label="Misión" value={project.mission} />
-                            <DetailField label="Visión" value={project.vision} />
-                            <DetailField label="Valores" value={project.values_text} />
+                            <DetailField label={t('projectDetails.description')} value={project.description} emptyText={t('projectDetails.noInfo')} />
+                            <DetailField label={t('projectDetails.mission')} value={project.mission} emptyText={t('projectDetails.noInfo')} />
+                            <DetailField label={t('projectDetails.vision')} value={project.vision} emptyText={t('projectDetails.noInfo')} />
+                            <DetailField label={t('projectDetails.values')} value={project.values_text} emptyText={t('projectDetails.noInfo')} />
                         </div>
                     </div>
                 </DetailSection>
             )}
 
-            {/* Redes Sociales & Web */}
+            {/* Social */}
             {hasSocials && (
-                <DetailSection title="Web y Redes Sociales" icon={<Globe className="w-4 h-4 text-green-500" />}>
+                <DetailSection title={t('projectDetails.webSocial')} icon={<Globe className="w-4 h-4 text-green-500" />}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                        <SocialLink label={project.website_url || 'Sitio Web'} url={project.website_url} icon={<Globe className="w-4 h-4 text-gray-500" />} />
+                        <SocialLink label={project.website_url || t('projectDetails.website')} url={project.website_url} icon={<Globe className="w-4 h-4 text-gray-500" />} />
                         <SocialLink label="Instagram" url={project.social_instagram} icon={<Instagram className="w-4 h-4 text-pink-500" />} />
                         <SocialLink label="Facebook" url={project.social_facebook} icon={<Facebook className="w-4 h-4 text-blue-600" />} />
                         <SocialLink label="LinkedIn" url={project.social_linkedin} icon={<Linkedin className="w-4 h-4 text-blue-700" />} />
@@ -119,13 +121,13 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                 </DetailSection>
             )}
 
-            {/* Info Corporativa */}
+            {/* Corporate */}
             {hasCorporate && (
-                <DetailSection title="Información Corporativa" icon={<FileText className="w-4 h-4 text-purple-500" />}>
+                <DetailSection title={t('projectDetails.corporateInfo')} icon={<FileText className="w-4 h-4 text-purple-500" />}>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <DetailField label="País" value={project.country} />
-                        <DetailField label="Dirección" value={project.address} />
-                        <DetailField label="ID Fiscal / RUT" value={project.tax_id} />
+                        <DetailField label={t('projectDetails.country')} value={project.country} emptyText={t('projectDetails.noInfo')} />
+                        <DetailField label={t('projectDetails.address')} value={project.address} emptyText={t('projectDetails.noInfo')} />
+                        <DetailField label={t('projectDetails.taxId')} value={project.tax_id} emptyText={t('projectDetails.noInfo')} />
                     </div>
                 </DetailSection>
             )}

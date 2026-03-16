@@ -3,6 +3,7 @@
 import { Users, Mail, Shield, ShieldCheck, Clock, Link as LinkIcon } from 'lucide-react'
 import { InviteMemberModal, RevokeInviteButton, RemoveMemberButton } from '../../team/invite-modal'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface ProjectTeamProps {
     projectId: string
@@ -11,6 +12,8 @@ interface ProjectTeamProps {
 }
 
 export function ProjectTeam({ projectId, members, invites }: ProjectTeamProps) {
+    const { t } = useTranslation()
+
     // Unify lists
     const unifiedList = [
         ...(members || []).map((m: any) => ({
@@ -28,8 +31,8 @@ export function ProjectTeam({ projectId, members, invites }: ProjectTeamProps) {
             type: 'invite',
             status: 'pending',
             channel: i.channel,
-            displayEmail: i.channel === 'link' ? 'Enlace de Invitación' : i.email,
-            displayName: i.channel === 'link' ? 'Link Generado' : 'Invitado',
+            displayEmail: i.channel === 'link' ? t('projectTeam.inviteLink') : i.email,
+            displayName: i.channel === 'link' ? t('projectTeam.linkGenerated') : t('projectTeam.invited'),
             initials: i.channel === 'link' ? 'L' : (i.email?.[0] || 'I').toUpperCase()
         }))
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -39,8 +42,8 @@ export function ProjectTeam({ projectId, members, invites }: ProjectTeamProps) {
             <Card className="border-none shadow-none bg-transparent">
                 <CardHeader className="flex flex-row items-center justify-between px-0">
                     <div>
-                        <CardTitle className="text-2xl">Equipo del Proyecto</CardTitle>
-                        <CardDescription>Gestiona quién tiene acceso a este proyecto y sus permisos.</CardDescription>
+                        <CardTitle className="text-2xl">{t('projectTeam.title')}</CardTitle>
+                        <CardDescription>{t('projectTeam.desc')}</CardDescription>
                     </div>
                     <InviteMemberModal projectId={projectId} />
                 </CardHeader>
@@ -49,10 +52,10 @@ export function ProjectTeam({ projectId, members, invites }: ProjectTeamProps) {
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-gray-50/30">
-                                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Miembro</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Estado</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rol</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Desde</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('projectTeam.member')}</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('projectTeam.status')}</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('projectTeam.role')}</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('projectTeam.since')}</th>
                                     <th className="px-6 py-4"></th>
                                 </tr>
                             </thead>
@@ -77,12 +80,12 @@ export function ProjectTeam({ projectId, members, invites }: ProjectTeamProps) {
                                             {item.status === 'active' ? (
                                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-50 text-green-700 tracking-wide uppercase">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                                                    Activo
+                                                    {t('projectTeam.active')}
                                                 </span>
                                             ) : (
                                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-orange-50 text-orange-700 tracking-wide uppercase">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                                                    Pendiente
+                                                    {t('projectTeam.pending')}
                                                 </span>
                                             )}
                                         </td>
@@ -115,7 +118,7 @@ export function ProjectTeam({ projectId, members, invites }: ProjectTeamProps) {
                                     <tr>
                                         <td colSpan={5} className="text-center py-12 text-gray-400">
                                             <Users size={32} className="mx-auto mb-3 opacity-20" />
-                                            <p className="text-sm">No hay miembros ni invitaciones.</p>
+                                            <p className="text-sm">{t('projectTeam.noMembers')}</p>
                                         </td>
                                     </tr>
                                 )}

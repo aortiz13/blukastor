@@ -334,6 +334,7 @@ Deno.serve(async (req) => {
 
     // 2. Fetch User Context (Semantic Memory)
     let userContextPrompt = "";
+    let companyLocale = "es"; // Default to Spanish
     if (contactId) {
       const { data: contextData } = await supabaseClient
         .from('user_context')
@@ -344,6 +345,19 @@ Deno.serve(async (req) => {
       if (contextData) {
         userContextPrompt = `\n\n[USER KNOWLEDGE]\nPersonal Finance: ${JSON.stringify(contextData.personal_finance)}\nBusiness Context: ${JSON.stringify(contextData.business_context)}`;
       }
+    }
+
+    // Fetch company locale for language preference
+    if (clientCompanyId) {
+      const { data: companyData } = await supabaseClient
+        .from('client_companies')
+        .select('locale')
+        .eq('id', clientCompanyId)
+        .single();
+      if (companyData?.locale) {
+        companyLocale = companyData.locale;
+      }
+      console.log(`Company locale: ${companyLocale}`);
     }
 
 
@@ -385,6 +399,15 @@ Deno.serve(async (req) => {
 
     6. **MEMORY**:
        - Use 'update_user_financial_profile' to remember important user preferences.
+    
+    7. **LANGUAGE**:
+       - The company's configured language is: ${companyLocale}
+       - If the language is "en", respond in English.
+       - If the language is "es", respond in Spanish.
+       - Always respect the user's language preference from company settings.
+
+    [LANGUAGE PREFERENCE]
+    lang: ${companyLocale}
     
     ${userContextPrompt}`;
 

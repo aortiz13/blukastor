@@ -46,6 +46,11 @@ export class PromptBuilder {
     buildContextPayload(context: AIContext): string {
         const sections: string[] = []
 
+        // Language preference (from company settings)
+        if (context.company?.locale) {
+            sections.push(`[LANGUAGE PREFERENCE]\nlang: ${context.company.locale}`)
+        }
+
         // User profile
         if (context.userContext) {
             sections.push(`[USER PROFILE]\n${JSON.stringify(context.userContext, null, 2)}`)
@@ -53,7 +58,7 @@ export class PromptBuilder {
 
         // Company info
         if (context.company) {
-            sections.push(`[COMPANY / TENANT]\ncompany_id: ${context.company.id}\ncompany_name: ${context.company.name || context.company.company_name}`)
+            sections.push(`[COMPANY / TENANT]\ncompany_id: ${context.company.id}\ncompany_name: ${context.company.name || context.company.company_name}\nlocale: ${context.company.locale || 'es'}`)
         }
 
         // Company context
@@ -194,11 +199,11 @@ Si necesitas guardar contexto adicional:
 - Si no estás seguro de qué tool usar, no propongas ninguna llamada nueva (deja "ops": []).
 
 ## IDIOMA
-- Si existe lang en el contexto de entrada, úsalo.
-- Si no, usa user_context.profile.language si existe.
+- PRIMERO: Si existe "lang" en el LANGUAGE PREFERENCE del contexto de entrada, SIEMPRE responde en ese idioma ("es" = español, "en" = inglés).
+- Si no existe lang, usa user_context.profile.language si existe.
 - Si no, detecta el idioma del último mensaje del usuario.
 - No cambies de idioma salvo que el usuario lo haga explícito.
-- Todo el texto en assistant_reply debe estar en CURRENT_LANGUAGE (normalmente español).
+- Todo el texto en assistant_reply debe estar en el idioma determinado.
 
 ## OBJETIVO DEL AGENTE (SCOPE FUNCIONAL)
 
@@ -417,11 +422,11 @@ PROHIBIDO inventar nombres de tools nuevos.
 NO uses "update_transactions" ni "update_finance_profile" — esos son exclusivos del agente de Finanzas.
 
 ## IDIOMA
-- Si existe lang en el contexto de entrada, úsalo.
-- Si no, usa user_context.profile.language si existe.
+- PRIMERO: Si existe "lang" en el LANGUAGE PREFERENCE del contexto de entrada, SIEMPRE responde en ese idioma ("es" = español, "en" = inglés).
+- Si no existe lang, usa user_context.profile.language si existe.
 - Si no, detecta el idioma del último mensaje del usuario.
 - No cambies de idioma salvo que el usuario lo haga explícito.
-- Todo el texto en assistant_reply debe estar en CURRENT_LANGUAGE (normalmente español).
+- Todo el texto en assistant_reply debe estar en el idioma determinado.
 
 ## OBJETIVO DEL AGENTE (SCOPE FUNCIONAL)
 

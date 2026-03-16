@@ -10,7 +10,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // Resolve admin's company
         const { data: admins } = await supabase
             .from('admin_profiles')
             .select('company_id, role, scope')
@@ -31,13 +30,11 @@ export async function POST(request: Request) {
 
         const serviceClient = createServiceClient()
 
-        // Try to find the contact — could be wa.contacts.id or auth.users.id (user_id)
+        // Use public.contacts view (mirrors wa.contacts)
         let contact: any = null
         let resolvedCompanyId: string | null = bodyCompanyId || null
 
-        // 1. Try direct lookup by contact id
         const { data: directContact } = await serviceClient
-            .schema('wa')
             .from('contacts')
             .select('id, phone, client_company_id')
             .eq('id', contactId)
@@ -47,9 +44,7 @@ export async function POST(request: Request) {
             contact = directContact
             resolvedCompanyId = resolvedCompanyId || directContact.client_company_id
         } else {
-            // 2. Try lookup by auth user_id (the userId is an auth.users.id)
             const { data: userContact } = await serviceClient
-                .schema('wa')
                 .from('contacts')
                 .select('id, phone, client_company_id')
                 .eq('user_id', contactId)
@@ -67,7 +62,6 @@ export async function POST(request: Request) {
         }
 
         if (!resolvedCompanyId) {
-            // Fallback: resolve from admin profile
             if (isSuperAdmin) {
                 const { cookies } = await import('next/headers')
                 const cookieStore = await cookies()
@@ -83,7 +77,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'No company found' }, { status: 403 })
         }
 
-        // Upsert ai_enabled row
         const { error: upsertError } = await serviceClient
             .from('ai_enabled')
             .upsert({

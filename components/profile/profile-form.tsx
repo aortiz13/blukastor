@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ChangePasswordForm } from './change-password-form'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface ProfileData {
     real_name?: string
@@ -20,18 +21,8 @@ interface ProfileData {
     bio?: string
 }
 
-const PROFILE_FIELDS: { key: keyof ProfileData; label: string; icon: any; placeholder: string; colSpan?: boolean }[] = [
-    { key: 'real_name', label: 'Nombre Completo', icon: User, placeholder: 'Ej: Juan Pérez' },
-    { key: 'nickname', label: 'Apodo / Nombre Preferido', icon: User, placeholder: '¿Cómo prefieres que te llamen?' },
-    { key: 'email', label: 'Correo Electrónico', icon: Mail, placeholder: 'tu@correo.com' },
-    { key: 'job_title', label: 'Puesto / Rol', icon: Briefcase, placeholder: 'Ej: CEO, Gerente de Ventas...' },
-    { key: 'industry', label: 'Industria', icon: Building2, placeholder: 'Ej: Inmobiliaria, Tecnología...' },
-    { key: 'country', label: 'País', icon: MapPin, placeholder: 'Ej: México, Chile...' },
-    { key: 'city', label: 'Ciudad', icon: MapPin, placeholder: 'Ej: CDMX, Santiago...' },
-    { key: 'bio', label: 'Acerca de mí', icon: FileText, placeholder: 'Una breve descripción sobre ti...', colSpan: true },
-]
-
 export function ProfileForm({ contactId, companyId, authEmail }: { contactId: string; companyId: string; authEmail?: string }) {
+    const { t } = useTranslation()
     const [profile, setProfile] = useState<ProfileData>({})
     const [originalProfile, setOriginalProfile] = useState<ProfileData>({})
     const [isLoading, setIsLoading] = useState(true)
@@ -40,13 +31,23 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
     const [completion, setCompletion] = useState(0)
     const supabase = createClient()
 
+    const PROFILE_FIELDS: { key: keyof ProfileData; labelKey: string; icon: any; placeholderKey: string; colSpan?: boolean }[] = [
+        { key: 'real_name', labelKey: 'profile.fullName', icon: User, placeholderKey: 'profile.fullNamePlaceholder' },
+        { key: 'nickname', labelKey: 'profile.nickname', icon: User, placeholderKey: 'profile.nicknamePlaceholder' },
+        { key: 'email', labelKey: 'profile.email', icon: Mail, placeholderKey: 'profile.emailPlaceholder' },
+        { key: 'job_title', labelKey: 'profile.jobTitle', icon: Briefcase, placeholderKey: 'profile.jobTitlePlaceholder' },
+        { key: 'industry', labelKey: 'profile.industry', icon: Building2, placeholderKey: 'profile.industryPlaceholder' },
+        { key: 'country', labelKey: 'profile.country', icon: MapPin, placeholderKey: 'profile.countryPlaceholder' },
+        { key: 'city', labelKey: 'profile.city', icon: MapPin, placeholderKey: 'profile.cityPlaceholder' },
+        { key: 'bio', labelKey: 'profile.bio', icon: FileText, placeholderKey: 'profile.bioPlaceholder', colSpan: true },
+    ]
+
     const fetchProfile = useCallback(async () => {
         try {
             const res = await fetch(`/api/profile?contact_id=${contactId}`)
             if (res.ok) {
                 const data = await res.json()
                 const fetchedProfile = data.profile || {}
-                // Always use the auth email, not whatever is in the profile data
                 if (authEmail) fetchedProfile.email = authEmail
                 setProfile(fetchedProfile)
                 setOriginalProfile(fetchedProfile)
@@ -61,7 +62,6 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
     useEffect(() => {
         fetchProfile()
 
-        // Subscribe to real-time updates
         const channel = supabase
             .channel(`profile_sync_${contactId}`)
             .on(
@@ -116,7 +116,6 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
 
     const hasChanges = JSON.stringify(profile) !== JSON.stringify(originalProfile)
 
-    // Calculate filled fields for progress
     const filledCount = PROFILE_FIELDS.filter(
         (f) => profile[f.key] && String(profile[f.key]).trim().length > 0
     ).length
@@ -139,17 +138,17 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
                         <div className="p-2.5 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl shadow-lg shadow-violet-200">
                             <User className="text-white" size={20} />
                         </div>
-                        Mi Perfil
+                        {t('profile.title')}
                     </h2>
                     <p className="text-gray-400 text-sm mt-1">
-                        Completa tu información personal. También se actualiza automáticamente al conversar con el agente.
+                        {t('profile.subtitle')}
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
                     {saved && (
                         <span className="flex items-center gap-1.5 text-emerald-600 text-sm font-medium animate-in fade-in">
                             <CheckCircle2 size={16} />
-                            Guardado
+                            {t('profile.saved')}
                         </span>
                     )}
                     <button
@@ -163,7 +162,7 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
                         )}
                     >
                         {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                        Guardar
+                        {t('profile.save')}
                     </button>
                 </div>
             </div>
@@ -171,12 +170,12 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
             {/* Completion Bar */}
             <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Perfil completado</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('profile.completed')}</span>
                     <span className={cn(
                         'text-sm font-bold',
                         filledCount === totalFields ? 'text-emerald-600' : 'text-violet-600'
                     )}>
-                        {filledCount}/{totalFields} campos
+                        {filledCount}/{totalFields} {t('profile.fields')}
                     </span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -194,10 +193,10 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
 
             {/* Fields Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {PROFILE_FIELDS.map(({ key, label, icon: Icon, placeholder, colSpan }) => (
+                {PROFILE_FIELDS.map(({ key, labelKey, icon: Icon, placeholderKey, colSpan }) => (
                     <div key={key} className={cn('space-y-1.5', colSpan && 'md:col-span-2')}>
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">
-                            {label}
+                            {t(labelKey)}
                         </label>
                         <div className="relative group">
                             <Icon
@@ -209,7 +208,7 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
                                     rows={3}
                                     value={profile[key] || ''}
                                     onChange={(e) => handleFieldChange(key, e.target.value)}
-                                    placeholder={placeholder}
+                                    placeholder={t(placeholderKey)}
                                     className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300 transition-all resize-none"
                                 />
                             ) : (
@@ -217,7 +216,7 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
                                     type={key === 'email' ? 'email' : 'text'}
                                     value={profile[key] || ''}
                                     onChange={(e) => handleFieldChange(key, e.target.value)}
-                                    placeholder={placeholder}
+                                    placeholder={t(placeholderKey)}
                                     readOnly={key === 'email'}
                                     disabled={key === 'email'}
                                     className={cn(
@@ -242,10 +241,9 @@ export function ProfileForm({ contactId, companyId, authEmail }: { contactId: st
                     <Sparkles className="text-violet-500" size={18} />
                 </div>
                 <div>
-                    <h4 className="font-bold text-violet-700 text-sm">Autocompletado Inteligente</h4>
+                    <h4 className="font-bold text-violet-700 text-sm">{t('profile.smartAutofill')}</h4>
                     <p className="text-gray-600 text-xs mt-0.5 leading-relaxed">
-                        Tu perfil también se actualiza automáticamente cuando conversas con el agente virtual.
-                        Los campos se llenarán con la información que compartas durante tus chats.
+                        {t('profile.smartAutofillHint')}
                     </p>
                 </div>
             </div>

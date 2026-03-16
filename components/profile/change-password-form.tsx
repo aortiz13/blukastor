@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { Lock, Eye, EyeOff, Loader2, CheckCircle2, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export function ChangePasswordForm({ authEmail }: { authEmail?: string }) {
+    const { t } = useTranslation()
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
@@ -18,11 +20,11 @@ export function ChangePasswordForm({ authEmail }: { authEmail?: string }) {
         setSuccess(false)
 
         if (newPassword.length < 6) {
-            setError('La contraseña debe tener al menos 6 caracteres')
+            setError(t('password.tooShort'))
             return
         }
         if (newPassword !== confirmPassword) {
-            setError('Las contraseñas no coinciden')
+            setError(t('password.mismatch'))
             return
         }
 
@@ -36,7 +38,7 @@ export function ChangePasswordForm({ authEmail }: { authEmail?: string }) {
             const data = await res.json()
 
             if (!res.ok) {
-                setError(data.error || 'Error al cambiar la contraseña')
+                setError(data.error || t('password.errorChanging'))
             } else {
                 setSuccess(true)
                 setNewPassword('')
@@ -44,7 +46,7 @@ export function ChangePasswordForm({ authEmail }: { authEmail?: string }) {
                 setTimeout(() => setSuccess(false), 5000)
             }
         } catch (err: any) {
-            setError(err.message || 'Error inesperado')
+            setError(err.message || t('password.unexpectedError'))
         }
         setIsLoading(false)
     }
@@ -56,11 +58,11 @@ export function ChangePasswordForm({ authEmail }: { authEmail?: string }) {
                     <Shield className="text-amber-600" size={18} />
                 </div>
                 <div>
-                    <h3 className="text-lg font-bold text-gray-900">Cambiar Contraseña</h3>
+                    <h3 className="text-lg font-bold text-gray-900">{t('password.title')}</h3>
                     <p className="text-gray-400 text-xs">
                         {authEmail
-                            ? <>Cambiar contraseña para <span className="font-semibold text-gray-600">{authEmail}</span></>
-                            : 'Actualiza tu contraseña de acceso'
+                            ? <>{t('password.changeFor')} <span className="font-semibold text-gray-600">{authEmail}</span></>
+                            : t('password.updateAccess')
                         }
                     </p>
                 </div>
@@ -69,7 +71,7 @@ export function ChangePasswordForm({ authEmail }: { authEmail?: string }) {
             <form onSubmit={handleSubmit} className="space-y-3 max-w-md">
                 <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">
-                        Nueva Contraseña
+                        {t('password.newPassword')}
                     </label>
                     <div className="relative">
                         <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -77,7 +79,7 @@ export function ChangePasswordForm({ authEmail }: { authEmail?: string }) {
                             type={showPassword ? 'text' : 'password'}
                             value={newPassword}
                             onChange={(e) => { setNewPassword(e.target.value); setError(''); setSuccess(false) }}
-                            placeholder="Mínimo 6 caracteres"
+                            placeholder={t('password.newPlaceholder')}
                             minLength={6}
                             required
                             className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-10 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-300 transition-all"
@@ -94,7 +96,7 @@ export function ChangePasswordForm({ authEmail }: { authEmail?: string }) {
 
                 <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">
-                        Confirmar Contraseña
+                        {t('password.confirm')}
                     </label>
                     <div className="relative">
                         <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -102,7 +104,7 @@ export function ChangePasswordForm({ authEmail }: { authEmail?: string }) {
                             type={showPassword ? 'text' : 'password'}
                             value={confirmPassword}
                             onChange={(e) => { setConfirmPassword(e.target.value); setError(''); setSuccess(false) }}
-                            placeholder="Repite tu nueva contraseña"
+                            placeholder={t('password.confirmPlaceholder')}
                             minLength={6}
                             required
                             className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-300 transition-all"
@@ -117,7 +119,7 @@ export function ChangePasswordForm({ authEmail }: { authEmail?: string }) {
                 {success && (
                     <div className="flex items-center gap-2 text-emerald-600 text-sm bg-emerald-50 p-3 rounded-xl font-medium">
                         <CheckCircle2 size={16} />
-                        ¡Contraseña actualizada exitosamente!
+                        {t('password.success')}
                     </div>
                 )}
 
@@ -132,7 +134,7 @@ export function ChangePasswordForm({ authEmail }: { authEmail?: string }) {
                     )}
                 >
                     {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Lock size={16} />}
-                    Cambiar Contraseña
+                    {t('password.changeButton')}
                 </button>
             </form>
         </div>

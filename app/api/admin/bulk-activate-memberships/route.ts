@@ -5,32 +5,32 @@ export async function POST() {
     try {
         const supabase = createServiceClient()
 
-        // Update all memberships: set status to active, started_at to now, expires_at to 3 months from now
+        // Calculate 3 months from now
         const threeMonthsFromNow = new Date()
         threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3)
 
-        const { data, error } = await supabase
-            .schema('wa')
-            .from('memberships')
-            .update({
-                status: 'active',
-                started_at: new Date().toISOString(),
-                expires_at: threeMonthsFromNow.toISOString(),
-            })
-            .neq('id', '00000000-0000-0000-0000-000000000000') // Match all rows
-            .select('id')
+        // Use exec_sql_void RPC to update wa.memberships directly
+        // (PostgREST only exposes public/graphql_public schemas)
+        const { error: updateError } = await supabase.rpc('exec_sql_void', {
+            sql: `UPDATE wa.memberships SET status = 'active', started_at = now(), expires_at = now() + interval '3 months'`
+        })
 
-        if (error) {
-            console.error('Error activating memberships:', error)
+        if (updateError) {
+            console.error('Error activating memberships:', updateError)
             return NextResponse.json(
-                { error: error.message },
+                { error: updateError.message },
                 { status: 500 }
             )
         }
 
+        // Get the count of updated memberships
+        const { count } = await supabase
+            .from('membership_status_v2')
+            .select('*', { count: 'exact', head: true })
+
         return NextResponse.json({
             success: true,
-            updatedCount: data?.length || 0,
+            updatedCount: count ?? 0,
             expiresAt: threeMonthsFromNow.toISOString(),
         })
     } catch (err: any) {

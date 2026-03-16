@@ -92,7 +92,7 @@ export default async function UsersPage() {
                 {[
                     { label: 'Total Usuarios', value: users?.length || 0, icon: Users, color: 'blue' },
                     { label: 'Administradores', value: users?.filter(u => u.is_admin).length || 0, icon: Shield, color: 'purple' },
-                    { label: 'Banneados', value: users?.filter(u => u.is_banned).length || 0, icon: ShieldBan, color: 'amber' },
+                    { label: 'Banneados', value: bannedUsers?.length || 0, icon: ShieldBan, color: 'amber' },
                     {
                         label: 'Activos (30d)', value: users?.filter(u => {
                             const lastActivity = u.last_seen || u.last_sign_in_at
@@ -125,6 +125,6 @@ export default async function UsersPage() {
     )
 }
 
-function TrendingUp(props: any) { return <svg {...props} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18" /><path d="M17 6h6v6" /></svg> }
-function ShieldBan(props: any) { return <svg {...props} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><line x1="4" y1="4" x2="20" y2="20" /></svg> }
+function TrendingUp({ size, ...props }: any) { return <svg {...props} width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18" /><path d="M17 6h6v6" /></svg> }
+function ShieldBan({ size, ...props }: any) { return <svg {...props} width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><line x1="4" y1="4" x2="20" y2="20" /></svg> }
 function cn(...inputs: any[]) { return inputs.filter(Boolean).join(' ') }

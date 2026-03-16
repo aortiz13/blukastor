@@ -3,18 +3,18 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-function ShieldBan(props: any) {
+function ShieldBan({ size, ...props }: any) {
     return (
-        <svg {...props} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg {...props} width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             <line x1="4" y1="4" x2="20" y2="20" />
         </svg>
     )
 }
 
-function X(props: any) {
+function X({ size, ...props }: any) {
     return (
-        <svg {...props} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg {...props} width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
@@ -88,9 +88,9 @@ export function BanUserButton() {
         <>
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="bg-amber-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-amber-600 transition shadow-lg shadow-amber-500/10"
+                className="bg-amber-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-amber-600 transition shadow-lg shadow-amber-500/10"
             >
-                <ShieldBan size={20} />
+                <ShieldBan size={16} />
                 <span>Bannear Usuario</span>
             </button>
 

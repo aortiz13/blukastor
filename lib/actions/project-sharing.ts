@@ -310,11 +310,13 @@ export async function getUserProjects() {
 
     const projectIds = memberships.map(m => m.project_id)
 
-    // Fetch company details
+    // Fetch company details (exclude archived/deleted)
     const { data: projects, error: projectsError } = await supabase
         .from('companies')
         .select('id, name, created_at')
         .in('id', projectIds)
+        .eq('is_active', true)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
 
     if (projectsError) {

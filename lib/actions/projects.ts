@@ -188,3 +188,125 @@ export async function upsertGoal(goal: any) {
 
     revalidatePath('/', 'layout')
 }
+
+/**
+ * Archive a project (set is_active = false).
+ * The project will no longer appear in the main list but can be restored.
+ */
+export async function archiveProject(projectId: string) {
+    const supabase = await createClient()
+    const adminDb = createServiceClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+        throw new Error('Unauthorized: Please log in')
+    }
+
+    const { error } = await adminDb
+        .from('companies')
+        .update({ is_active: false })
+        .eq('id', projectId)
+        .eq('company_kind', 'project')
+
+    if (error) {
+        console.error('Error archiving project:', error)
+        throw new Error('Failed to archive project')
+    }
+
+    revalidatePath('/', 'layout')
+}
+
+/**
+ * Unarchive a project (set is_active = true).
+ */
+export async function unarchiveProject(projectId: string) {
+    const supabase = await createClient()
+    const adminDb = createServiceClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+        throw new Error('Unauthorized: Please log in')
+    }
+
+    const { error } = await adminDb
+        .from('companies')
+        .update({ is_active: true })
+        .eq('id', projectId)
+        .eq('company_kind', 'project')
+
+    if (error) {
+        console.error('Error unarchiving project:', error)
+        throw new Error('Failed to unarchive project')
+    }
+
+    revalidatePath('/', 'layout')
+}
+
+/**
+ * Permanently delete a project.
+ * This performs a cascade soft-delete: removes related data, then sets deleted_at on the project.
+ * Requires confirmName to match the project name as a safety check.
+ */
+export async function deleteProject(projectId: string, confirmName: string) {
+    const supabase = await createClient()
+    const adminDb = createServiceClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+        throw new Error('Unauthorized: Please log in')
+    }
+
+    // 1. Verify project exists and name matches
+    const { data: project, error: fetchError } = await adminDb
+        .from('companies')
+        .select('id, name')
+        .eq('id', projectId)
+        .eq('company_kind', 'project')
+        .single()
+
+    if (fetchError || !project) {
+        throw new Error('Project not found')
+    }
+
+    if (project.name.trim().toLowerCase() !== confirmName.trim().toLowerCase()) {
+        throw new Error('El nombre del proyecto no coincide')
+    }
+
+    // 2. Cascade delete related data
+    // Delete goals
+    await adminDb.from('goals').delete().eq('context_company_id', projectId)
+
+    // Delete tasks
+    await adminDb.from('tasks').delete().eq('context_company_id', projectId)
+
+    // Delete financial transactions
+    await adminDb.from('financial_transactions').delete().eq('context_company_id', projectId)
+
+    // Delete financial budgets
+    await adminDb.from('financial_budgets').delete().eq('company_id', projectId)
+
+    // Delete company invites
+    await adminDb.from('company_invites').delete().eq('company_id', projectId)
+
+    // Delete project members
+    await adminDb.from('project_members').delete().eq('project_id', projectId)
+
+    // Delete company_context
+    await adminDb.from('company_context').delete().eq('company_id', projectId)
+
+    // 3. Soft-delete the project itself
+    const { error: deleteError } = await adminDb
+        .from('companies')
+        .update({
+            deleted_at: new Date().toISOString(),
+            is_active: false,
+        })
+        .eq('id', projectId)
+
+    if (deleteError) {
+        console.error('Error deleting project:', deleteError)
+        throw new Error('Failed to delete project')
+    }
+
+    revalidatePath('/', 'layout')
+}

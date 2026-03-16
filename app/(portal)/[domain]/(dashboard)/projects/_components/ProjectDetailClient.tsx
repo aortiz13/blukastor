@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Target, Clock, Briefcase, Palette } from 'lucide-react'
+import { Target, Clock, Briefcase, Palette, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { GoalList } from './GoalList'
 import { GoalForm } from './GoalForm'
@@ -15,6 +15,7 @@ import { ProjectDetails } from './ProjectDetails'
 import { ProjectBusiness } from './ProjectBusiness'
 import { FloatingChat } from '@/components/chat/floating-chat'
 import { CorporateBrandingForm } from '@/app/corporate/branding/corporate-branding-form'
+import { ProjectActions } from './ProjectActions'
 
 interface ProjectDetailClientProps {
     domain: string
@@ -80,8 +81,15 @@ export function ProjectDetailClient({
                     <p className="text-muted-foreground">{project.description || 'Sin descripción'}</p>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Badge variant="outline" className="text-blue-600 bg-blue-50 border-blue-100 uppercase font-bold px-3 py-1">
-                        Proyecto Activo
+                    <Badge
+                        variant="outline"
+                        className={`uppercase font-bold px-3 py-1 ${
+                            project.is_active
+                                ? 'text-blue-600 bg-blue-50 border-blue-100'
+                                : 'text-amber-600 bg-amber-50 border-amber-100'
+                        }`}
+                    >
+                        {project.is_active ? 'Proyecto Activo' : 'Proyecto Archivado'}
                     </Badge>
                 </div>
             </div>
@@ -102,6 +110,10 @@ export function ProjectDetailClient({
                             Negocio
                         </TabsTrigger>
                     )}
+                    <TabsTrigger value="settings">
+                        <Settings className="w-3.5 h-3.5 mr-1.5" />
+                        Configuración
+                    </TabsTrigger>
                 </TabsList>
 
                 {/* Más detalles — deep project info from companies table */}
@@ -175,6 +187,23 @@ export function ProjectDetailClient({
                         />
                     </TabsContent>
                 )}
+
+                {/* Configuración */}
+                <TabsContent value="settings">
+                    <div className="space-y-4">
+                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4">
+                            <h3 className="text-lg font-bold">Configuración del Proyecto</h3>
+                            <p className="text-sm text-muted-foreground">
+                                Administra el estado del proyecto. Puedes archivarlo o eliminarlo definitivamente.
+                            </p>
+                        </div>
+                        <ProjectActions
+                            projectId={id}
+                            projectName={project.name}
+                            isActive={project.is_active}
+                        />
+                    </div>
+                </TabsContent>
             </Tabs>
 
             {/* Floating AI Chat Agent — scoped to this project, routed by active tab */}

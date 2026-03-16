@@ -12,7 +12,7 @@ export async function POST() {
         // Use exec_sql_void RPC to update wa.memberships directly
         // (PostgREST only exposes public/graphql_public schemas)
         const { error: updateError } = await supabase.rpc('exec_sql_void', {
-            sql: `UPDATE wa.memberships SET status = 'active', started_at = now(), expires_at = now() + interval '3 months'`
+            sql_query: `UPDATE wa.memberships SET status = 'active', started_at = now(), expires_at = now() + interval '3 months'`
         })
 
         if (updateError) {

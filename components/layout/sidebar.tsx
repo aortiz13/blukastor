@@ -21,6 +21,7 @@ import {
     Palette
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface SidebarProps {
     domain: string
@@ -35,6 +36,7 @@ export function Sidebar({ domain, companyName, logoUrl, primaryColor, userName }
     const router = useRouter()
     const supabase = createClient()
     const [isCollapsed, setIsCollapsed] = useState(false)
+    const { t } = useTranslation()
 
     const handleSignOut = async () => {
         await supabase.auth.signOut()
@@ -42,18 +44,18 @@ export function Sidebar({ domain, companyName, logoUrl, primaryColor, userName }
     }
 
     const navItems = [
-        { label: 'Finanzas', icon: DollarSign, href: '/finance' },
-        { label: 'Agentes Virtuales', icon: MessageSquare, href: '/chat' },
-        { label: 'Proyectos', icon: Briefcase, href: '/projects' },
-        { label: 'Mis Equipos', icon: Users, href: '/my-teams' },
-        { label: 'Metas', icon: Target, href: '/goals' },
-        { label: 'Contenido', icon: ChevronRight, href: '/content' }, // Placeholder for extra nav
+        { label: t('nav.finance'), icon: DollarSign, href: '/finance' },
+        { label: t('nav.agents'), icon: MessageSquare, href: '/chat' },
+        { label: t('nav.projects'), icon: Briefcase, href: '/projects' },
+        { label: t('nav.myTeams'), icon: Users, href: '/my-teams' },
+        { label: t('nav.goals'), icon: Target, href: '/goals' },
+        { label: t('nav.content'), icon: ChevronRight, href: '/content' },
     ]
 
     const bottomItems = [
-        { label: 'Branding', icon: Palette, href: '/branding' },
-        { label: 'Mi Perfil', icon: User, href: '/profile' },
-        { label: 'Ajustes', icon: Settings, href: '/settings' },
+        { label: t('nav.branding'), icon: Palette, href: '/branding' },
+        { label: t('nav.profile'), icon: User, href: '/profile' },
+        { label: t('nav.settings'), icon: Settings, href: '/settings' },
     ]
 
     return (
@@ -101,7 +103,7 @@ export function Sidebar({ domain, companyName, logoUrl, primaryColor, userName }
             <nav className="flex-1 px-4 space-y-1 mt-4 text-center">
                 {!isCollapsed && (
                     <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 px-2 text-left">
-                        Navegación
+                        {t('nav.navigation')}
                     </div>
                 )}
                 {navItems.map((item) => {
@@ -155,10 +157,10 @@ export function Sidebar({ domain, companyName, logoUrl, primaryColor, userName }
                         "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-all mt-2 text-left",
                         isCollapsed && "justify-center px-0 py-3"
                     )}
-                    title={isCollapsed ? "Cerrar Sesión" : undefined}
+                    title={isCollapsed ? t('nav.signOut') : undefined}
                 >
                     <LogOut size={20} />
-                    {!isCollapsed && <span>Cerrar Sesión</span>}
+                    {!isCollapsed && <span>{t('nav.signOut')}</span>}
                 </button>
             </div>
         </aside>

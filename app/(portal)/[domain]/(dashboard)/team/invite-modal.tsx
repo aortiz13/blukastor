@@ -2,13 +2,15 @@
 
 import { useState } from 'react'
 import { inviteUserToProject, revokeInvite, removeMember } from '@/lib/actions/project-sharing'
-import { UserPlus, Loader2, Trash2, XCircle } from 'lucide-react'
+import { UserPlus, Loader2, Trash2, XCircle, Globe } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { SUPPORTED_LOCALES, Locale } from '@/lib/i18n/translations'
 
 export function InviteMemberModal({ projectId }: { projectId: string }) {
     const [isOpen, setIsOpen] = useState(false)
     const [email, setEmail] = useState('')
     const [role, setRole] = useState<'editor' | 'viewer'>('editor')
+    const [language, setLanguage] = useState<Locale>('es')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [mode, setMode] = useState<'email' | 'link'>('email')
@@ -85,6 +87,28 @@ export function InviteMemberModal({ projectId }: { projectId: string }) {
                     >
                         Enlace
                     </button>
+                </div>
+
+                {/* Language Selector */}
+                <div className="mb-6">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-1">
+                        <Globe size={12} /> Idioma del invitado / Guest language
+                    </label>
+                    <div className="flex bg-gray-100 p-1 rounded-xl">
+                        {SUPPORTED_LOCALES.map(loc => (
+                            <button
+                                key={loc.code}
+                                type="button"
+                                onClick={() => setLanguage(loc.code)}
+                                className={`flex-1 py-2 text-sm font-bold rounded-lg flex items-center justify-center gap-1.5 transition ${
+                                    language === loc.code ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                <span>{loc.flag}</span>
+                                <span>{loc.label}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {mode === 'email' ? (

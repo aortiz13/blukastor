@@ -4,8 +4,9 @@ import { useState } from 'react'
 import {
     UserPlus, Loader2, XCircle, Mail, Link2, Copy, Check, Shield,
     LayoutDashboard, Users, FileText, ShieldAlert, CreditCard,
-    TrendingUp, Palette, Bot, ExternalLink, MessageCircle, Phone
+    TrendingUp, Palette, Bot, ExternalLink, MessageCircle, Phone, Globe
 } from 'lucide-react'
+import { SUPPORTED_LOCALES, Locale } from '@/lib/i18n/translations'
 
 interface InviteUserModalProps {
     companyName: string
@@ -48,6 +49,7 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
     const [email, setEmail] = useState('')
     const [phone, setPhone] = useState('')
     const [role, setRole] = useState('member')
+    const [language, setLanguage] = useState<Locale>('es')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
@@ -77,6 +79,7 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                     email: mode === 'email' ? email : undefined,
                     phone: mode === 'whatsapp' ? phone : undefined,
                     role, channel: mode,
+                    language,
                     ...(role === 'member' ? { permissions } : {}),
                 }),
             })
@@ -157,6 +160,31 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                                 ))}
                             </div>
                         </div>
+                    </div>
+
+                    {/* Language Selector */}
+                    <div className="mb-4">
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                            <Globe size={10} /> Idioma del invitado / Guest language
+                        </label>
+                        <div className="flex bg-gray-50 border border-gray-200 rounded-lg p-0.5">
+                            {SUPPORTED_LOCALES.map(loc => (
+                                <button
+                                    key={loc.code}
+                                    type="button"
+                                    onClick={() => setLanguage(loc.code)}
+                                    className={`flex-1 py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                                        language === loc.code ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400 hover:text-gray-600'
+                                    }`}
+                                >
+                                    <span>{loc.flag}</span>
+                                    <span>{loc.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <p className="text-[9px] text-gray-400 mt-1">
+                            Idioma en el que se enviará la invitación y se mostrará la plataforma.
+                        </p>
                     </div>
 
                     {/* Client portal info */}
@@ -268,7 +296,7 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                                     <button onClick={copyToClipboard}
                                         className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-blue-700 transition flex items-center justify-center gap-1.5">
                                         {copied ? <Check size={14} /> : <Copy size={14} />}
-                                        {copied ? 'Copiado!' : 'Copiar Enlace'}
+                                        {copied ? '¡Copiado!' : 'Copiar Enlace'}
                                     </button>
                                     <p className="text-[9px] text-blue-400 text-center">Válido 7 días • {roleLabels[role]}</p>
                                 </div>

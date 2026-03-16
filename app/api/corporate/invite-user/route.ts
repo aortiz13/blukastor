@@ -46,7 +46,8 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json()
-        const { email, phone, role: inviteRole, channel, permissions } = body
+        const { email, phone, role: inviteRole, channel, permissions, language: inviteLanguage } = body
+        const language = ['es', 'en'].includes(inviteLanguage) ? inviteLanguage : 'es'
 
         if (!channel || !['email', 'link', 'whatsapp'].includes(channel)) {
             return NextResponse.json({ error: 'Invalid channel' }, { status: 400 })
@@ -96,6 +97,7 @@ export async function POST(request: Request) {
                 token,
                 role: inviteRole,
                 channel,
+                language,
                 permissions: memberPermissions,
                 expires_at: expiresAt.toISOString(),
                 created_by: user.id,
@@ -135,6 +137,7 @@ export async function POST(request: Request) {
                         senderName: user.user_metadata?.full_name || user.email,
                         inviteLink: inviteUrl,
                         role: inviteRole,
+                        language,
                     }
                 })
             } catch (emailError) {
@@ -152,6 +155,7 @@ export async function POST(request: Request) {
                         inviteUrl,
                         companyName: company?.name || 'la plataforma',
                         role: inviteRole,
+                        language,
                     }
                 })
             } catch (waError) {

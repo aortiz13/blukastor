@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { X, UserPlus, Loader2, Mail, Shield, Building, FolderKanban } from 'lucide-react'
+import { X, UserPlus, Loader2, Mail, Shield, Building, FolderKanban, Globe } from 'lucide-react'
+import { SUPPORTED_LOCALES, Locale } from '@/lib/i18n/translations'
 
 interface InviteUserModalProps {
     isOpen: boolean
@@ -29,6 +30,7 @@ export function InviteUserModal({ isOpen, onClose }: InviteUserModalProps) {
     const [role, setRole] = useState('viewer')
     const [companyId, setCompanyId] = useState('')
     const [selectedProjects, setSelectedProjects] = useState<string[]>([])
+    const [language, setLanguage] = useState<Locale>('es')
 
     const [companies, setCompanies] = useState<Company[]>([])
     const [projects, setProjects] = useState<Project[]>([])
@@ -97,6 +99,7 @@ export function InviteUserModal({ isOpen, onClose }: InviteUserModalProps) {
                     email,
                     companyId,
                     role,
+                    language,
                     projectIds: selectedProjects.length > 0 ? selectedProjects : undefined
                 })
             })
@@ -124,6 +127,7 @@ export function InviteUserModal({ isOpen, onClose }: InviteUserModalProps) {
             setCompanyId('')
             setSelectedProjects([])
             setProjects([])
+            setLanguage('es')
             onClose()
         }
     }
@@ -224,6 +228,33 @@ export function InviteUserModal({ isOpen, onClose }: InviteUserModalProps) {
                             <p><strong>Usuario:</strong> Acceso al portal de la empresa</p>
                             <p><strong>Administrador:</strong> Acceso al portal corporativo y al portal de la empresa</p>
                         </div>
+                    </div>
+
+                    {/* Language */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                            <Globe className="w-4 h-4" />
+                            Idioma del invitado / Guest language
+                        </label>
+                        <div className="flex bg-gray-50 border border-gray-200 rounded-xl p-1">
+                            {SUPPORTED_LOCALES.map(loc => (
+                                <button
+                                    key={loc.code}
+                                    type="button"
+                                    onClick={() => setLanguage(loc.code)}
+                                    disabled={loading}
+                                    className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition ${
+                                        language === loc.code ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400 hover:text-gray-600'
+                                    }`}
+                                >
+                                    <span>{loc.flag}</span>
+                                    <span>{loc.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                            Idioma en el que se enviará la invitación y se mostrará la plataforma para este usuario.
+                        </p>
                     </div>
 
                     {/* Projects */}

@@ -44,26 +44,6 @@ export default function LoginPage() {
         }
     }, [domain])
 
-    const handleMagicLink = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
-        setMessage('')
-
-        const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-                emailRedirectTo: `${window.location.origin}/auth/callback`,
-            },
-        })
-
-        setIsLoading(false)
-        if (error) {
-            setMessage('Error: ' + error.message)
-        } else {
-            setMessage('¡Revisa tu email para entrar!')
-        }
-    }
-
     const handlePasswordLogin = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
@@ -419,19 +399,6 @@ export default function LoginPage() {
                                                 {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Entrar con Contraseña'}
                                             </button>
                                         </form>
-
-                                        <div className="relative">
-                                            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-200"></span></div>
-                                            <div className="relative flex justify-center text-xs uppercase"><span className="px-3 text-gray-400" style={{ backgroundColor: company.login_bg_color || '#ffffff' }}>O también</span></div>
-                                        </div>
-
-                                        <button
-                                            onClick={handleMagicLink}
-                                            disabled={isLoading || !email}
-                                            className="flex w-full justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
-                                        >
-                                            Enviar Enlace Mágico
-                                        </button>
                                     </>
                                 )}
                             </>

@@ -13,10 +13,11 @@ Deno.serve(async (req) => {
     }
 
     try {
-        const { phone, otp, instanceName, companyName } = await req.json();
+        const { phone, otp, instanceName, companyName, apiKey } = await req.json();
 
-        // Always use the default instance (Blukastor_Nova) for sending OTPs
-        const instance = DEFAULT_INSTANCE;
+        // Use the company's own WhatsApp instance, fallback to default
+        const instance = instanceName || DEFAULT_INSTANCE;
+        const evolutionApiKey = apiKey || EVOLUTION_API_KEY;
 
         console.log('Sending WhatsApp OTP:', { phone, instance, companyName });
 
@@ -39,7 +40,7 @@ Deno.serve(async (req) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'apikey': EVOLUTION_API_KEY,
+                'apikey': evolutionApiKey,
             },
             body: JSON.stringify({
                 number: phoneNumber,

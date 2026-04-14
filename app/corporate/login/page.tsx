@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Building2, Loader2, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react'
+import { Building2, Loader2, Mail, Lock, ArrowRight } from 'lucide-react'
 
 interface CompanyBranding {
     found: boolean
@@ -22,7 +22,7 @@ export default function CorporateLoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [isLoading, setIsLoading] = useState(false)
-    const [isMagicLinkLoading, setIsMagicLinkLoading] = useState(false)
+
     const [message, setMessage] = useState('')
     const [messageType, setMessageType] = useState<'error' | 'success' | 'info'>('info')
     const [branding, setBranding] = useState<CompanyBranding | null>(null)
@@ -85,32 +85,7 @@ export default function CorporateLoginPage() {
         window.location.href = '/corporate/dashboard'
     }
 
-    const handleMagicLink = async () => {
-        if (!email) {
-            setMessage('Ingresa tu email primero.')
-            setMessageType('error')
-            return
-        }
 
-        setIsMagicLinkLoading(true)
-        setMessage('')
-
-        const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-                emailRedirectTo: `${window.location.origin}/auth/callback?next=/corporate/dashboard`,
-            },
-        })
-
-        setIsMagicLinkLoading(false)
-        if (error) {
-            setMessage(error.message)
-            setMessageType('error')
-        } else {
-            setMessage('Revisa tu correo electrónico. Te enviamos un enlace de acceso.')
-            setMessageType('success')
-        }
-    }
 
     const handleForgotPassword = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -328,32 +303,6 @@ export default function CorporateLoginPage() {
                                     )}
                                 </button>
                             </form>
-
-                            {/* Divider */}
-                            <div className="relative my-6">
-                                <div className="absolute inset-0 flex items-center">
-                                    <span className="w-full border-t border-white/10" />
-                                </div>
-                                <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-transparent px-3 text-white/30 tracking-wider">o también</span>
-                                </div>
-                            </div>
-
-                            {/* Magic Link Button */}
-                            <button
-                                onClick={handleMagicLink}
-                                disabled={isMagicLinkLoading}
-                                className="w-full flex items-center justify-center gap-2 py-3 border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white rounded-xl transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isMagicLinkLoading ? (
-                                    <Loader2 className="animate-spin" size={18} />
-                                ) : (
-                                    <>
-                                        <Sparkles size={16} style={{ color: primaryColor }} />
-                                        Enviar Enlace Mágico
-                                    </>
-                                )}
-                            </button>
                         </>
                     )}
 

@@ -489,6 +489,7 @@ const es: TranslationDict = {
     'common.errorSaving': 'Error al guardar',
     'common.noResults': 'Sin resultados',
     'common.enterPressHint': 'Presiona Enter para agregar rápidamente.',
+    'common.networkError': 'Error de red',
 
     // Goals
     'goal.updated': 'Objetivo actualizado',
@@ -1239,6 +1240,7 @@ const en: TranslationDict = {
     'common.errorSaving': 'Error saving',
     'common.noResults': 'No results',
     'common.enterPressHint': 'Press Enter to add quickly.',
+    'common.networkError': 'Network error',
 
     // Goals
     'goal.updated': 'Goal updated',

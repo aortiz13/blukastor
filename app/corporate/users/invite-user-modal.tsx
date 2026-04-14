@@ -7,6 +7,7 @@ import {
     TrendingUp, Palette, Bot, ExternalLink, MessageCircle, Phone, Globe
 } from 'lucide-react'
 import { SUPPORTED_LOCALES, Locale } from '@/lib/i18n/translations'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface InviteUserModalProps {
     companyName: string
@@ -14,14 +15,14 @@ interface InviteUserModalProps {
 }
 
 const CORPORATE_MODULES = [
-    { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { key: 'users', label: 'Usuarios', icon: Users },
-    { key: 'compliance', label: 'Cumplimiento', icon: FileText },
-    { key: 'escalation', label: 'Escalamiento', icon: ShieldAlert },
-    { key: 'memberships', label: 'Membresías', icon: CreditCard },
-    { key: 'finance', label: 'Finanzas', icon: TrendingUp },
-    { key: 'branding', label: 'Branding', icon: Palette },
-    { key: 'agents', label: 'Agentes', icon: Bot },
+    { key: 'dashboard', labelKey: 'module.dashboard', icon: LayoutDashboard },
+    { key: 'users', labelKey: 'module.users', icon: Users },
+    { key: 'compliance', labelKey: 'module.compliance', icon: FileText },
+    { key: 'escalation', labelKey: 'module.escalation', icon: ShieldAlert },
+    { key: 'memberships', labelKey: 'module.memberships', icon: CreditCard },
+    { key: 'finance', labelKey: 'module.finance', icon: TrendingUp },
+    { key: 'branding', labelKey: 'module.branding', icon: Palette },
+    { key: 'agents', labelKey: 'module.agents', icon: Bot },
 ]
 
 interface ModulePermissions {
@@ -29,6 +30,7 @@ interface ModulePermissions {
 }
 
 export function InviteUserButton({ companyName, companyPortalUrl }: InviteUserModalProps) {
+    const { t } = useTranslation()
     const [isOpen, setIsOpen] = useState(false)
     return (
         <>
@@ -37,7 +39,7 @@ export function InviteUserButton({ companyName, companyPortalUrl }: InviteUserMo
                 className="bg-black text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-800 transition shadow-lg shadow-black/5 text-sm"
             >
                 <UserPlus size={16} />
-                <span>Invitar Usuario</span>
+                <span>{t('invite.inviteUser')}</span>
             </button>
             {isOpen && <InviteModal companyName={companyName} companyPortalUrl={companyPortalUrl} onClose={() => setIsOpen(false)} />}
         </>
@@ -56,6 +58,7 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
     const [inviteLink, setInviteLink] = useState('')
     const [copied, setCopied] = useState(false)
     const [permissions, setPermissions] = useState<ModulePermissions>({ modules: [] })
+    const { t } = useTranslation()
 
     const toggleModule = (key: string) => {
         setPermissions(prev => ({
@@ -68,7 +71,7 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
         setLoading(true); setError(''); setSuccess(''); setInviteLink('')
 
         if (role === 'member' && permissions.modules.length === 0) {
-            setError('Selecciona al menos un módulo'); setLoading(false); return
+            setError(t('invite.selectModule')); setLoading(false); return
         }
 
         try {
@@ -85,10 +88,10 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error || 'Error'); return }
-            if (mode === 'email') { setSuccess(`Enviado a ${email}`); setEmail('') }
-            else if (mode === 'whatsapp') { setSuccess(`Enviado por WhatsApp a +${phone}`); setPhone('') }
+            if (mode === 'email') { setSuccess(`${t('invite.sentToEmail')} ${email}`); setEmail('') }
+            else if (mode === 'whatsapp') { setSuccess(`${t('invite.sentToWhatsApp')} +${phone}`); setPhone('') }
             else { setInviteLink(data.inviteUrl) }
-        } catch (err: any) { setError(err.message || 'Error de red') }
+        } catch (err: any) { setError(err.message || t('common.networkError')) }
         finally { setLoading(false) }
     }
 
@@ -100,7 +103,7 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
     const reset = () => { setError(''); setSuccess(''); setInviteLink('') }
 
     const roleLabels: Record<string, string> = {
-        admin: 'Administrador', member: 'Miembro (Empleado)', client: 'Cliente',
+        admin: t('invite.roleAdmin'), member: t('invite.roleMemberEmployee'), client: t('invite.roleClient'),
     }
 
     return (
@@ -109,7 +112,7 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                 {/* Header */}
                 <div className="flex justify-between items-center px-6 pt-6 pb-3">
                     <div>
-                        <h2 className="text-lg font-bold text-gray-900">Invitar Usuario</h2>
+                        <h2 className="text-lg font-bold text-gray-900">{t('invite.inviteUser')}</h2>
                         <p className="text-gray-400 text-xs">{companyName}</p>
                     </div>
                     <button onClick={onClose} className="text-gray-300 hover:text-gray-500 transition">
@@ -124,22 +127,22 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                         {/* Role */}
                         <div className="flex-1">
                             <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                                Rol
+                                {t('invite.role')}
                             </label>
                             <select
                                 value={role}
                                 onChange={(e) => setRole(e.target.value)}
                                 className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5"
                             >
-                                <option value="member">Miembro</option>
-                                <option value="admin">Administrador</option>
-                                <option value="client">Cliente</option>
+                                <option value="member">{t('invite.roleMember')}</option>
+                                <option value="admin">{t('invite.roleAdmin')}</option>
+                                <option value="client">{t('invite.roleClient')}</option>
                             </select>
                         </div>
                         {/* Channel */}
                         <div className="flex-1">
                             <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                                Canal
+                                {t('invite.channel')}
                             </label>
                             <div className="flex bg-gray-50 border border-gray-200 rounded-lg p-0.5">
                                 {[
@@ -165,7 +168,7 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                     {/* Language Selector */}
                     <div className="mb-4">
                         <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                            <Globe size={10} /> Idioma del invitado / Guest language
+                            <Globe size={10} /> {t('invite.guestLanguage')}
                         </label>
                         <div className="flex bg-gray-50 border border-gray-200 rounded-lg p-0.5">
                             {SUPPORTED_LOCALES.map(loc => (
@@ -183,7 +186,7 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                             ))}
                         </div>
                         <p className="text-[9px] text-gray-400 mt-1">
-                            Idioma en el que se enviará la invitación y se mostrará la plataforma.
+                            {t('invite.languageHint')}
                         </p>
                     </div>
 
@@ -194,7 +197,7 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                                 <ExternalLink size={14} className="text-green-600" />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-[10px] font-bold text-gray-500 uppercase">Portal de usuario</p>
+                                <p className="text-[10px] font-bold text-gray-500 uppercase">{t('invite.userPortal')}</p>
                                 <p className="text-xs text-green-700 font-mono truncate">{companyPortalUrl}</p>
                             </div>
                         </div>
@@ -205,16 +208,16 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                         <div className="mb-4 p-3 bg-blue-50/40 rounded-xl border border-blue-100/50">
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1">
-                                    <Shield size={10} /> Módulos permitidos
+                                    <Shield size={10} /> {t('invite.modulesAllowed')}
                                 </span>
                                 <div className="flex gap-1">
                                     <button type="button" onClick={() => setPermissions({ modules: CORPORATE_MODULES.map(m => m.key) })}
                                         className="text-[9px] font-bold text-blue-600 hover:text-blue-800 px-1.5 py-0.5 rounded hover:bg-blue-100 transition">
-                                        Todos
+                                        {t('invite.all')}
                                     </button>
                                     <button type="button" onClick={() => setPermissions({ modules: [] })}
                                         className="text-[9px] font-bold text-gray-400 hover:text-gray-600 px-1.5 py-0.5 rounded hover:bg-gray-100 transition">
-                                        Ninguno
+                                        {t('invite.none')}
                                     </button>
                                 </div>
                             </div>
@@ -228,13 +231,13 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                                             <input type="checkbox" checked={on} onChange={() => toggleModule(mod.key)}
                                                 className="w-3.5 h-3.5 accent-blue-600 rounded" />
                                             <mod.icon size={13} className={on ? 'text-blue-600' : 'text-gray-400'} />
-                                            <span className={`text-xs font-medium ${on ? 'text-gray-800' : 'text-gray-500'}`}>{mod.label}</span>
+                                            <span className={`text-xs font-medium ${on ? 'text-gray-800' : 'text-gray-500'}`}>{t(mod.labelKey)}</span>
                                         </label>
                                     )
                                 })}
                             </div>
                             <p className="text-[9px] text-blue-500 font-bold text-center mt-2">
-                                {permissions.modules.length}/{CORPORATE_MODULES.length} seleccionados
+                                {permissions.modules.length}/{CORPORATE_MODULES.length} {t('invite.selected')}
                             </p>
                         </div>
                     )}
@@ -244,24 +247,24 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                         <form onSubmit={handleSubmit} className="space-y-3">
                             <div>
                                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                                    Número de WhatsApp
+                                    {t('invite.phone')}
                                 </label>
                                 <div className="relative">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">+</span>
                                     <input type="tel" required value={phone}
                                         onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
                                         className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-7 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-300"
-                                        placeholder="56912345678" />
+                                        placeholder={t('invite.phonePlaceholder')} />
                                 </div>
                             </div>
                             {error && <p className="text-red-600 text-xs bg-red-50 p-2.5 rounded-lg font-medium">{error}</p>}
                             {success && <div className="text-green-700 text-xs bg-green-50 p-2.5 rounded-lg font-medium flex items-center gap-1.5"><Check size={14} />{success}</div>}
                             <div className="flex gap-2">
-                                <button type="button" onClick={onClose} className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-lg font-bold hover:bg-gray-200 transition text-sm">Cancelar</button>
+                                <button type="button" onClick={onClose} className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-lg font-bold hover:bg-gray-200 transition text-sm">{t('invite.cancel')}</button>
                                 <button type="submit" disabled={loading}
                                     className="flex-1 bg-green-600 text-white py-2.5 rounded-lg font-bold hover:bg-green-700 transition disabled:opacity-50 flex items-center justify-center gap-1.5 text-sm">
                                     {loading ? <Loader2 size={14} className="animate-spin" /> : <MessageCircle size={14} />}
-                                    Enviar
+                                    {t('invite.send')}
                                 </button>
                             </div>
                         </form>
@@ -270,19 +273,19 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                     {mode === 'email' && (
                         <form onSubmit={handleSubmit} className="space-y-3">
                             <div>
-                                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Correo electrónico</label>
+                                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">{t('invite.email')}</label>
                                 <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
                                     className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
-                                    placeholder="usuario@ejemplo.com" />
+                                    placeholder={t('invite.emailPlaceholder')} />
                             </div>
                             {error && <p className="text-red-600 text-xs bg-red-50 p-2.5 rounded-lg font-medium">{error}</p>}
                             {success && <div className="text-green-700 text-xs bg-green-50 p-2.5 rounded-lg font-medium flex items-center gap-1.5"><Check size={14} />{success}</div>}
                             <div className="flex gap-2">
-                                <button type="button" onClick={onClose} className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-lg font-bold hover:bg-gray-200 transition text-sm">Cancelar</button>
+                                <button type="button" onClick={onClose} className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-lg font-bold hover:bg-gray-200 transition text-sm">{t('invite.cancel')}</button>
                                 <button type="submit" disabled={loading}
                                     className="flex-1 bg-black text-white py-2.5 rounded-lg font-bold hover:bg-gray-800 transition disabled:opacity-50 flex items-center justify-center gap-1.5 text-sm">
                                     {loading ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
-                                    Enviar
+                                    {t('invite.send')}
                                 </button>
                             </div>
                         </form>
@@ -296,9 +299,9 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                                     <button onClick={copyToClipboard}
                                         className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-blue-700 transition flex items-center justify-center gap-1.5">
                                         {copied ? <Check size={14} /> : <Copy size={14} />}
-                                        {copied ? '¡Copiado!' : 'Copiar Enlace'}
+                                        {copied ? t('invite.copied') : t('invite.copyLink')}
                                     </button>
-                                    <p className="text-[9px] text-blue-400 text-center">Válido 7 días • {roleLabels[role]}</p>
+                                    <p className="text-[9px] text-blue-400 text-center">{t('invite.linkValid')} • {roleLabels[role]}</p>
                                 </div>
                             ) : (
                                 <>
@@ -306,11 +309,11 @@ function InviteModal({ companyName, companyPortalUrl, onClose }: { companyName: 
                                     <button onClick={() => handleSubmit()} disabled={loading}
                                         className="w-full bg-black text-white py-2.5 rounded-lg font-bold hover:bg-gray-800 transition disabled:opacity-50 flex items-center justify-center gap-1.5 text-sm">
                                         {loading ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
-                                        Generar Enlace
+                                        {t('invite.generateLink')}
                                     </button>
                                 </>
                             )}
-                            <button type="button" onClick={onClose} className="w-full bg-gray-100 text-gray-600 py-2.5 rounded-lg font-bold hover:bg-gray-200 transition text-sm">Cerrar</button>
+                            <button type="button" onClick={onClose} className="w-full bg-gray-100 text-gray-600 py-2.5 rounded-lg font-bold hover:bg-gray-200 transition text-sm">{t('invite.close')}</button>
                         </div>
                     )}
                 </div>

@@ -5,8 +5,10 @@ import { inviteUserToProject, revokeInvite, removeMember } from '@/lib/actions/p
 import { UserPlus, Loader2, Trash2, XCircle, Globe } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { SUPPORTED_LOCALES, Locale } from '@/lib/i18n/translations'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export function InviteMemberModal({ projectId }: { projectId: string }) {
+    const { t } = useTranslation()
     const [isOpen, setIsOpen] = useState(false)
     const [email, setEmail] = useState('')
     const [role, setRole] = useState<'editor' | 'viewer'>('editor')
@@ -48,7 +50,7 @@ export function InviteMemberModal({ projectId }: { projectId: string }) {
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(inviteLink)
-        alert('Link copiado al portapapeles')
+        alert(t('invite.linkCopied'))
     }
 
     if (!isOpen) {
@@ -58,7 +60,7 @@ export function InviteMemberModal({ projectId }: { projectId: string }) {
                 className="bg-black text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-800 transition shadow-lg shadow-black/5 text-sm"
             >
                 <UserPlus size={18} />
-                <span>Invitar Miembro</span>
+                <span>{t('invite.memberTitle')}</span>
             </button>
         )
     }
@@ -67,12 +69,12 @@ export function InviteMemberModal({ projectId }: { projectId: string }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-1">
-                    <h2 className="text-2xl font-bold">Invitar Miembro</h2>
+                    <h2 className="text-2xl font-bold">{t('invite.memberTitle')}</h2>
                     <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600">
                         <XCircle size={24} />
                     </button>
                 </div>
-                <p className="text-gray-500 text-sm mb-6">Gestiona el acceso al proyecto.</p>
+                <p className="text-gray-500 text-sm mb-6">{t('invite.manageAccess')}</p>
 
                 <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
                     <button
@@ -85,14 +87,14 @@ export function InviteMemberModal({ projectId }: { projectId: string }) {
                         onClick={() => { setMode('link'); setError(''); setInviteLink('') }}
                         className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${mode === 'link' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-gray-700'}`}
                     >
-                        Enlace
+                        {t('invite.link')}
                     </button>
                 </div>
 
                 {/* Language Selector */}
                 <div className="mb-6">
                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-1">
-                        <Globe size={12} /> Idioma del invitado / Guest language
+                        <Globe size={12} /> {t('invite.guestLanguage')}
                     </label>
                     <div className="flex bg-gray-100 p-1 rounded-xl">
                         {SUPPORTED_LOCALES.map(loc => (
@@ -121,19 +123,19 @@ export function InviteMemberModal({ projectId }: { projectId: string }) {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/5"
-                                placeholder="colaborador@ejemplo.com"
+                                placeholder={t('invite.emailPlaceholder')}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Rol</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">{t('invite.role')}</label>
                             <select
                                 value={role}
                                 onChange={(e) => setRole(e.target.value as any)}
                                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/5"
                             >
-                                <option value="editor">Editor (Puede editar)</option>
-                                <option value="viewer">Viewer (Solo lectura)</option>
+                                <option value="editor">{t('invite.roleEditor')}</option>
+                                <option value="viewer">{t('invite.roleViewer')}</option>
                             </select>
                         </div>
 
@@ -147,7 +149,7 @@ export function InviteMemberModal({ projectId }: { projectId: string }) {
                                 onClick={() => setIsOpen(false)}
                                 className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition"
                             >
-                                Cancelar
+                                {t('common.cancel')}
                             </button>
                             <button
                                 type="submit"
@@ -155,27 +157,27 @@ export function InviteMemberModal({ projectId }: { projectId: string }) {
                                 className="flex-1 bg-black text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 {loading && <Loader2 size={16} className="animate-spin" />}
-                                Enviar Invitación
+                                {t('invite.sendInvite')}
                             </button>
                         </div>
                     </form>
                 ) : (
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Rol del Enlace</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">{t('invite.linkRole')}</label>
                             <select
                                 value={role}
                                 onChange={(e) => setRole(e.target.value as any)}
                                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black/5"
                             >
-                                <option value="editor">Editor (Puede editar)</option>
-                                <option value="viewer">Viewer (Solo lectura)</option>
+                                <option value="editor">{t('invite.roleEditor')}</option>
+                                <option value="viewer">{t('invite.roleViewer')}</option>
                             </select>
                         </div>
 
                         {inviteLink ? (
                             <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl space-y-3">
-                                <p className="text-xs font-bold text-blue-800 uppercase tracking-widest">Enlace generado:</p>
+                                <p className="text-xs font-bold text-blue-800 uppercase tracking-widest">{t('invite.linkGenerated')}</p>
                                 <div className="text-sm text-blue-600 break-all font-mono bg-white p-2 rounded border border-blue-100">
                                     {inviteLink}
                                 </div>
@@ -183,7 +185,7 @@ export function InviteMemberModal({ projectId }: { projectId: string }) {
                                     onClick={copyToClipboard}
                                     className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-blue-700 transition"
                                 >
-                                    Copiar Enlace
+                                    {t('invite.copyLink')}
                                 </button>
                             </div>
                         ) : (
@@ -193,7 +195,7 @@ export function InviteMemberModal({ projectId }: { projectId: string }) {
                                 className="w-full bg-black text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 {loading && <Loader2 size={16} className="animate-spin" />}
-                                Generar Enlace
+                                {t('invite.generateLink')}
                             </button>
                         )}
 
@@ -208,10 +210,11 @@ export function InviteMemberModal({ projectId }: { projectId: string }) {
 }
 
 export function RevokeInviteButton({ inviteId }: { inviteId: string }) {
+    const { t } = useTranslation()
     const [loading, setLoading] = useState(false)
 
     const handleRevoke = async () => {
-        if (!confirm('¿Estás seguro de cancelar esta invitación?')) return
+        if (!confirm(t('invite.confirmRevoke'))) return
         setLoading(true)
         await revokeInvite(inviteId)
         setLoading(false)
@@ -223,16 +226,17 @@ export function RevokeInviteButton({ inviteId }: { inviteId: string }) {
             disabled={loading}
             className="text-xs font-bold text-red-500 p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 rounded-lg"
         >
-            {loading ? <Loader2 size={14} className="animate-spin" /> : 'Cancelar'}
+            {loading ? <Loader2 size={14} className="animate-spin" /> : t('common.cancel')}
         </button>
     )
 }
 
 export function RemoveMemberButton({ memberId }: { memberId: string }) {
+    const { t } = useTranslation()
     const [loading, setLoading] = useState(false)
 
     const handleRemove = async () => {
-        if (!confirm('¿Estás seguro de eliminar a este miembro del proyecto?')) return
+        if (!confirm(t('invite.confirmRemove'))) return
         setLoading(true)
         await removeMember(memberId)
         setLoading(false)

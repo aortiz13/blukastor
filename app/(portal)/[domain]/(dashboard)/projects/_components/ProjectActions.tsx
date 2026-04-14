@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Archive, ArchiveRestore, Trash2, AlertTriangle } from 'lucide-react'
 import { archiveProject, unarchiveProject, deleteProject } from '@/lib/actions/projects'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface ProjectActionsProps {
     projectId: string
@@ -29,6 +30,7 @@ interface ProjectActionsProps {
 
 export function ProjectActions({ projectId, projectName, isActive }: ProjectActionsProps) {
     const router = useRouter()
+    const { t } = useTranslation()
     const [isPending, startTransition] = useTransition()
     const [archived, setArchived] = useState(!isActive)
     const [confirmName, setConfirmName] = useState('')
@@ -60,7 +62,7 @@ export function ProjectActions({ projectId, projectName, isActive }: ProjectActi
                 await deleteProject(projectId, confirmName)
                 router.push('/projects')
             } catch (err: any) {
-                setDeleteError(err.message || 'Error al eliminar el proyecto')
+                setDeleteError(err.message || t('projects.deleteError'))
             }
         })
     }
@@ -78,23 +80,22 @@ export function ProjectActions({ projectId, projectName, isActive }: ProjectActi
                         ) : (
                             <Archive className="w-5 h-5 text-amber-600" />
                         )}
-                        Archivar Proyecto
+                        {t('projects.archiveProject')}
                     </CardTitle>
                     <CardDescription>
-                        Al archivar un proyecto, este dejará de aparecer en la lista principal de proyectos.
-                        Podrás restaurarlo en cualquier momento.
+                        {t('projects.archiveDescription')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                             <Label htmlFor="archive-switch" className="text-sm font-medium">
-                                {archived ? 'Proyecto archivado' : 'Proyecto activo'}
+                                {archived ? t('projects.projectArchived') : t('projects.projectActive')}
                             </Label>
                             <p className="text-xs text-muted-foreground">
                                 {archived
-                                    ? 'Este proyecto está archivado y no aparece en la lista.'
-                                    : 'Este proyecto está activo y visible en la lista.'}
+                                    ? t('projects.archivedStatus')
+                                    : t('projects.activeStatus')}
                             </p>
                         </div>
                         <Switch
@@ -113,11 +114,10 @@ export function ProjectActions({ projectId, projectName, isActive }: ProjectActi
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2 text-red-700">
                         <Trash2 className="w-5 h-5" />
-                        Zona de Peligro
+                        {t('projects.dangerZone')}
                     </CardTitle>
                     <CardDescription>
-                        La eliminación de un proyecto es <strong>permanente e irreversible</strong>. 
-                        Se borrarán todas las metas, transacciones financieras, miembros del equipo e invitaciones asociadas.
+                        {t('projects.deleteWarning')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -131,31 +131,30 @@ export function ProjectActions({ projectId, projectName, isActive }: ProjectActi
                         <AlertDialogTrigger asChild>
                             <Button variant="destructive" className="gap-2">
                                 <Trash2 className="w-4 h-4" />
-                                Eliminar Proyecto Definitivamente
+                                {t('projects.deletePermanently')}
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle className="flex items-center gap-2 text-red-600">
                                     <AlertTriangle className="w-5 h-5" />
-                                    ¿Estás seguro?
+                                    {t('projects.areYouSure')}
                                 </AlertDialogTitle>
                                 <AlertDialogDescription className="space-y-3">
                                     <p>
-                                        Esta acción <strong>no se puede deshacer</strong>. Se eliminarán permanentemente
-                                        todos los datos asociados a este proyecto:
+                                        {t('projects.cannotUndo')}
                                     </p>
                                     <ul className="list-disc pl-5 space-y-1 text-sm">
-                                        <li>Metas y objetivos</li>
-                                        <li>Transacciones financieras</li>
-                                        <li>Presupuestos</li>
-                                        <li>Miembros del equipo</li>
-                                        <li>Invitaciones pendientes</li>
-                                        <li>Contexto del negocio</li>
+                                        <li>{t('projects.deleteGoals')}</li>
+                                        <li>{t('projects.deleteTransactions')}</li>
+                                        <li>{t('projects.deleteBudgets')}</li>
+                                        <li>{t('projects.deleteTeamMembers')}</li>
+                                        <li>{t('projects.deletePendingInvites')}</li>
+                                        <li>{t('projects.deleteBusinessContext')}</li>
                                     </ul>
                                     <div className="pt-2">
                                         <p className="text-sm font-medium text-gray-900 mb-2">
-                                            Para confirmar, escribe el nombre del proyecto: <strong className="text-red-600">{projectName}</strong>
+                                            {t('projects.confirmDeleteText')} <strong className="text-red-600">{projectName}</strong>
                                         </p>
                                         <Input
                                             value={confirmName}
@@ -172,7 +171,7 @@ export function ProjectActions({ projectId, projectName, isActive }: ProjectActi
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+                                <AlertDialogCancel disabled={isPending}>{t('common.cancel')}</AlertDialogCancel>
                                 <Button
                                     variant="destructive"
                                     onClick={handleDelete}
@@ -182,12 +181,12 @@ export function ProjectActions({ projectId, projectName, isActive }: ProjectActi
                                     {isPending ? (
                                         <span className="flex items-center gap-2">
                                             <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                            Eliminando...
+                                            {t('projects.deleting')}
                                         </span>
                                     ) : (
                                         <>
                                             <Trash2 className="w-4 h-4" />
-                                            Eliminar Definitivamente
+                                            {t('projects.deleteDefinitive')}
                                         </>
                                     )}
                                 </Button>

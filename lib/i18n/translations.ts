@@ -173,6 +173,27 @@ const es: TranslationDict = {
 
     // Projects
     'projects.notFound': 'Empresa no encontrada',
+    'projects.archiveProject': 'Archivar Proyecto',
+    'projects.archiveDescription': 'Al archivar un proyecto, este dejará de aparecer en la lista principal. Podrás restaurarlo en cualquier momento.',
+    'projects.projectArchived': 'Proyecto archivado',
+    'projects.projectActive': 'Proyecto activo',
+    'projects.archivedStatus': 'Este proyecto está archivado y no aparece en la lista.',
+    'projects.activeStatus': 'Este proyecto está activo y visible en la lista.',
+    'projects.dangerZone': 'Zona de Peligro',
+    'projects.deleteWarning': 'La eliminación de un proyecto es permanente e irreversible. Se borrarán todas las metas, transacciones financieras, miembros del equipo e invitaciones asociadas.',
+    'projects.deletePermanently': 'Eliminar Proyecto Definitivamente',
+    'projects.areYouSure': '¿Estás seguro?',
+    'projects.cannotUndo': 'Esta acción no se puede deshacer. Se eliminarán permanentemente todos los datos asociados a este proyecto:',
+    'projects.deleteGoals': 'Metas y objetivos',
+    'projects.deleteTransactions': 'Transacciones financieras',
+    'projects.deleteBudgets': 'Presupuestos',
+    'projects.deleteTeamMembers': 'Miembros del equipo',
+    'projects.deletePendingInvites': 'Invitaciones pendientes',
+    'projects.deleteBusinessContext': 'Contexto del negocio',
+    'projects.confirmDeleteText': 'Para confirmar, escribe el nombre del proyecto:',
+    'projects.deleteError': 'Error al eliminar el proyecto',
+    'projects.deleting': 'Eliminando...',
+    'projects.deleteDefinitive': 'Eliminar Definitivamente',
 
     // Invite modals
     'invite.title': 'Invitar Usuario',
@@ -226,6 +247,12 @@ const es: TranslationDict = {
     'invite.fillRequired': 'Por favor completa todos los campos requeridos',
     'invite.success': 'Usuario invitado exitosamente',
     'invite.selectModule': 'Selecciona al menos un módulo',
+    'invite.link': 'Enlace',
+    'invite.guestLanguage': 'Idioma del invitado / Guest language',
+    'invite.linkCopied': 'Link copiado al portapapeles',
+    'invite.confirmRevoke': '¿Estás seguro de cancelar esta invitación?',
+    'invite.confirmRemove': '¿Estás seguro de eliminar a este miembro del proyecto?',
+    'invite.linkRole': 'Rol del Enlace',
 
     // Corporate modules
     'module.dashboard': 'Dashboard',
@@ -889,6 +916,27 @@ const en: TranslationDict = {
 
     // Projects
     'projects.notFound': 'Company not found',
+    'projects.archiveProject': 'Archive Project',
+    'projects.archiveDescription': 'Archiving a project removes it from the main list. You can restore it at any time.',
+    'projects.projectArchived': 'Project archived',
+    'projects.projectActive': 'Project active',
+    'projects.archivedStatus': 'This project is archived and hidden from the list.',
+    'projects.activeStatus': 'This project is active and visible in the list.',
+    'projects.dangerZone': 'Danger Zone',
+    'projects.deleteWarning': 'Deleting a project is permanent and irreversible. All goals, financial transactions, team members, and invitations will be deleted.',
+    'projects.deletePermanently': 'Delete Project Permanently',
+    'projects.areYouSure': 'Are you sure?',
+    'projects.cannotUndo': 'This action cannot be undone. All data associated with this project will be permanently deleted:',
+    'projects.deleteGoals': 'Goals and objectives',
+    'projects.deleteTransactions': 'Financial transactions',
+    'projects.deleteBudgets': 'Budgets',
+    'projects.deleteTeamMembers': 'Team members',
+    'projects.deletePendingInvites': 'Pending invitations',
+    'projects.deleteBusinessContext': 'Business context',
+    'projects.confirmDeleteText': 'To confirm, type the project name:',
+    'projects.deleteError': 'Error deleting the project',
+    'projects.deleting': 'Deleting...',
+    'projects.deleteDefinitive': 'Delete Permanently',
 
     // Invite modals
     'invite.title': 'Invite User',
@@ -942,6 +990,12 @@ const en: TranslationDict = {
     'invite.fillRequired': 'Please complete all required fields',
     'invite.success': 'User invited successfully',
     'invite.selectModule': 'Select at least one module',
+    'invite.link': 'Link',
+    'invite.guestLanguage': 'Guest language',
+    'invite.linkCopied': 'Link copied to clipboard',
+    'invite.confirmRevoke': 'Are you sure you want to cancel this invitation?',
+    'invite.confirmRemove': 'Are you sure you want to remove this member from the project?',
+    'invite.linkRole': 'Link Role',
 
     // Corporate modules
     'module.dashboard': 'Dashboard',

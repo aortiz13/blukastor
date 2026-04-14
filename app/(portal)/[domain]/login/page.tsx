@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getCompanyByDomain } from '@/lib/data/companies'
 import { Loader2, Mail, Phone, MessageCircle, UserPlus } from 'lucide-react'
 import { useParams } from 'next/navigation'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function LoginPage() {
     const params = useParams()
@@ -35,6 +36,7 @@ export default function LoginPage() {
     const [message, setMessage] = useState('')
     const [forgotMode, setForgotMode] = useState(false)
     const supabase = createClient()
+    const { t } = useTranslation()
 
     useEffect(() => {
         if (domain) {
@@ -65,7 +67,7 @@ export default function LoginPage() {
     const handleForgotPassword = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!email) {
-            setMessage('Error: Ingresa tu correo electrónico primero')
+            setMessage('Error: ' + t('login.enterEmail'))
             return
         }
         setIsLoading(true)
@@ -80,7 +82,7 @@ export default function LoginPage() {
             const data = await res.json()
 
             if (!res.ok) {
-                setMessage('Error: ' + (data.error || 'Error al enviar el correo'))
+                setMessage('Error: ' + (data.error || t('login.sendError')))
             } else {
                 setMessage('✅ ' + data.message)
             }
@@ -109,11 +111,11 @@ export default function LoginPage() {
             const data = await res.json()
 
             if (!res.ok) {
-                setMessage('Error: ' + (data.error || 'Error al enviar código'))
+                setMessage('Error: ' + (data.error || t('login.otpSendError')))
             } else {
                 setOtpSent(true)
                 setContactName(data.contactName || '')
-                setMessage('✅ Código enviado por WhatsApp')
+                setMessage('✅ ' + t('login.otpSentWhatsApp'))
             }
         } catch (err: any) {
             setMessage('Error: ' + err.message)
@@ -142,7 +144,7 @@ export default function LoginPage() {
             const data = await res.json()
 
             if (!res.ok) {
-                setMessage('Error: ' + (data.error || 'Código inválido'))
+                setMessage('Error: ' + (data.error || t('login.invalidCode')))
             } else if (data.hasUser && data.tokenHash) {
                 // Verify session directly in the browser — no external redirect
                 const { error: verifyError } = await supabase.auth.verifyOtp({
@@ -160,7 +162,7 @@ export default function LoginPage() {
                 setNeedsRegistration(true)
                 setMessage('')
             } else {
-                setMessage(data.message || 'Verificación exitosa')
+                setMessage(data.message || t('login.verificationSuccess'))
             }
         } catch (err: any) {
             setMessage('Error: ' + err.message)
@@ -191,17 +193,17 @@ export default function LoginPage() {
             const data = await res.json()
 
             if (!res.ok) {
-                setMessage('Error: ' + (data.error || 'Error al crear cuenta'))
+                setMessage('Error: ' + (data.error || t('login.accountCreateError')))
             } else if (data.success) {
                 // Account created — sign in directly with the credentials
-                setMessage('✅ ¡Cuenta creada! Iniciando sesión...')
+                setMessage('✅ ' + t('login.accountCreatedLogging'))
                 const { error: signInError } = await supabase.auth.signInWithPassword({
                     email: regEmail,
                     password: regPassword,
                 })
 
                 if (signInError) {
-                    setMessage('Cuenta creada. Inicia sesión con tu email y contraseña.')
+                    setMessage(t('login.accountCreatedLoginManually'))
                     setNeedsRegistration(false)
                     setLoginMethod('email')
                     setEmail(regEmail)
@@ -225,7 +227,7 @@ export default function LoginPage() {
     const fontHeading = company?.font_heading || 'Inter'
     const fontBody = company?.font_body || 'Inter'
     const portalConfig = (company?.frontend_config as any)?.portal || {}
-    const welcomeText = portalConfig.login_welcome_text || `Bienvenido al portal de ${companyName}`
+    const welcomeText = portalConfig.login_welcome_text || `${t('login.welcomePortal')} ${companyName}`
     const mobileCover = coverImageMobileUrl || coverImageUrl
 
     // Google Fonts
@@ -331,13 +333,13 @@ export default function LoginPage() {
                                                 required
                                                 className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
                                                 style={{ '--tw-ring-color': primaryColor + '40', borderColor: 'rgb(229,231,235)' } as any}
-                                                placeholder="Correo electrónico"
+                                                placeholder={t('login.emailAddress')}
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
                                             />
                                         </div>
                                         <p className="text-xs text-gray-400 text-center">
-                                            Te enviaremos un enlace para restablecer tu contraseña
+                                            {t('login.resetLinkHint')}
                                         </p>
                                         <button
                                             type="submit"
@@ -345,7 +347,7 @@ export default function LoginPage() {
                                             className="flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
                                             style={{ backgroundColor: primaryColor }}
                                         >
-                                            {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Enviar enlace de recuperación'}
+                                            {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : t('login.sendResetLink')}
                                         </button>
                                         <button
                                             type="button"
@@ -353,7 +355,7 @@ export default function LoginPage() {
                                             className="flex w-full justify-center text-sm font-medium transition"
                                             style={{ color: primaryColor }}
                                         >
-                                            ← Volver al inicio de sesión
+                                            ← {t('login.backToLogin')}
                                         </button>
                                     </form>
                                 ) : (
@@ -366,7 +368,7 @@ export default function LoginPage() {
                                                     required
                                                     className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
                                                     style={{ '--tw-ring-color': primaryColor + '40', borderColor: 'rgb(229,231,235)' } as any}
-                                                    placeholder="Correo electrónico"
+                                                    placeholder={t('login.emailAddress')}
                                                     value={email}
                                                     onChange={(e) => setEmail(e.target.value)}
                                                 />
@@ -375,7 +377,7 @@ export default function LoginPage() {
                                                     required
                                                     className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
                                                     style={{ '--tw-ring-color': primaryColor + '40' } as any}
-                                                    placeholder="Contraseña"
+                                                    placeholder={t('login.password')}
                                                     value={password}
                                                     onChange={(e) => setPassword(e.target.value)}
                                                 />
@@ -387,7 +389,7 @@ export default function LoginPage() {
                                                     className="text-xs font-medium transition hover:opacity-80"
                                                     style={{ color: primaryColor }}
                                                 >
-                                                    ¿Olvidaste tu contraseña?
+                                                    {t('login.forgotPassword')}
                                                 </button>
                                             </div>
                                             <button
@@ -396,7 +398,7 @@ export default function LoginPage() {
                                                 className="flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
                                                 style={{ backgroundColor: primaryColor }}
                                             >
-                                                {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : 'Entrar con Contraseña'}
+                                                {isLoading ? <Loader2 className="mr-2 animate-spin" size={18} /> : t('login.enterWithPassword')}
                                             </button>
                                         </form>
                                     </>
@@ -415,17 +417,16 @@ export default function LoginPage() {
                                                 <UserPlus size={24} className="text-blue-500" />
                                             </div>
                                             <p className="text-sm font-semibold text-gray-800">
-                                                ¡Número verificado! 🎉
+                                                {t('login.numberVerified')}
                                             </p>
                                             <p className="text-xs text-gray-500">
-                                                Crea tu cuenta para acceder al portal.
-                                                Tu número <span className="font-bold">{phone}</span> quedará asociado.
+                                                {t('login.createAccountHint')} <span className="font-bold">{phone}</span>
                                             </p>
                                         </div>
                                         <div className="space-y-3">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Correo electrónico
+                                                    {t('login.emailAddress')}
                                                 </label>
                                                 <input
                                                     type="email"
@@ -439,7 +440,7 @@ export default function LoginPage() {
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Contraseña
+                                                    {t('login.password')}
                                                 </label>
                                                 <input
                                                     type="password"
@@ -447,7 +448,7 @@ export default function LoginPage() {
                                                     minLength={6}
                                                     className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none transition"
                                                     style={{ '--tw-ring-color': primaryColor + '40' } as any}
-                                                    placeholder="Mínimo 6 caracteres"
+                                                    placeholder={t('login.minChars')}
                                                     value={regPassword}
                                                     onChange={(e) => setRegPassword(e.target.value)}
                                                 />
@@ -464,7 +465,7 @@ export default function LoginPage() {
                                             ) : (
                                                 <>
                                                     <UserPlus size={18} />
-                                                    Crear cuenta
+                                                    {t('login.createAccount')}
                                                 </>
                                             )}
                                         </button>
@@ -473,14 +474,14 @@ export default function LoginPage() {
                                             onClick={() => { setNeedsRegistration(false); setOtpSent(false); setOtpCode(''); setMessage('') }}
                                             className="flex w-full justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition"
                                         >
-                                            Volver al inicio
+                                            {t('login.backToStart')}
                                         </button>
                                     </form>
                                 ) : !otpSent ? (
                                     <form onSubmit={handleRequestOtp} className="space-y-4">
                                         <div className="space-y-2">
                                             <label className="block text-sm font-medium text-gray-700">
-                                                Número de WhatsApp
+                                                {t('login.whatsappNumber')}
                                             </label>
                                             <div className="relative">
                                                 <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -495,7 +496,7 @@ export default function LoginPage() {
                                                 />
                                             </div>
                                             <p className="text-xs text-gray-400">
-                                                Incluye el código de país (ej: +56, +1, +54)
+                                                {t('login.countryCodeHint')}
                                             </p>
                                         </div>
                                         <button
@@ -509,7 +510,7 @@ export default function LoginPage() {
                                             ) : (
                                                 <>
                                                     <MessageCircle size={18} />
-                                                    Enviar código por WhatsApp
+                                                    {t('login.sendCodeWhatsApp')}
                                                 </>
                                             )}
                                         </button>
@@ -521,18 +522,18 @@ export default function LoginPage() {
                                                 <MessageCircle size={24} className="text-green-500" />
                                             </div>
                                             <p className="text-sm text-gray-600">
-                                                Enviamos un código a<br />
+                                                {t('login.codeSentTo')}<br />
                                                 <span className="font-bold text-gray-900">{phone}</span>
                                             </p>
                                             {contactName && (
                                                 <p className="text-xs text-gray-400">
-                                                    Hola {contactName} 👋
+                                                    {t('login.hello')} {contactName} 👋
                                                 </p>
                                             )}
                                         </div>
                                         <div className="space-y-2">
                                             <label className="block text-sm font-medium text-gray-700">
-                                                Código de verificación
+                                                {t('login.verificationCode')}
                                             </label>
                                             <input
                                                 type="text"
@@ -551,14 +552,14 @@ export default function LoginPage() {
                                             className="flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
                                             style={{ backgroundColor: primaryColor }}
                                         >
-                                            {isLoading ? <Loader2 className="animate-spin" size={18} /> : 'Verificar código'}
+                                            {isLoading ? <Loader2 className="animate-spin" size={18} /> : t('login.verifyCode')}
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => { setOtpSent(false); setOtpCode(''); setMessage('') }}
                                             className="flex w-full justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition"
                                         >
-                                            Cambiar número
+                                            {t('login.changeNumber')}
                                         </button>
                                     </form>
                                 )}

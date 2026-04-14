@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function RootLoginPage() {
     const [email, setEmail] = useState('')
@@ -11,6 +12,7 @@ export default function RootLoginPage() {
     const [message, setMessage] = useState('')
     const [forgotMode, setForgotMode] = useState(false)
     const supabase = createClient()
+    const { t } = useTranslation()
 
     const handlePasswordLogin = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -34,7 +36,7 @@ export default function RootLoginPage() {
     const handleForgotPassword = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!email) {
-            setMessage('Error: Ingresa tu correo electrónico primero')
+            setMessage('Error: ' + t('login.enterEmail'))
             return
         }
         setIsLoading(true)
@@ -49,7 +51,7 @@ export default function RootLoginPage() {
             const data = await res.json()
 
             if (!res.ok) {
-                setMessage('Error: ' + (data.error || 'Error al enviar el correo'))
+                setMessage('Error: ' + (data.error || t('login.sendError')))
             } else {
                 setMessage('✅ ' + data.message)
             }
@@ -65,7 +67,7 @@ export default function RootLoginPage() {
                 <div className="text-center">
                     <h1 className="text-3xl font-extrabold text-gray-900">Blukastor Admin</h1>
                     <p className="mt-2 text-sm text-gray-600">
-                        {forgotMode ? 'Recuperar Contraseña' : 'Acceso de Gestión del Sistema'}
+                        {forgotMode ? t('login.recoverPassword') : t('login.systemAccess')}
                     </p>
                 </div>
 
@@ -76,7 +78,7 @@ export default function RootLoginPage() {
                             <div className="space-y-2">
                                 <input
                                     type="email"
-                                    placeholder="Correo electrónico"
+                                    placeholder={t('login.emailAddress')}
                                     required
                                     className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={email}
@@ -88,14 +90,14 @@ export default function RootLoginPage() {
                                 disabled={isLoading}
                                 className="flex w-full items-center justify-center rounded-lg bg-blue-600 py-3 font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
                             >
-                                {isLoading ? <Loader2 className="mr-2 animate-spin" size={20} /> : 'Enviar enlace de recuperación'}
+                                {isLoading ? <Loader2 className="mr-2 animate-spin" size={20} /> : t('login.sendResetLink')}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => { setForgotMode(false); setMessage('') }}
                                 className="flex w-full justify-center text-sm text-blue-600 hover:text-blue-800 font-medium transition"
                             >
-                                ← Volver al inicio de sesión
+                                ← {t('login.backToLogin')}
                             </button>
                         </form>
                     ) : (
@@ -105,7 +107,7 @@ export default function RootLoginPage() {
                                 <div className="space-y-2">
                                     <input
                                         type="email"
-                                        placeholder="Correo electrónico"
+                                        placeholder={t('login.emailAddress')}
                                         required
                                         className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         value={email}
@@ -113,7 +115,7 @@ export default function RootLoginPage() {
                                     />
                                     <input
                                         type="password"
-                                        placeholder="Contraseña"
+                                        placeholder={t('login.password')}
                                         required
                                         className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         value={password}
@@ -126,7 +128,7 @@ export default function RootLoginPage() {
                                         onClick={() => { setForgotMode(true); setMessage('') }}
                                         className="text-sm text-blue-600 hover:text-blue-800 font-medium transition"
                                     >
-                                        ¿Olvidaste tu contraseña?
+                                        {t('login.forgotPassword')}
                                     </button>
                                 </div>
                                 <button
@@ -134,7 +136,7 @@ export default function RootLoginPage() {
                                     disabled={isLoading}
                                     className="flex w-full items-center justify-center rounded-lg bg-blue-600 py-3 font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
                                 >
-                                    {isLoading ? <Loader2 className="mr-2 animate-spin" size={20} /> : 'Entrar con Contraseña'}
+                                    {isLoading ? <Loader2 className="mr-2 animate-spin" size={20} /> : t('login.enterWithPassword')}
                                 </button>
                             </form>
                         </>

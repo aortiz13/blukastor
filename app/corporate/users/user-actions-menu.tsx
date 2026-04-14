@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { MoreVertical, Eye, Trash2, Bot, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import UserDetailsModal from './user-details-modal'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface UserActionsMenuProps {
     contactId: string
@@ -14,6 +15,7 @@ interface UserActionsMenuProps {
 
 export default function UserActionsMenu({ contactId, contactName, companyId, onDeleted }: UserActionsMenuProps) {
     const [open, setOpen] = useState(false)
+    const { t } = useTranslation()
     const [showDetails, setShowDetails] = useState(false)
     const [aiEnabled, setAiEnabled] = useState<boolean | null>(null)
     const [aiToggling, setAiToggling] = useState(false)
@@ -92,7 +94,7 @@ export default function UserActionsMenu({ contactId, contactName, companyId, onD
                             className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
                         >
                             <Eye size={14} className="text-gray-400" />
-                            Ver detalles
+                            {t('users.viewDetails')}
                         </button>
                         <div className="h-px bg-gray-100 mx-2" />
                         {/* AI Toggle inline */}
@@ -129,7 +131,7 @@ export default function UserActionsMenu({ contactId, contactName, companyId, onD
                             className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-2.5 transition-colors"
                         >
                             <Trash2 size={14} />
-                            Eliminar usuario
+                            {t('users.deleteUser')}
                         </button>
                     </div>
                 )}

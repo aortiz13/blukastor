@@ -6,6 +6,7 @@ import {
     FileText, Bot, Trash2, AlertTriangle, Check, User
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface UserDetailsModalProps {
     contactId: string
@@ -50,6 +51,7 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const [deleting, setDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState('')
+    const { t } = useTranslation()
 
     useEffect(() => {
         fetchDetails()
@@ -103,10 +105,10 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
                 onClose()
             } else {
                 const data = await res.json()
-                setDeleteError(data.error || 'Error al eliminar')
+                setDeleteError(data.error || t('users.deleteError'))
             }
         } catch (err: any) {
-            setDeleteError(err.message || 'Error de red')
+            setDeleteError(err.message || t('common.networkError'))
         } finally {
             setDeleting(false)
         }
@@ -127,7 +129,7 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
     }
 
     const displayName = details?.contact
-        ? details.contact.real_name || details.contact.push_name || details.contact.nickname || details.contact.phone || 'Sin nombre'
+        ? details.contact.real_name || details.contact.push_name || details.contact.nickname || details.contact.phone || t('users.noName')
         : contactName
 
     const hasPortalAccess = details?.contact?.user_id && details.contact.user_id !== '00000000-0000-0000-0000-000000000000'
@@ -161,7 +163,7 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-12 gap-3">
                             <Loader2 size={24} className="text-gray-400 animate-spin" />
-                            <p className="text-sm text-gray-400">Cargando detalles...</p>
+                            <p className="text-sm text-gray-400">{t('users.loadingDetails')}</p>
                         </div>
                     ) : details ? (
                         <>
@@ -169,31 +171,31 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
                             <section>
                                 <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
                                     <User size={12} />
-                                    Información
+                                    {t('users.information')}
                                 </h3>
                                 <div className="bg-gray-50 rounded-2xl p-4 space-y-2.5">
-                                    <InfoRow label="Nombre real" value={details.contact.real_name} />
+                                    <InfoRow label={t('users.realName')} value={details.contact.real_name} />
                                     <InfoRow label="WhatsApp" value={details.contact.push_name} />
-                                    {details.contact.nickname && <InfoRow label="Apodo" value={details.contact.nickname} />}
+                                    {details.contact.nickname && <InfoRow label={t('users.nickname')} value={details.contact.nickname} />}
                                     <InfoRow
-                                        label="Teléfono"
+                                        label={t('users.phone')}
                                         value={details.contact.phone}
                                         icon={<Phone size={12} className="text-gray-400" />}
                                         mono
                                     />
                                     <InfoRow
-                                        label="Primera visita"
+                                        label={t('users.firstSeen')}
                                         value={formatDate(details.contact.first_seen)}
                                         icon={<Calendar size={12} className="text-gray-400" />}
                                     />
                                     <InfoRow
-                                        label="Última actividad"
+                                        label={t('users.lastSeen')}
                                         value={formatDateTime(details.contact.last_seen)}
                                         icon={<Clock size={12} className="text-gray-400" />}
                                     />
                                     {hasPortalAccess && (
                                         <div className="flex items-center gap-2 pt-1">
-                                            <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase">Portal Activo</span>
+                                            <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase">{t('users.portalActive')}</span>
                                         </div>
                                     )}
                                 </div>
@@ -204,7 +206,7 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
                                 <section>
                                     <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
                                         <CreditCard size={12} />
-                                        Membresía
+                                        {t('users.membership')}
                                     </h3>
                                     <div className="bg-gray-50 rounded-2xl p-4 space-y-2.5">
                                         <div className="flex items-center gap-2">
@@ -216,8 +218,8 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
                                             </span>
                                             <span className="text-xs text-gray-400">({details.membership.status})</span>
                                         </div>
-                                        <InfoRow label="Inicio" value={formatDate(details.membership.started_at)} />
-                                        <InfoRow label="Vencimiento" value={formatDate(details.membership.expires_at)} />
+                                        <InfoRow label={t('users.start')} value={formatDate(details.membership.started_at)} />
+                                        <InfoRow label={t('users.expiry')} value={formatDate(details.membership.expires_at)} />
                                     </div>
                                 </section>
                             )}
@@ -227,15 +229,15 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
                                 <section>
                                     <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
                                         <FileText size={12} />
-                                        Cumplimiento
+                                        {t('users.compliance')}
                                     </h3>
                                     <div className="bg-gray-50 rounded-2xl p-4 space-y-2.5">
                                         <InfoRow
-                                            label="Términos & Condiciones"
-                                            value={details.compliance.terms_accepted ? '✅ Aceptado' : '⏳ Pendiente'}
+                                            label={t('users.termsConditions')}
+                                            value={details.compliance.terms_accepted ? `✅ ${t('users.accepted')}` : `⏳ ${t('users.pending')}`}
                                         />
                                         {details.compliance.accepted_at && (
-                                            <InfoRow label="Fecha" value={formatDateTime(details.compliance.accepted_at)} />
+                                            <InfoRow label={t('common.date')} value={formatDateTime(details.compliance.accepted_at)} />
                                         )}
                                     </div>
                                 </section>
@@ -262,18 +264,18 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
                             <section>
                                 <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
                                     <Bot size={12} />
-                                    Agente AI
+                                    {t('users.aiAgent')}
                                 </h3>
                                 <div className="bg-gray-50 rounded-2xl p-4">
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-sm font-semibold text-gray-900">
-                                                {aiEnabled ? 'Activado' : 'Desactivado'}
+                                                {aiEnabled ? t('users.aiEnabled') : t('users.aiDisabled')}
                                             </p>
                                             <p className="text-xs text-gray-400 mt-0.5">
                                                 {aiEnabled
-                                                    ? 'El agente AI responde a este usuario'
-                                                    : 'El agente AI no responderá a este usuario'
+                                                    ? t('users.aiEnabledHint')
+                                                    : t('users.aiDisabledHint')
                                                 }
                                             </p>
                                         </div>
@@ -308,7 +310,7 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
                                 <div className="border border-red-200 rounded-2xl p-4 bg-red-50/50">
                                     <h3 className="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                                         <AlertTriangle size={12} />
-                                        Zona Peligrosa
+                                        {t('users.dangerZone')}
                                     </h3>
                                     {!showDeleteConfirm ? (
                                         <button
@@ -316,12 +318,12 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
                                             className="flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 transition"
                                         >
                                             <Trash2 size={14} />
-                                            Eliminar usuario permanentemente
+                                            {t('users.deleteUserPermanently')}
                                         </button>
                                     ) : (
                                         <div className="space-y-3">
                                             <p className="text-xs text-red-600 font-medium">
-                                                ¿Estás seguro? Se eliminarán <strong>todos los datos</strong> de este usuario: contacto, membresía, historial de chat, contexto AI, transacciones financieras, metas y tareas. Esta acción es <strong>irreversible</strong>.
+                                                {t('users.deleteConfirmMessage')}
                                             </p>
                                             {deleteError && (
                                                 <p className="text-xs text-red-500 bg-red-100 rounded-lg px-3 py-2">{deleteError}</p>
@@ -332,7 +334,7 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
                                                     disabled={deleting}
                                                     className="flex-1 bg-white text-gray-600 py-2 rounded-lg font-bold text-sm border border-gray-200 hover:bg-gray-50 transition"
                                                 >
-                                                    Cancelar
+                                                    {t('common.cancel')}
                                                 </button>
                                                 <button
                                                     onClick={handleDelete}
@@ -344,7 +346,7 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
                                                     ) : (
                                                         <Trash2 size={14} />
                                                     )}
-                                                    {deleting ? 'Eliminando...' : 'Sí, eliminar'}
+                                                    {deleting ? t('common.deleting') : t('users.yesDelete')}
                                                 </button>
                                             </div>
                                         </div>
@@ -354,7 +356,7 @@ export default function UserDetailsModal({ contactId, contactName, companyId, on
                         </>
                     ) : (
                         <div className="text-center py-8">
-                            <p className="text-sm text-gray-400">No se pudieron cargar los detalles</p>
+                            <p className="text-sm text-gray-400">{t('users.loadError')}</p>
                         </div>
                     )}
                 </div>

@@ -9,6 +9,7 @@ import {
     MessageCircle, Check, X, Loader2, CheckCircle2, XCircle, AlertCircle
 } from 'lucide-react'
 import UserActionsMenu from './user-actions-menu'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface Contact {
     id: string
@@ -46,6 +47,7 @@ interface InviteResult {
 
 export default function UsersClient({ contacts, membershipMap, companyName, companyPortalUrl, companyId }: UsersClientProps) {
     const router = useRouter()
+    const { t } = useTranslation()
     const [search, setSearch] = useState('')
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const [showConfirm, setShowConfirm] = useState(false)
@@ -93,7 +95,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
         setSending(true)
         const inviteResults: InviteResult[] = selectedContacts.map(c => ({
             contactId: c.id,
-            name: c.push_name || c.nickname || c.phone || 'Sin nombre',
+            name: c.push_name || c.nickname || c.phone || t('users.noName'),
             phone: c.phone!,
             status: 'pending' as const,
         }))
@@ -115,12 +117,12 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                 })
                 const data = await res.json()
                 if (!res.ok) {
-                    inviteResults[i] = { ...inviteResults[i], status: 'error', message: data.error || 'Error desconocido' }
+                    inviteResults[i] = { ...inviteResults[i], status: 'error', message: data.error || t('users.unknownError') }
                 } else {
                     inviteResults[i] = { ...inviteResults[i], status: 'success' }
                 }
             } catch (err: any) {
-                inviteResults[i] = { ...inviteResults[i], status: 'error', message: err.message || 'Error de red' }
+                inviteResults[i] = { ...inviteResults[i], status: 'error', message: err.message || t('common.networkError') }
             }
             setResults([...inviteResults])
         }
@@ -146,7 +148,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Buscar por nombre, teléfono o tags..."
+                    placeholder={t('users.searchPlaceholder')}
                     className="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium"
                 />
             </div>
@@ -159,8 +161,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                             <div className="bg-white/10 rounded-lg px-2.5 py-1">
                                 <span className="font-black text-sm">{selected.size}</span>
                             </div>
-                            <span className="text-sm text-gray-300 font-medium">
-                                usuario{selected.size !== 1 ? 's' : ''} seleccionado{selected.size !== 1 ? 's' : ''}
+                                {t('users.usersSelected', { count: String(selected.size) })}
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -168,14 +169,14 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                 onClick={() => setSelected(new Set())}
                                 className="text-gray-400 hover:text-white transition px-3 py-1.5 rounded-lg hover:bg-white/10 text-sm font-medium"
                             >
-                                Cancelar
+                                {t('common.cancel')}
                             </button>
                             <button
                                 onClick={() => setShowConfirm(true)}
                                 className="bg-green-600 hover:bg-green-500 text-white px-4 py-1.5 rounded-xl font-bold flex items-center gap-2 transition text-sm"
                             >
                                 <MessageCircle size={14} />
-                                Invitar al Portal
+                                {t('users.inviteToPortal')}
                             </button>
                         </div>
                     </div>
@@ -187,15 +188,15 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                 <table className="w-full text-left">
                     <thead>
                         <tr className="bg-gray-50 border-b border-gray-100">
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Usuario</th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Teléfono</th>
+                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('users.user')}</th>
+                            <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('users.phone')}</th>
                             <th className="px-4 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center w-16">
                                 <input
                                     type="checkbox"
                                     checked={allSelectableSelected}
                                     onChange={toggleAll}
                                     className="w-4 h-4 accent-gray-900 rounded cursor-pointer"
-                                    title="Seleccionar todos para WhatsApp"
+                                    title={t('users.selectAllWhatsApp')}
                                 />
                             </th>
                             <th className="px-4 py-4 w-12"></th>
@@ -220,7 +221,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-1.5">
-                                                    <p className="font-bold text-gray-900 text-sm">{contact.push_name || contact.nickname || 'Sin nombre'}</p>
+                                                    <p className="font-bold text-gray-900 text-sm">{contact.push_name || contact.nickname || t('users.noName')}</p>
                                                     {contact.has_portal_access && (
                                                         <span className="px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[9px] font-bold uppercase">Portal</span>
                                                     )}
@@ -241,7 +242,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                                 className="w-4 h-4 accent-gray-900 rounded cursor-pointer"
                                             />
                                         ) : contact.has_portal_access ? (
-                                            <div className="w-4 h-4 flex items-center justify-center mx-auto" title="Ya registrado en el portal">
+                                            <div className="w-4 h-4 flex items-center justify-center mx-auto" title={t('users.alreadyRegistered')}>
                                                 <Check size={14} className="text-green-500" />
                                             </div>
                                         ) : (
@@ -251,7 +252,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                     <td className="px-4 py-4 text-right">
                                         <UserActionsMenu
                                             contactId={contact.id}
-                                            contactName={contact.push_name || contact.nickname || contact.phone || 'Sin nombre'}
+                                            contactName={contact.push_name || contact.nickname || contact.phone || t('users.noName')}
                                             companyId={companyId}
                                             onDeleted={() => router.refresh()}
                                         />
@@ -265,8 +266,8 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                 {(!contacts || contacts.length === 0) && (
                     <div className="text-center py-12">
                         <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-600 font-medium">No hay usuarios registrados</p>
-                        <p className="text-gray-400 text-sm">Los usuarios aparecerán aquí cuando interactúen con el sistema</p>
+                        <p className="text-gray-600 font-medium">{t('users.noUsers')}</p>
+                        <p className="text-gray-400 text-sm">{t('users.noUsersHint')}</p>
                     </div>
                 )}
             </div>
@@ -281,13 +282,13 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                     <MessageCircle size={18} className="text-green-600" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900">Invitar al Portal via WhatsApp</h3>
+                                    <h3 className="font-bold text-gray-900">{t('users.inviteViaWhatsApp')}</h3>
                                     <p className="text-xs text-gray-400">{companyName}</p>
                                 </div>
                             </div>
 
                             <p className="text-sm text-gray-600 mb-4">
-                                Se enviará una invitación por WhatsApp a <strong>{selectedContacts.length}</strong> usuario{selectedContacts.length !== 1 ? 's' : ''} para unirse al portal web como <strong>cliente</strong>.
+                                {t('users.inviteDescription', { count: String(selectedContacts.length) })}
                             </p>
 
                             <div className="max-h-48 overflow-y-auto space-y-1.5 mb-4">
@@ -297,7 +298,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                             {(c.push_name || c.phone || '?').charAt(0).toUpperCase()}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-semibold text-gray-800 truncate">{c.push_name || c.nickname || 'Sin nombre'}</p>
+                                            <p className="text-sm font-semibold text-gray-800 truncate">{c.push_name || c.nickname || t('users.noName')}</p>
                                             <p className="text-xs text-gray-400 font-mono">{c.phone}</p>
                                         </div>
                                     </div>
@@ -307,7 +308,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                             <div className="p-2.5 bg-amber-50 rounded-xl border border-amber-100 mb-4">
                                 <p className="text-[11px] text-amber-700 font-medium flex items-center gap-1.5">
                                     <AlertCircle size={12} />
-                                    Cada usuario recibirá un enlace único para registrarse en el portal.
+                                    {t('users.uniqueLinkHint')}
                                 </p>
                             </div>
                         </div>
@@ -317,14 +318,14 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                 onClick={() => setShowConfirm(false)}
                                 className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-lg font-bold hover:bg-gray-200 transition text-sm"
                             >
-                                Cancelar
+                                {t('common.cancel')}
                             </button>
                             <button
                                 onClick={handleInvite}
                                 className="flex-1 bg-green-600 text-white py-2.5 rounded-lg font-bold hover:bg-green-500 transition flex items-center justify-center gap-1.5 text-sm"
                             >
                                 <MessageCircle size={14} />
-                                Enviar Invitaciones
+                                {t('users.sendInvitations')}
                             </button>
                         </div>
                     </div>
@@ -352,11 +353,11 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-gray-900">
-                                            {sending ? 'Enviando invitaciones...' : 'Resultado'}
+                                            {sending ? t('users.sendingInvitations') : t('users.result')}
                                         </h3>
                                         {!sending && (
                                             <p className="text-xs text-gray-400">
-                                                {successCount} enviadas • {errorCount} errores
+                                                {successCount} {t('users.sent')} • {errorCount} {t('users.errors')}
                                             </p>
                                         )}
                                     </div>
@@ -412,7 +413,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                                     onClick={closeResults}
                                     className="w-full bg-gray-900 text-white py-2.5 rounded-lg font-bold hover:bg-gray-800 transition text-sm"
                                 >
-                                    Cerrar
+                                    {t('invite.close')}
                                 </button>
                             </div>
                         )}

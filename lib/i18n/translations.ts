@@ -246,6 +246,23 @@ const es: TranslationDict = {
     'users.yesDelete': 'Sí, eliminar',
     'users.loadError': 'No se pudieron cargar los detalles',
 
+    // Login (corporate)
+    'login.noCorporateAccess': 'Tu cuenta no tiene acceso al Portal Corporativo. Contacta al equipo de Blukastor.',
+    'login.enterEmail': 'Ingresa tu email primero.',
+    'login.sendError': 'Error al enviar el correo',
+    'login.portal': 'Portal',
+    'login.corporatePortal': 'Portal Corporativo',
+    'login.recoverAccess': 'Recupera tu acceso',
+    'login.exclusiveAccess': 'Acceso exclusivo para clientes corporativos',
+    'login.corporateEmail': 'Email corporativo',
+    'login.resetLinkHint': 'Te enviaremos un enlace para restablecer tu contraseña',
+    'login.sendResetLink': 'Enviar enlace de recuperación',
+    'login.backToLogin': 'Volver al inicio de sesión',
+    'login.password': 'Contraseña',
+    'login.forgotPassword': '¿Olvidaste tu contraseña?',
+    'login.enterPortal': 'Ingresar al Portal',
+    'login.systemAdmin': '¿Eres administrador del sistema? →',
+
     // Invite modals
     'invite.title': 'Invitar Usuario',
     'invite.memberTitle': 'Invitar Miembro',
@@ -1040,6 +1057,23 @@ const en: TranslationDict = {
     'users.deleteConfirmMessage': 'Are you sure? All data for this user will be deleted: contact, membership, chat history, AI context, financial transactions, goals and tasks. This action is irreversible.',
     'users.yesDelete': 'Yes, delete',
     'users.loadError': 'Could not load details',
+
+    // Login (corporate)
+    'login.noCorporateAccess': 'Your account does not have access to the Corporate Portal. Contact the Blukastor team.',
+    'login.enterEmail': 'Enter your email first.',
+    'login.sendError': 'Error sending email',
+    'login.portal': 'Portal',
+    'login.corporatePortal': 'Corporate Portal',
+    'login.recoverAccess': 'Recover your access',
+    'login.exclusiveAccess': 'Exclusive access for corporate clients',
+    'login.corporateEmail': 'Corporate email',
+    'login.resetLinkHint': 'We will send you a link to reset your password',
+    'login.sendResetLink': 'Send reset link',
+    'login.backToLogin': 'Back to login',
+    'login.password': 'Password',
+    'login.forgotPassword': 'Forgot your password?',
+    'login.enterPortal': 'Enter Portal',
+    'login.systemAdmin': 'Are you a system administrator? →',
 
     // Invite modals
     'invite.title': 'Invite User',

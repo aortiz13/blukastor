@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Building2, Loader2, Mail, Lock, ArrowRight } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface CompanyBranding {
     companyId?: string
@@ -29,6 +30,7 @@ export default function CorporateLoginPage() {
     const [branding, setBranding] = useState<CompanyBranding | null>(null)
     const [forgotMode, setForgotMode] = useState(false)
     const supabase = createClient()
+    const { t } = useTranslation()
 
     // Detect custom domain and fetch branding
     useEffect(() => {
@@ -77,7 +79,7 @@ export default function CorporateLoginPage() {
             // Sign out the user — they don't have corporate access
             await supabase.auth.signOut()
             setIsLoading(false)
-            setMessage('Tu cuenta no tiene acceso al Portal Corporativo. Contacta al equipo de Blukastor.')
+            setMessage(t('login.noCorporateAccess'))
             setMessageType('error')
             return
         }
@@ -91,7 +93,7 @@ export default function CorporateLoginPage() {
     const handleForgotPassword = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!email) {
-            setMessage('Ingresa tu email primero.')
+            setMessage(t('login.enterEmail'))
             setMessageType('error')
             return
         }
@@ -107,7 +109,7 @@ export default function CorporateLoginPage() {
             const data = await res.json()
 
             if (!res.ok) {
-                setMessage(data.error || 'Error al enviar el correo')
+                setMessage(data.error || t('login.sendError'))
                 setMessageType('error')
             } else {
                 setMessage(data.message)
@@ -127,8 +129,8 @@ export default function CorporateLoginPage() {
     const secondaryColor = branding?.secondary_color || '#8b5cf6'
     const loginBgUrl = branding?.login_background_url || branding?.cover_image_url
     const welcomeText = branding?.login_welcome_text || branding?.tagline
-    const loginTitle = companyName ? `Portal ${companyName}` : 'Portal Corporativo'
-    const loginSubtitle = forgotMode ? 'Recupera tu acceso' : (welcomeText || 'Acceso exclusivo para clientes corporativos')
+    const loginTitle = companyName ? `${t('login.portal')} ${companyName}` : t('login.corporatePortal')
+    const loginSubtitle = forgotMode ? t('login.recoverAccess') : (welcomeText || t('login.exclusiveAccess'))
 
     return (
         <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -202,7 +204,7 @@ export default function CorporateLoginPage() {
                                 </div>
                                 <input
                                     type="email"
-                                    placeholder="Email corporativo"
+                                    placeholder={t('login.corporateEmail')}
                                     required
                                     className="w-full pl-12 pr-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm"
                                     value={email}
@@ -211,7 +213,7 @@ export default function CorporateLoginPage() {
                             </div>
 
                             <p className="text-indigo-200/40 text-xs text-center">
-                                Te enviaremos un enlace para restablecer tu contraseña
+                                {t('login.resetLinkHint')}
                             </p>
 
                             {/* Submit Button */}
@@ -227,7 +229,7 @@ export default function CorporateLoginPage() {
                                 {isLoading ? (
                                     <Loader2 className="animate-spin" size={20} />
                                 ) : (
-                                    'Enviar enlace de recuperación'
+                                    t('login.sendResetLink')
                                 )}
                             </button>
 
@@ -236,7 +238,7 @@ export default function CorporateLoginPage() {
                                 onClick={() => { setForgotMode(false); setMessage('') }}
                                 className="w-full text-center text-sm text-indigo-300/50 hover:text-indigo-300/80 transition-colors font-medium"
                             >
-                                ← Volver al inicio de sesión
+                                ← {t('login.backToLogin')}
                             </button>
                         </form>
                     ) : (
@@ -250,7 +252,7 @@ export default function CorporateLoginPage() {
                                     </div>
                                     <input
                                         type="email"
-                                        placeholder="Email corporativo"
+                                        placeholder={t('login.corporateEmail')}
                                         required
                                         className="w-full pl-12 pr-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm"
                                         value={email}
@@ -265,7 +267,7 @@ export default function CorporateLoginPage() {
                                     </div>
                                     <input
                                         type="password"
-                                        placeholder="Contraseña"
+                                        placeholder={t('login.password')}
                                         required
                                         className="w-full pl-12 pr-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm"
                                         value={password}
@@ -280,7 +282,7 @@ export default function CorporateLoginPage() {
                                         onClick={() => { setForgotMode(true); setMessage('') }}
                                         className="text-xs text-indigo-300/50 hover:text-indigo-300/80 transition-colors font-medium"
                                     >
-                                        ¿Olvidaste tu contraseña?
+                                        {t('login.forgotPassword')}
                                     </button>
                                 </div>
 
@@ -298,7 +300,7 @@ export default function CorporateLoginPage() {
                                         <Loader2 className="animate-spin" size={20} />
                                     ) : (
                                         <>
-                                            Ingresar al Portal
+                                            {t('login.enterPortal')}
                                             <ArrowRight size={18} />
                                         </>
                                     )}
@@ -326,7 +328,7 @@ export default function CorporateLoginPage() {
                         href="/login"
                         className="text-xs text-white/30 hover:text-white/60 transition-colors"
                     >
-                        ¿Eres administrador del sistema? →
+                        {t('login.systemAdmin')}
                     </a>
                 </div>
             </div>

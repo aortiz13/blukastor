@@ -34,15 +34,18 @@ export async function POST(
             return NextResponse.json({ error: 'Email is required' }, { status: 400 })
         }
 
-        // Fetch company details
+        // Fetch company details (including branding for dynamic emails)
         const { data: company } = await supabase
             .from('client_companies')
-            .select('name, custom_domain')
+            .select('name, custom_domain, logo_url, primary_color, secondary_color')
             .eq('id', companyId)
             .single()
 
         const companyName = company?.name || 'Portal'
         const companyDomain = company?.custom_domain || null
+        const companyLogoUrl = company?.logo_url || ''
+        const companyPrimaryColor = company?.primary_color || '#6366f1'
+        const companySecondaryColor = company?.secondary_color || '#8b5cf6'
         const senderName = user.user_metadata?.full_name || user.email || 'Administrador'
 
         let redirectUrl: string
@@ -180,6 +183,9 @@ export async function POST(
                         inviteLink,
                         role,
                         companyDomain,
+                        logoUrl: companyLogoUrl,
+                        primaryColor: companyPrimaryColor,
+                        secondaryColor: companySecondaryColor,
                     }
                 })
             } catch (emailError) {

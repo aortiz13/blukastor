@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Building2, Loader2, Mail, Lock, ArrowRight } from 'lucide-react'
 
 interface CompanyBranding {
+    companyId?: string
     found: boolean
     name?: string
     logo_url?: string
@@ -101,7 +102,7 @@ export default function CorporateLoginPage() {
             const res = await fetch('/api/auth/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email, companyId: branding?.companyId }),
             })
             const data = await res.json()
 

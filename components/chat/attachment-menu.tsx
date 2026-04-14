@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from 'react'
 import { Image as ImageIcon, FileText } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface AttachmentMenuProps {
     onSelectImage: (file: File) => void
@@ -13,6 +14,7 @@ export function AttachmentMenu({ onSelectImage, onSelectFile, onClose }: Attachm
     const menuRef = useRef<HTMLDivElement>(null)
     const imageInputRef = useRef<HTMLInputElement>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const { t } = useTranslation()
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -43,7 +45,7 @@ export function AttachmentMenu({ onSelectImage, onSelectFile, onClose }: Attachm
                 <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
                     <ImageIcon size={16} className="text-violet-600" />
                 </div>
-                <span>Imagen</span>
+                <span>{t('chat.image')}</span>
             </button>
             <button
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-sm text-gray-700"
@@ -52,7 +54,7 @@ export function AttachmentMenu({ onSelectImage, onSelectFile, onClose }: Attachm
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                     <FileText size={16} className="text-blue-600" />
                 </div>
-                <span>Documento</span>
+                <span>{t('chat.document')}</span>
             </button>
 
             {/* Hidden file inputs */}

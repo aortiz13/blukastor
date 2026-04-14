@@ -10,6 +10,7 @@ import { removeGoal, updateGoal } from '@/lib/actions/goals'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface GoalCardProps {
     goal: any
@@ -23,11 +24,11 @@ const PRIORITY_STYLES: Record<string, string> = {
     low: 'bg-gray-100 text-gray-600',
 }
 
-const PRIORITY_LABELS: Record<string, string> = {
-    critical: 'Crítica',
-    high: 'Alta',
-    medium: 'Media',
-    low: 'Baja',
+const PRIORITY_LABELS_KEYS: Record<string, string> = {
+    critical: 'goal.priorityCritical',
+    high: 'goal.priorityHigh',
+    medium: 'goal.priorityMedium',
+    low: 'goal.priorityLow',
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -37,17 +38,18 @@ const STATUS_STYLES: Record<string, string> = {
     paused: 'bg-gray-100 text-gray-500',
 }
 
-const STATUS_LABELS: Record<string, string> = {
-    active: 'Activo',
-    in_progress: 'En Progreso',
-    completed: 'Completado',
-    paused: 'Pausado',
+const STATUS_LABELS_KEYS: Record<string, string> = {
+    active: 'goal.statusActive',
+    in_progress: 'goal.statusInProgress',
+    completed: 'goal.statusCompleted',
+    paused: 'goal.statusPaused',
 }
 
 export function GoalCard({ goal, companyId }: GoalCardProps) {
     const [showMenu, setShowMenu] = useState(false)
     const [deleting, setDeleting] = useState(false)
     const router = useRouter()
+    const { t } = useTranslation()
 
     const status = goal.status || 'active'
     const priority = goal.priority || 'medium'
@@ -55,14 +57,14 @@ export function GoalCard({ goal, companyId }: GoalCardProps) {
     const krs: string[] = Array.isArray(goal.krs) ? goal.krs : []
 
     const handleDelete = async () => {
-        if (!confirm('¿Estás seguro de que quieres eliminar este objetivo?')) return
+        if (!confirm(t('goal.confirmDelete'))) return
         setDeleting(true)
         try {
             await removeGoal(goal.id)
-            toast.success('Objetivo eliminado')
+            toast.success(t('goal.deleted'))
             router.refresh()
         } catch {
-            toast.error('Error al eliminar')
+            toast.error(t('goal.deleteError'))
         } finally {
             setDeleting(false)
         }
@@ -72,10 +74,10 @@ export function GoalCard({ goal, companyId }: GoalCardProps) {
         const nextStatus = isCompleted ? 'active' : 'completed'
         try {
             await updateGoal(goal.id, { status: nextStatus })
-            toast.success(isCompleted ? 'Objetivo reabierto' : '¡Objetivo completado!')
+            toast.success(isCompleted ? t('goal.reopened') : t('goal.completed'))
             router.refresh()
         } catch {
-            toast.error('Error al cambiar estado')
+            toast.error(t('goal.statusError'))
         }
         setShowMenu(false)
     }
@@ -109,7 +111,7 @@ export function GoalCard({ goal, companyId }: GoalCardProps) {
                         "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider",
                         STATUS_STYLES[status] || STATUS_STYLES.active
                     )}>
-                        {STATUS_LABELS[status] || status}
+                        {t(STATUS_LABELS_KEYS[status] || 'goal.statusActive')}
                     </span>
 
                     <div className="relative">
@@ -129,7 +131,7 @@ export function GoalCard({ goal, companyId }: GoalCardProps) {
                                         trigger={
                                             <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2.5 text-gray-700">
                                                 <Target size={14} />
-                                                Editar
+                                                {t('common.edit')}
                                             </button>
                                         }
                                     />
@@ -138,7 +140,7 @@ export function GoalCard({ goal, companyId }: GoalCardProps) {
                                         className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2.5 text-gray-700"
                                     >
                                         {isCompleted ? <RotateCcw size={14} /> : <CheckCircle2 size={14} />}
-                                        {isCompleted ? 'Reabrir' : 'Marcar completado'}
+                                        {isCompleted ? t('goal.reopen') : t('goal.markComplete')}
                                     </button>
                                     <hr className="my-1 border-gray-100" />
                                     <button
@@ -147,7 +149,7 @@ export function GoalCard({ goal, companyId }: GoalCardProps) {
                                         className="w-full text-left px-4 py-2.5 text-sm hover:bg-red-50 transition-colors flex items-center gap-2.5 text-red-500"
                                     >
                                         <Trash2 size={14} />
-                                        {deleting ? 'Eliminando...' : 'Eliminar'}
+                                        {deleting ? t('common.deleting') : t('common.delete')}
                                     </button>
                                 </div>
                             </>
@@ -182,7 +184,7 @@ export function GoalCard({ goal, companyId }: GoalCardProps) {
             {/* Key Results */}
             {krs.length > 0 && (
                 <div className="space-y-2 mb-6 flex-1">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Resultados Clave</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('goal.keyResults')}</span>
                     <div className="space-y-1.5">
                         {krs.map((kr, i) => (
                             <div key={i} className="flex items-start gap-2.5 text-sm">
@@ -211,11 +213,11 @@ export function GoalCard({ goal, companyId }: GoalCardProps) {
                     "px-2.5 py-1 rounded-full",
                     PRIORITY_STYLES[priority] || PRIORITY_STYLES.medium
                 )}>
-                    {PRIORITY_LABELS[priority] || priority}
+                    {t(PRIORITY_LABELS_KEYS[priority] || 'goal.priorityMedium')}
                 </span>
                 <div className="flex items-center gap-1.5 text-gray-400">
                     <Flag size={14} />
-                    <span>{goal.scope === 'personal' ? 'Personal' : 'Empresa'}</span>
+                    <span>{goal.scope === 'personal' ? t('goal.personal') : t('goal.company')}</span>
                 </div>
                 {formattedDeadline && (
                     <div className="flex items-center gap-1.5 text-gray-400">

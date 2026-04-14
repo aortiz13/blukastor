@@ -1,5 +1,6 @@
 import type { Agent } from '@/lib/types/chat'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface ChatSidebarProps {
     agents?: Agent[]
@@ -8,22 +9,23 @@ interface ChatSidebarProps {
 }
 
 export function ChatSidebar({ agents = [], selectedAgentId, onSelectAgent }: ChatSidebarProps) {
+    const { t } = useTranslation()
     return (
         <div className="flex flex-col h-full">
             <div className="p-4 border-b font-semibold flex justify-between items-center">
-                <span>Agentes</span>
+                <span>{t('chat.agents')}</span>
                 {selectedAgentId && (
                     <button
                         onClick={() => onSelectAgent?.(null)}
                         className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                     >
-                        Resetear
+                        {t('chat.reset')}
                     </button>
                 )}
             </div>
             <div className="flex-1 overflow-y-auto">
                 {agents.length === 0 ? (
-                    <div className="p-4 text-sm text-gray-500 text-center">No agents available</div>
+                    <div className="p-4 text-sm text-gray-500 text-center">{t('chat.noAgents')}</div>
                 ) : (
                     agents.map((agent) => (
                         <div

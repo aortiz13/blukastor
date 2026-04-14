@@ -16,6 +16,7 @@ import {
 import { createGoal, updateGoal } from '@/lib/actions/goals'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface GoalFormDialogProps {
     companyId: string
@@ -29,6 +30,7 @@ export function GoalFormDialog({ companyId, goal, trigger }: GoalFormDialogProps
     const [krs, setKrs] = useState<string[]>(goal?.krs || [])
     const [newKr, setNewKr] = useState('')
     const router = useRouter()
+    const { t } = useTranslation()
 
     const isEdit = !!goal
 
@@ -73,7 +75,7 @@ export function GoalFormDialog({ companyId, goal, trigger }: GoalFormDialogProps
                     deadline: deadline || null,
                     krs: krs.length > 0 ? krs : null,
                 })
-                toast.success('Objetivo actualizado')
+                toast.success(t('goal.updated'))
             } else {
                 await createGoal({
                     companyId,
@@ -85,14 +87,14 @@ export function GoalFormDialog({ companyId, goal, trigger }: GoalFormDialogProps
                     deadline: deadline || undefined,
                     krs: krs.length > 0 ? krs : undefined,
                 })
-                toast.success('Objetivo creado')
+                toast.success(t('goal.created'))
             }
             setOpen(false)
             setKrs([])
             setNewKr('')
             router.refresh()
         } catch (err: any) {
-            toast.error(err.message || 'Error al guardar')
+            toast.error(err.message || t('common.errorSaving'))
         } finally {
             setLoading(false)
         }
@@ -114,7 +116,7 @@ export function GoalFormDialog({ companyId, goal, trigger }: GoalFormDialogProps
     ) : (
         <button className="bg-black text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-800 transition shadow-lg shadow-black/5 text-sm">
             <Plus size={18} />
-            <span>Nuevo Objetivo</span>
+            <span>{t('goal.newGoal')}</span>
         </button>
     )
 
@@ -126,73 +128,73 @@ export function GoalFormDialog({ companyId, goal, trigger }: GoalFormDialogProps
             <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>{isEdit ? 'Editar Objetivo' : 'Nuevo Objetivo'}</DialogTitle>
+                        <DialogTitle>{isEdit ? t('goal.editGoal') : t('goal.newGoal')}</DialogTitle>
                         <DialogDescription>
-                            {isEdit ? 'Modifica los detalles de tu objetivo.' : 'Define un objetivo claro y medible con resultados clave.'}
+                            {isEdit ? t('goal.editDesc') : t('goal.createDesc')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         {/* Title */}
                         <div className="space-y-2">
-                            <Label htmlFor="title">Título *</Label>
+                            <Label htmlFor="title">{t('goal.titleLabel')}</Label>
                             <Input
                                 id="title"
                                 name="title"
                                 defaultValue={goal?.title}
-                                placeholder="Ej: Incrementar ventas 20% Q4"
+                                placeholder={t('goal.titlePlaceholder')}
                                 required
                             />
                         </div>
 
                         {/* Description */}
                         <div className="space-y-2">
-                            <Label htmlFor="description">Descripción</Label>
+                            <Label htmlFor="description">{t('goal.descriptionLabel')}</Label>
                             <Textarea
                                 id="description"
                                 name="description"
                                 defaultValue={goal?.description}
-                                placeholder="Detalla cómo planeas alcanzar este objetivo"
+                                placeholder={t('goal.descriptionPlaceholder')}
                                 rows={2}
                             />
                         </div>
 
                         {/* Target */}
                         <div className="space-y-2">
-                            <Label htmlFor="target">Meta / Target</Label>
+                            <Label htmlFor="target">{t('goal.targetLabel')}</Label>
                             <Input
                                 id="target"
                                 name="target"
                                 defaultValue={goal?.target}
-                                placeholder="Ej: +20% Q/Q, 200 seguidores, ≥7h promedio/semana"
+                                placeholder={t('goal.targetPlaceholder')}
                             />
-                            <p className="text-[11px] text-gray-400">El resultado cuantificable que quieres alcanzar.</p>
+                            <p className="text-[11px] text-gray-400">{t('goal.targetHint')}</p>
                         </div>
 
                         {/* Priority + Scope */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="priority">Prioridad</Label>
+                                <Label htmlFor="priority">{t('goal.priorityLabel')}</Label>
                                 <Select name="priority" defaultValue={goal?.priority || 'medium'}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Seleccionar" />
+                                        <SelectValue placeholder={t('common.select')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="low">Baja</SelectItem>
-                                        <SelectItem value="medium">Media</SelectItem>
-                                        <SelectItem value="high">Alta</SelectItem>
-                                        <SelectItem value="critical">Crítica</SelectItem>
+                                        <SelectItem value="low">{t('goal.priorityLow')}</SelectItem>
+                                        <SelectItem value="medium">{t('goal.priorityMedium')}</SelectItem>
+                                        <SelectItem value="high">{t('goal.priorityHigh')}</SelectItem>
+                                        <SelectItem value="critical">{t('goal.priorityCritical')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="scope">Alcance</Label>
+                                <Label htmlFor="scope">{t('goal.scopeLabel')}</Label>
                                 <Select name="scope" defaultValue={goal?.scope || 'company'}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Seleccionar" />
+                                        <SelectValue placeholder={t('common.select')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="personal">Personal</SelectItem>
-                                        <SelectItem value="company">Empresa</SelectItem>
+                                        <SelectItem value="personal">{t('goal.personal')}</SelectItem>
+                                        <SelectItem value="company">{t('goal.company')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -200,7 +202,7 @@ export function GoalFormDialog({ companyId, goal, trigger }: GoalFormDialogProps
 
                         {/* Deadline */}
                         <div className="space-y-2">
-                            <Label htmlFor="deadline">Fecha Límite</Label>
+                            <Label htmlFor="deadline">{t('goal.deadlineLabel')}</Label>
                             <Input
                                 id="deadline"
                                 name="deadline"
@@ -211,7 +213,7 @@ export function GoalFormDialog({ companyId, goal, trigger }: GoalFormDialogProps
 
                         {/* Key Results */}
                         <div className="space-y-2">
-                            <Label>Resultados Clave (KRs)</Label>
+                            <Label>{t('goal.keyResults')}</Label>
                             <div className="space-y-2">
                                 {krs.map((kr, i) => (
                                     <div key={i} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
@@ -232,23 +234,23 @@ export function GoalFormDialog({ companyId, goal, trigger }: GoalFormDialogProps
                                     value={newKr}
                                     onChange={(e) => setNewKr(e.target.value)}
                                     onKeyDown={handleKeyDown}
-                                    placeholder="Ej: +15% leads MQL"
+                                    placeholder={t('goal.krPlaceholder')}
                                     className="flex-1"
                                 />
                                 <Button type="button" variant="outline" size="sm" onClick={addKr} disabled={!newKr.trim()}>
-                                    <Plus size={14} className="mr-1" /> Agregar
+                                    <Plus size={14} className="mr-1" /> {t('common.add')}
                                 </Button>
                             </div>
-                            <p className="text-[11px] text-gray-400">Presiona Enter para agregar rápidamente.</p>
+                            <p className="text-[11px] text-gray-400">{t('common.enterPressHint')}</p>
                         </div>
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
-                            Cancelar
+                            {t('common.cancel')}
                         </Button>
                         <Button type="submit" disabled={loading}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {loading ? 'Guardando...' : isEdit ? 'Guardar Cambios' : 'Crear Objetivo'}
+                            {loading ? t('common.saving') : isEdit ? t('common.saveChanges') : t('goal.createGoal')}
                         </Button>
                     </DialogFooter>
                 </form>

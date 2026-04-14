@@ -8,10 +8,13 @@ import { NextResponse } from 'next/server'
  * Uses Supabase Admin API to generate a recovery link, then sends the email
  * via the send-company-invite edge function (Resend) to bypass the broken
  * send-email auth hook.
+ * 
+ * Accepts optional `companyId` to brand the recovery email with the company's
+ * logo and colors.
  */
 export async function POST(request: Request) {
     try {
-        const { email, redirectUrl } = await request.json()
+        const { email, redirectUrl, companyId } = await request.json()
 
         if (!email) {
             return NextResponse.json(
@@ -53,18 +56,41 @@ export async function POST(request: Request) {
             })
         }
 
-        // Send recovery email via edge function (Resend)
+        // Resolve company branding if companyId is provided
         const supabase = await createClient()
+        let companyName = 'Blukastor'
+        let logoUrl = ''
+        let primaryColor = '#6366f1'
+        let secondaryColor = '#8b5cf6'
 
+        if (companyId) {
+            const { data: company } = await supabaseAdmin
+                .from('client_companies')
+                .select('name, logo_url, primary_color, secondary_color')
+                .eq('id', companyId)
+                .single()
+
+            if (company) {
+                companyName = company.name || companyName
+                logoUrl = company.logo_url || logoUrl
+                primaryColor = company.primary_color || primaryColor
+                secondaryColor = company.secondary_color || secondaryColor
+            }
+        }
+
+        // Send recovery email via edge function (Resend)
         try {
             await supabase.functions.invoke('send-company-invite', {
                 body: {
                     email,
-                    companyName: 'Blukastor',
+                    companyName,
                     senderName: 'Soporte',
                     inviteLink: recoveryLink,
                     role: 'recovery',
                     isPasswordRecovery: true,
+                    logoUrl,
+                    primaryColor,
+                    secondaryColor,
                 }
             })
         } catch (emailError) {

@@ -8,6 +8,7 @@ import { MessageBubble } from './message-bubble'
 import { ChatInputBar } from './chat-input-bar'
 import type { Message } from '@/lib/types/chat'
 import type { MessageMedia } from '@/lib/types/chat'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 // Clean neutral background with subtle dot pattern
 const chatBgStyle: React.CSSProperties = {
@@ -29,6 +30,7 @@ export function ChatWindow({ contactId, companyId, selectedAgent }: {
     const [showScrollBtn, setShowScrollBtn] = useState(false)
     const [newMsgCount, setNewMsgCount] = useState(0)
     const supabase = createClient()
+    const { t } = useTranslation()
     const scrollRef = useRef<HTMLDivElement>(null)
     const isAtBottomRef = useRef(true)
 
@@ -278,7 +280,7 @@ export function ChatWindow({ contactId, companyId, selectedAgent }: {
     }
 
     const resetChat = async () => {
-        if (!confirm('¿Estás seguro de que quieres iniciar una nueva conversación?')) return
+        if (!confirm(t('chat.confirmReset'))) return
         setIsLoading(true)
         try {
             const { error } = await supabase.from('wa_consolidated').delete().eq('contact_id', contactId)
@@ -287,7 +289,7 @@ export function ChatWindow({ contactId, companyId, selectedAgent }: {
             setMessages([])
         } catch (error) {
             console.error('Error resetting chat:', error)
-            alert('Error al reiniciar el chat')
+            alert(t('chat.resetError'))
         } finally {
             setIsLoading(false)
         }
@@ -299,21 +301,21 @@ export function ChatWindow({ contactId, companyId, selectedAgent }: {
             <div className="h-[60px] border-b px-4 bg-primary flex justify-between items-center flex-shrink-0">
                 <div className="flex flex-col">
                     <h2 className="font-semibold text-primary-foreground text-sm">
-                        Chat con {selectedAgent ? selectedAgent.agent_name : 'Nova (Auto)'}
+                        {t('chat.chatWith')} {selectedAgent ? selectedAgent.agent_name : t('chat.autoMode')}
                     </h2>
                     {selectedAgent && (
                         <span className="text-[10px] text-primary-foreground/70">
-                            Modo forzado: {selectedAgent.agent_type}
+                            {t('chat.forcedMode')} {selectedAgent.agent_type}
                         </span>
                     )}
                 </div>
                 <button
                     onClick={resetChat}
                     className="text-xs flex items-center gap-1 text-primary-foreground/60 hover:text-primary-foreground transition-colors"
-                    title="Nueva Conversación"
+                    title={t('chat.newConversation')}
                 >
                     <PlusCircle size={14} />
-                    <span>Nueva conversación</span>
+                    <span>{t('chat.newConversation')}</span>
                 </button>
             </div>
 
@@ -337,8 +339,8 @@ export function ChatWindow({ contactId, companyId, selectedAgent }: {
                 {messages.length === 0 && !isLoading && (
                     <div className="text-center mt-16">
                         <div className="inline-block bg-white/80 backdrop-blur px-6 py-4 rounded-2xl shadow-sm">
-                            <p className="text-gray-500 text-sm">Inicia una conversación con Nova</p>
-                            <p className="text-gray-400 text-xs mt-1">Envía un mensaje, audio o archivo</p>
+                            <p className="text-gray-500 text-sm">{t('chat.startConversation')}</p>
+                            <p className="text-gray-400 text-xs mt-1">{t('chat.sendHint')}</p>
                         </div>
                     </div>
                 )}
@@ -347,7 +349,7 @@ export function ChatWindow({ contactId, companyId, selectedAgent }: {
                     <div className="flex justify-start mb-1">
                         <div className="bg-white text-gray-500 rounded-[18px] rounded-bl-[4px] px-4 py-3 shadow-sm flex items-center gap-2 border border-gray-100">
                             <Loader2 size={14} className="animate-spin" />
-                            <span className="text-sm">Nova está escribiendo...</span>
+                            <span className="text-sm">{t('chat.novaTyping')}</span>
                         </div>
                     </div>
                 )}

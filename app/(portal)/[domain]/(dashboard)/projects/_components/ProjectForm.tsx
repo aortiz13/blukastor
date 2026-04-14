@@ -18,6 +18,7 @@ import { Plus, Loader2 } from "lucide-react"
 import { createProject } from '@/lib/actions/projects'
 import { toast } from 'sonner'
 import { useRouter, useParams } from 'next/navigation'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface ProjectFormProps {
     companyId: string
@@ -28,6 +29,7 @@ export function ProjectForm({ companyId, domain }: ProjectFormProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const router = useRouter()
+    const { t } = useTranslation()
 
     async function handleSubmit(formData: FormData) {
         setLoading(true)
@@ -36,11 +38,11 @@ export function ProjectForm({ companyId, domain }: ProjectFormProps) {
 
         try {
             const project = await createProject(companyId, name, description)
-            toast.success('Proyecto creado con éxito')
+            toast.success(t('project.createdSuccess'))
             setOpen(false)
             router.push(`/projects/${project.id}`)
         } catch (error: any) {
-            toast.error(error.message || 'Error al crear proyecto')
+            toast.error(error.message || t('project.createError'))
         } finally {
             setLoading(false)
         }
@@ -51,31 +53,31 @@ export function ProjectForm({ companyId, domain }: ProjectFormProps) {
             <DialogTrigger asChild>
                 <Button>
                     <Plus className="mr-2 h-4 w-4" />
-                    Nuevo Proyecto
+                    {t('project.newProject')}
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <form action={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>Crear Nuevo Proyecto</DialogTitle>
+                        <DialogTitle>{t('project.createTitle')}</DialogTitle>
                         <DialogDescription>
-                            Define un nuevo proyecto para gestionar tus metas y finanzas.
+                            {t('project.createDesc')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Nombre del Proyecto</Label>
-                            <Input id="name" name="name" placeholder="Ej: Nueva Sucursal, App Móvil" required />
+                            <Label htmlFor="name">{t('project.nameLabel')}</Label>
+                            <Input id="name" name="name" placeholder={t('project.namePlaceholder')} required />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="description">Descripción (Opcional)</Label>
-                            <Textarea id="description" name="description" placeholder="Breve descripción del objetivo de este proyecto" />
+                            <Label htmlFor="description">{t('project.descLabel')}</Label>
+                            <Textarea id="description" name="description" placeholder={t('project.descPlaceholder')} />
                         </div>
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {loading ? 'Creando...' : 'Crear Proyecto'}
+                            {loading ? t('common.creating') : t('project.create')}
                         </Button>
                     </DialogFooter>
                 </form>

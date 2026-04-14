@@ -5,6 +5,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { MessageSquare, X, Loader2, Send, ChevronDown, Sparkles } from 'lucide-react'
 import { processAIChatMessage } from '@/lib/actions/chat'
 import type { Message } from '@/lib/types/chat'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface FloatingChatProps {
     contactId: string
@@ -26,6 +27,7 @@ export function FloatingChat({ contactId, companyId, projectName, primaryColor =
     const [hasNewMessages, setHasNewMessages] = useState(false)
 
     const supabase = createClient()
+    const { t } = useTranslation()
     const scrollRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLTextAreaElement>(null)
     const isAtBottomRef = useRef(true)
@@ -181,7 +183,7 @@ export function FloatingChat({ contactId, companyId, projectName, primaryColor =
                             <Sparkles size={16} className="text-white" />
                         </div>
                         <div className="min-w-0">
-                            <h3 className="text-white font-semibold text-sm truncate">Agente IA</h3>
+                            <h3 className="text-white font-semibold text-sm truncate">{t('chat.aiAgent')}</h3>
                             <p className="text-white/70 text-[11px] truncate">{projectName}</p>
                         </div>
                     </div>
@@ -197,7 +199,7 @@ export function FloatingChat({ contactId, companyId, projectName, primaryColor =
                         style={{ background: `${primaryColor}15` }}>
                         <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: primaryColor }} />
                         <span className="text-[11px] font-medium" style={{ color: primaryColor }}>
-                            Estás en el chat de {chatLabel}
+                            {t('chat.inChatOf')} {chatLabel}
                         </span>
                     </div>
                 )}
@@ -212,9 +214,9 @@ export function FloatingChat({ contactId, companyId, projectName, primaryColor =
                                     style={{ background: `${primaryColor}15` }}>
                                     <Sparkles size={22} style={{ color: primaryColor }} />
                                 </div>
-                                <p className="text-gray-600 text-sm font-medium">¡Hola! 👋</p>
+                                <p className="text-gray-600 text-sm font-medium">{t('chat.hello')}</p>
                                 <p className="text-gray-400 text-xs mt-1 max-w-[220px]">
-                                    Soy tu asistente para <strong>{projectName}</strong>. Pregúntame sobre metas, finanzas o lo que necesites.
+                                    {t('chat.assistantIntro')} <strong>{projectName}</strong>{t('chat.assistantIntroSuffix')}
                                 </p>
                             </div>
                         </div>
@@ -235,7 +237,7 @@ export function FloatingChat({ contactId, companyId, projectName, primaryColor =
                         <div className="flex justify-start mb-2">
                             <div className="bg-white text-gray-500 rounded-[16px] rounded-bl-[4px] px-3.5 py-2.5 shadow-sm flex items-center gap-2 border border-gray-100">
                                 <Loader2 size={13} className="animate-spin" />
-                                <span className="text-xs">Escribiendo...</span>
+                                <span className="text-xs">{t('chat.typing')}</span>
                             </div>
                         </div>
                     )}
@@ -251,7 +253,7 @@ export function FloatingChat({ contactId, companyId, projectName, primaryColor =
                 {/* Input */}
                 <div className="border-t bg-white px-3 py-2.5 flex items-end gap-2 flex-shrink-0">
                     <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown} placeholder="Escribe un mensaje..." rows={1}
+                        onKeyDown={handleKeyDown} placeholder={t('chat.messageInput')} rows={1}
                         className="flex-1 resize-none border border-gray-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:border-transparent bg-gray-50/50 placeholder-gray-400 max-h-24"
                         disabled={isLoading} />
                     <button onClick={handleSend} disabled={isLoading || !input.trim()}
@@ -266,7 +268,7 @@ export function FloatingChat({ contactId, companyId, projectName, primaryColor =
             <button onClick={toggleOpen}
                 className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
                 style={{ background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)` }}
-                title={`Chat con agente de ${projectName}`}>
+                title={`${t('chat.chatWithAgent')} ${projectName}`}>
                 <div className="transition-transform duration-300"
                     style={{ transform: isOpen ? 'rotate(90deg) scale(0)' : 'rotate(0) scale(1)' }}>
                     <MessageSquare size={22} className="text-white" />

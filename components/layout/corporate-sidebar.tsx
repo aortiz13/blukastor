@@ -21,6 +21,7 @@ import {
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface MemberPermissions {
     modules: string[] // array of module keys: 'dashboard', 'users', 'compliance', 'escalation', 'memberships', 'finance', 'branding', 'agents'
@@ -37,15 +38,15 @@ interface CorporateSidebarProps {
     userPermissions?: MemberPermissions | null
 }
 
-const corporateNavigation: { name: string; href: string; icon: any; moduleKey: string }[] = [
-    { name: 'Dashboard', href: '/corporate/dashboard', icon: LayoutDashboard, moduleKey: 'dashboard' },
-    { name: 'Usuarios', href: '/corporate/users', icon: Users, moduleKey: 'users' },
-    { name: 'Cumplimiento (T&C)', href: '/corporate/compliance', icon: FileText, moduleKey: 'compliance' },
-    { name: 'Escalamiento Manual', href: '/corporate/escalation', icon: ShieldAlert, moduleKey: 'escalation' },
-    { name: 'Membresías', href: '/corporate/memberships', icon: CreditCard, moduleKey: 'memberships' },
-    { name: 'Finanzas Globales', href: '/corporate/finance', icon: TrendingUp, moduleKey: 'finance' },
-    { name: 'Branding', href: '/corporate/branding', icon: Palette, moduleKey: 'branding' },
-    { name: 'Agentes', href: '/corporate/agents', icon: Bot, moduleKey: 'agents' },
+const corporateNavigationDefs: { key: string; href: string; icon: any; moduleKey: string }[] = [
+    { key: 'dashboard', href: '/corporate/dashboard', icon: LayoutDashboard, moduleKey: 'dashboard' },
+    { key: 'corpNav.users', href: '/corporate/users', icon: Users, moduleKey: 'users' },
+    { key: 'corpNav.compliance', href: '/corporate/compliance', icon: FileText, moduleKey: 'compliance' },
+    { key: 'corpNav.escalation', href: '/corporate/escalation', icon: ShieldAlert, moduleKey: 'escalation' },
+    { key: 'corpNav.memberships', href: '/corporate/memberships', icon: CreditCard, moduleKey: 'memberships' },
+    { key: 'corpNav.globalFinance', href: '/corporate/finance', icon: TrendingUp, moduleKey: 'finance' },
+    { key: 'branding', href: '/corporate/branding', icon: Palette, moduleKey: 'branding' },
+    { key: 'corpNav.agents', href: '/corporate/agents', icon: Bot, moduleKey: 'agents' },
 ]
 
 export function CorporateSidebar({
@@ -64,13 +65,17 @@ export function CorporateSidebar({
     const [isCompanyPickerOpen, setIsCompanyPickerOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
     const supabase = createClient()
+    const { t } = useTranslation()
+
+    const corporateNavigation = corporateNavigationDefs.map(item => ({
+        ...item,
+        name: (item.key === 'dashboard' || item.key === 'branding') ? (item.key === 'dashboard' ? 'Dashboard' : 'Branding') : t(item.key),
+    }))
 
     // Filter navigation based on member permissions
     const isMember = userRole === 'member' && userPermissions
     const filteredNavigation = corporateNavigation.filter(item => {
-        // Admins and super admins see everything
         if (!isMember) return true
-        // Members: check if their module key is in the allowed list
         return userPermissions.modules.includes(item.moduleKey)
     })
 
@@ -138,7 +143,7 @@ export function CorporateSidebar({
                         </div>
                         <div className="flex flex-col">
                             <span className="font-bold text-xl tracking-tight leading-none">{companyName}</span>
-                            <span className="text-gray-400 text-xs mt-1 uppercase tracking-widest font-semibold">Portal Corporativo</span>
+                            <span className="text-gray-400 text-xs mt-1 uppercase tracking-widest font-semibold">{t('corpNav.corporatePortal')}</span>
                         </div>
                     </div>
                 </div>
@@ -236,7 +241,7 @@ export function CorporateSidebar({
                                     ? 'text-violet-500'
                                     : 'text-gray-400'
                             )} />
-                            <span>Mi Perfil</span>
+                            <span>{t('corpNav.myProfile')}</span>
                         </Link>
                         {isSuperAdmin && (
                             <Link
@@ -244,7 +249,7 @@ export function CorporateSidebar({
                                 className="flex items-center gap-3 w-full px-4 py-2.5 text-gray-600 hover:bg-white rounded-xl transition-all duration-200 group text-sm font-medium mb-1"
                             >
                                 <LayoutDashboard size={18} className="text-gray-400" />
-                                <span>Panel Super Admin</span>
+                                <span>{t('corpNav.superAdminPanel')}</span>
                             </Link>
                         )}
                         <button
@@ -252,7 +257,7 @@ export function CorporateSidebar({
                             className="flex items-center gap-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group"
                         >
                             <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
-                            <span className="font-bold text-sm">Cerrar Sesión</span>
+                            <span className="font-bold text-sm">{t('corpNav.signOut')}</span>
                         </button>
                     </div>
                 </div>

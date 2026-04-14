@@ -21,16 +21,17 @@ import {
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
-const adminNavigation = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Empresas', href: '/admin/companies', icon: Building2 },
-    { name: 'Usuarios', href: '/admin/users', icon: Users },
-    { name: 'Cumplimiento (T&C)', href: '/admin/compliance', icon: FileText },
-    { name: 'Escalamiento Manual', href: '/admin/escalation', icon: ShieldAlert },
-    { name: 'Membresías', href: '/admin/memberships', icon: CreditCard },
-    { name: 'Auditoría de IA', href: '/admin/agent-audit', icon: History },
-    { name: 'Finanzas Globales', href: '/admin/finance', icon: TrendingUp },
+const adminNavigationDefs = [
+    { key: 'dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+    { key: 'adminNav.companies', href: '/admin/companies', icon: Building2 },
+    { key: 'adminNav.users', href: '/admin/users', icon: Users },
+    { key: 'adminNav.compliance', href: '/admin/compliance', icon: FileText },
+    { key: 'adminNav.escalation', href: '/admin/escalation', icon: ShieldAlert },
+    { key: 'adminNav.memberships', href: '/admin/memberships', icon: CreditCard },
+    { key: 'adminNav.aiAudit', href: '/admin/agent-audit', icon: History },
+    { key: 'adminNav.globalFinance', href: '/admin/finance', icon: TrendingUp },
 ]
 
 export function AdminSidebar() {
@@ -39,6 +40,12 @@ export function AdminSidebar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
     const supabase = createClient()
+    const { t } = useTranslation()
+
+    const adminNavigation = adminNavigationDefs.map(item => ({
+        ...item,
+        name: item.key === 'dashboard' ? 'Dashboard' : t(item.key),
+    }))
 
     // Prevent hydration mismatch by only showing active state after mount
     useEffect(() => {
@@ -81,7 +88,7 @@ export function AdminSidebar() {
                         </div>
                         <div className="flex flex-col">
                             <span className="font-bold text-xl tracking-tight leading-none">Blukastor</span>
-                            <span className="text-gray-400 text-xs mt-1 uppercase tracking-widest font-semibold">Sistema Admin</span>
+                            <span className="text-gray-400 text-xs mt-1 uppercase tracking-widest font-semibold">{t('adminNav.systemAdmin')}</span>
                         </div>
                     </div>
                 </div>
@@ -128,14 +135,14 @@ export function AdminSidebar() {
                             )}
                         >
                             <Settings size={18} className="text-gray-400" />
-                            <span>Configuración</span>
+                            <span>{t('adminNav.settings')}</span>
                         </Link>
                         <button
                             onClick={handleSignOut}
                             className="flex items-center gap-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group"
                         >
                             <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
-                            <span className="font-bold text-sm">Cerrar Sesión</span>
+                            <span className="font-bold text-sm">{t('adminNav.signOut')}</span>
                         </button>
                     </div>
                 </div>

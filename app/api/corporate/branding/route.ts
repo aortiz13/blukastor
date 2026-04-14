@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 
         const { data: company, error } = await supabase
             .from('client_companies')
-            .select('name, logo_url, logo_dark_url, logo_icon_url, primary_color, secondary_color, accent_color, cover_image_url, tagline, frontend_config')
+            .select('id, name, logo_url, logo_dark_url, logo_icon_url, primary_color, secondary_color, accent_color, cover_image_url, tagline, frontend_config')
             .eq('custom_domain', domain)
             .eq('is_active', true)
             .single()
@@ -34,6 +34,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json({
             found: true,
+            companyId: company.id,
             name: company.name,
             logo_url: company.logo_url,
             logo_dark_url: company.logo_dark_url,

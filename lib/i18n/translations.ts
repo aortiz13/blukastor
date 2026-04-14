@@ -665,6 +665,8 @@ const es: TranslationDict = {
     'excel.editMapping': 'Editar Mapeo',
     'excel.importing': 'Importando...',
     'excel.importCount': 'Importar {count} transacciones',
+    'excel.selectAll': 'Seleccionar todas',
+    'excel.deselectAll': 'Deseleccionar',
 
     // Chat
     'chat.aiAgent': 'Agente IA',
@@ -1386,6 +1388,8 @@ const en: TranslationDict = {
     'excel.editMapping': 'Edit Mapping',
     'excel.importing': 'Importing...',
     'excel.importCount': 'Import {count} transactions',
+    'excel.selectAll': 'Select all',
+    'excel.deselectAll': 'Deselect',
 
     // Chat
     'chat.aiAgent': 'AI Agent',

@@ -8,6 +8,7 @@ import { FileSpreadsheet, Upload, Loader2, CheckCircle2, AlertCircle, X, Chevron
 import { createBulkTransactions } from '@/lib/actions/finance'
 import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface ExcelBulkUploadProps {
     companyId: string
@@ -35,13 +36,13 @@ interface MappedRow {
 
 type AppField = 'date' | 'amount' | 'type' | 'description' | 'category' | 'skip'
 
-const APP_FIELDS: { value: AppField; label: string; required: boolean }[] = [
-    { value: 'date', label: 'Fecha', required: true },
-    { value: 'amount', label: 'Monto', required: true },
-    { value: 'type', label: 'Tipo (Ingreso/Egreso)', required: true },
-    { value: 'description', label: 'Descripción', required: false },
-    { value: 'category', label: 'Categoría', required: false },
-    { value: 'skip', label: '— No mapear —', required: false },
+const getAppFields = (t: (key: string) => string): { value: AppField; label: string; required: boolean }[] => [
+    { value: 'date', label: t('excel.fieldDate'), required: true },
+    { value: 'amount', label: t('excel.fieldAmount'), required: true },
+    { value: 'type', label: t('excel.fieldType'), required: true },
+    { value: 'description', label: t('excel.fieldDescription'), required: false },
+    { value: 'category', label: t('excel.fieldCategory'), required: false },
+    { value: 'skip', label: t('excel.fieldSkip'), required: false },
 ]
 
 // Smart column name detection
@@ -63,6 +64,7 @@ const CATEGORIES = [
 ]
 
 export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBulkUploadProps) {
+    const { t } = useTranslation()
     const [open, setOpen] = useState(false)
     const [step, setStep] = useState<Step>('upload')
     const [dragActive, setDragActive] = useState(false)
@@ -102,7 +104,7 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
             const jsonData = XLSX.utils.sheet_to_json<ExcelRow>(sheet, { defval: '' })
 
             if (jsonData.length === 0) {
-                toast.error('El archivo está vacío o no tiene datos válidos')
+                toast.error(t('excel.emptyFile'))
                 return
             }
 
@@ -135,7 +137,7 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
             setStep('mapping')
         } catch (error) {
             console.error('Excel parse error:', error)
-            toast.error('Error al leer el archivo. Asegúrate que sea un Excel o CSV válido.')
+            toast.error(t('excel.readError'))
         }
     }, [])
 
@@ -148,7 +150,7 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
         const catCol = Object.entries(columnMapping).find(([, v]) => v === 'category')?.[0]
 
         if (!dateCol || !amountCol) {
-            toast.error('Debes mapear al menos las columnas de Fecha y Monto')
+            toast.error(t('excel.mustMapRequired'))
             return
         }
 
@@ -180,7 +182,7 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                     parsedDate = `${excelDate.y}-${String(excelDate.m).padStart(2, '0')}-${String(excelDate.d).padStart(2, '0')}`
                 }
             }
-            if (!parsedDate) errors.push('Fecha inválida')
+            if (!parsedDate) errors.push(t('excel.invalidDate'))
 
             // Parse amount
             let parsedAmount = 0
@@ -195,7 +197,7 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                 })
                 parsedAmount = Math.abs(parseFloat(cleaned)) || 0
             }
-            if (parsedAmount <= 0) errors.push('Monto inválido')
+            if (parsedAmount <= 0) errors.push(t('excel.invalidAmount'))
 
             // Parse type
             let parsedType: 'income' | 'expense' = 'expense'
@@ -249,7 +251,7 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
     const handleImport = async () => {
         const selected = mappedRows.filter(r => r.selected && r.errors.length === 0)
         if (selected.length === 0) {
-            toast.error('No hay filas válidas seleccionadas')
+            toast.error(t('excel.noValidRows'))
             return
         }
 
@@ -269,12 +271,12 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
             if (result?.error) {
                 toast.error(result.error)
             } else {
-                toast.success(`¡${selected.length} transacciones importadas exitosamente!`)
+                toast.success(`¡${selected.length} ${t('excel.importSuccess')}`)
                 setOpen(false)
                 resetForm()
             }
         } catch (error) {
-            toast.error('Error al importar las transacciones')
+            toast.error(t('excel.importError'))
         }
         setLoading(false)
     }
@@ -304,20 +306,20 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
             <DialogTrigger asChild>
                 <Button variant="outline">
                     <FileSpreadsheet className="mr-2 h-4 w-4" />
-                    Importar Excel
+                    {t('excel.importTitle')}
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         {step === 'upload' && (
-                            <><FileSpreadsheet className="h-5 w-5" /> Importar desde Excel</>
+                            <><FileSpreadsheet className="h-5 w-5" /> {t('excel.importFromExcel')}</>
                         )}
                         {step === 'mapping' && (
-                            <><FileSpreadsheet className="h-5 w-5" /> Mapear Columnas</>
+                            <><FileSpreadsheet className="h-5 w-5" /> {t('excel.mapColumns')}</>
                         )}
                         {step === 'review' && (
-                            <><CheckCircle2 className="h-5 w-5" /> Revisar y Aprobar</>
+                            <><CheckCircle2 className="h-5 w-5" /> {t('excel.reviewApprove')}</>
                         )}
                     </DialogTitle>
                 </DialogHeader>
@@ -340,13 +342,13 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                         >
                             <FileSpreadsheet className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                             <p className="text-lg font-medium mb-2">
-                                Arrastra y suelta tu archivo Excel aquí
+                                {t('excel.dragDropExcel')}
                             </p>
                             <p className="text-sm text-muted-foreground mb-4">
-                                o haz clic para buscar archivos
+                                {t('excel.clickToBrowse')}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                                Soporta: .xlsx, .xls, .csv
+                                {t('excel.supportedFormats')}
                             </p>
                             <input
                                 ref={fileInputRef}
@@ -361,8 +363,8 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                         </div>
 
                         <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded-lg border border-blue-100">
-                            <p className="font-medium mb-1">💡 Formato esperado</p>
-                            <p>Tu Excel debe tener columnas como: <strong>Fecha</strong>, <strong>Monto</strong>, <strong>Ingreso o Egreso</strong>, <strong>Detalle</strong>. Las columnas se detectarán automáticamente.</p>
+                            <p className="font-medium mb-1">{t('excel.expectedFormat')}</p>
+                            <p>{t('excel.expectedFormatDesc')}</p>
                         </div>
                     </div>
                 )}
@@ -372,19 +374,19 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                     <div className="space-y-4">
                         <div className="bg-gray-50 rounded-lg p-3 border">
                             <p className="text-sm text-muted-foreground">
-                                <strong>{fileName}</strong> — {rows.length} filas detectadas
+                                <strong>{fileName}</strong> — {rows.length} {t('excel.rowsDetected')}
                             </p>
                         </div>
 
                         <div className="space-y-3">
-                            <p className="text-sm font-medium">Asigna cada columna del Excel a un campo de la app:</p>
+                            <p className="text-sm font-medium">{t('excel.assignColumns')}</p>
 
                             {headers.map(header => (
                                 <div key={header} className="flex items-center gap-3 p-2 rounded-lg border bg-white">
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium truncate">{header}</p>
                                         <p className="text-xs text-muted-foreground truncate">
-                                            Ejemplo: {String(rows[0]?.[header] ?? '').substring(0, 40)}
+                                            {t('excel.example')}: {String(rows[0]?.[header] ?? '').substring(0, 40)}
                                         </p>
                                     </div>
                                     <div className="text-muted-foreground text-xs">→</div>
@@ -396,7 +398,7 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {APP_FIELDS.map(f => (
+                                            {getAppFields(t).map(f => (
                                                 <SelectItem key={f.value} value={f.value}>
                                                     {f.label} {f.required && '*'}
                                                 </SelectItem>
@@ -410,16 +412,16 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                         {!requiredMapped && (
                             <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 p-2 rounded border border-amber-200">
                                 <AlertCircle className="h-4 w-4 shrink-0" />
-                                Debes mapear al menos <strong>Fecha</strong> y <strong>Monto</strong>
+                                {t('excel.mustMapRequired')}
                             </div>
                         )}
 
                         <div className="flex gap-2 justify-between pt-2">
                             <Button variant="outline" onClick={() => setStep('upload')}>
-                                <ChevronLeft className="mr-1 h-4 w-4" /> Atrás
+                                <ChevronLeft className="mr-1 h-4 w-4" /> {t('common.back')}
                             </Button>
                             <Button onClick={applyMapping} disabled={!requiredMapped}>
-                                Continuar <ChevronRight className="ml-1 h-4 w-4" />
+                                {t('common.continue')} <ChevronRight className="ml-1 h-4 w-4" />
                             </Button>
                         </div>
                     </div>
@@ -431,14 +433,14 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                         {/* Stats bar */}
                         <div className="flex items-center gap-4 text-sm">
                             <span className="bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200">
-                                ✓ {selectedCount} seleccionadas
+                                ✓ {selectedCount} {t('excel.selected')}
                             </span>
                             <span className="bg-gray-50 text-gray-600 px-2 py-1 rounded border">
-                                {validCount} válidas
+                                {validCount} {t('excel.valid')}
                             </span>
                             {errorCount > 0 && (
                                 <span className="bg-red-50 text-red-700 px-2 py-1 rounded border border-red-200">
-                                    ✗ {errorCount} con errores
+                                    ✗ {errorCount} {t('excel.withErrors')}
                                 </span>
                             )}
                             <div className="flex-1" />
@@ -448,7 +450,7 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                                 onClick={() => toggleAll(true)}
                                 className="text-xs"
                             >
-                                Seleccionar todas
+                                {t('excel.selectAll')}
                             </Button>
                             <Button
                                 variant="ghost"
@@ -456,7 +458,7 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                                 onClick={() => toggleAll(false)}
                                 className="text-xs"
                             >
-                                Deseleccionar
+                                {t('excel.deselectAll')}
                             </Button>
                         </div>
 
@@ -473,11 +475,11 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                                                 className="rounded"
                                             />
                                         </th>
-                                        <th className="p-2 text-left">Fecha</th>
-                                        <th className="p-2 text-right">Monto</th>
-                                        <th className="p-2 text-center">Tipo</th>
-                                        <th className="p-2 text-left">Descripción</th>
-                                        <th className="p-2 text-left">Categoría</th>
+                                        <th className="p-2 text-left">{t('table.date')}</th>
+                                        <th className="p-2 text-right">{t('table.amount')}</th>
+                                        <th className="p-2 text-center">{t('table.type')}</th>
+                                        <th className="p-2 text-left">{t('table.description')}</th>
+                                        <th className="p-2 text-left">{t('table.category')}</th>
                                         <th className="p-2 text-center w-10"></th>
                                     </tr>
                                 </thead>
@@ -518,7 +520,7 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                                                         ? 'bg-green-100 text-green-800'
                                                         : 'bg-red-100 text-red-800'
                                                 }`}>
-                                                    {row.type === 'income' ? 'Ingreso' : 'Egreso'}
+                                                    {row.type === 'income' ? t('common.income') : t('common.expense')}
                                                 </span>
                                             </td>
                                             <td className="p-2 max-w-[200px] truncate" title={row.description}>
@@ -534,7 +536,7 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                                                     }}
                                                     className="text-xs border rounded px-1 py-0.5 bg-transparent w-full"
                                                 >
-                                                    <option value="">Sin categoría</option>
+                                                    <option value="">{t('excel.noCategory')}</option>
                                                     {CATEGORIES.map(c => (
                                                         <option key={c} value={c}>{c}</option>
                                                     ))}
@@ -556,11 +558,11 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                         {/* Actions */}
                         <div className="flex gap-2 justify-between pt-2">
                             <Button variant="outline" onClick={() => setStep('mapping')}>
-                                <ChevronLeft className="mr-1 h-4 w-4" /> Editar Mapeo
+                                <ChevronLeft className="mr-1 h-4 w-4" /> {t('excel.editMapping')}
                             </Button>
                             <div className="flex gap-2">
                                 <Button variant="outline" onClick={resetForm}>
-                                    Cancelar
+                                    {t('common.cancel')}
                                 </Button>
                                 <Button
                                     onClick={handleImport}
@@ -568,9 +570,9 @@ export function ExcelBulkUpload({ companyId, userId, companyCurrency }: ExcelBul
                                     className="min-w-[180px]"
                                 >
                                     {loading ? (
-                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importando...</>
+                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('excel.importing')}</>
                                     ) : (
-                                        <><CheckCircle2 className="mr-2 h-4 w-4" /> Importar {selectedCount} transacciones</>
+                                        <><CheckCircle2 className="mr-2 h-4 w-4" /> {t('excel.importCount').replace('{count}', String(selectedCount))}</>
                                     )}
                                 </Button>
                             </div>

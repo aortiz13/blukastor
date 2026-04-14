@@ -161,7 +161,8 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                             <div className="bg-white/10 rounded-lg px-2.5 py-1">
                                 <span className="font-black text-sm">{selected.size}</span>
                             </div>
-                                {t('users.usersSelected', { count: String(selected.size) })}
+                            <span className="text-sm text-gray-300">
+                                {selected.size} {t('users.usersSelected')}
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -288,7 +289,7 @@ export default function UsersClient({ contacts, membershipMap, companyName, comp
                             </div>
 
                             <p className="text-sm text-gray-600 mb-4">
-                                {t('users.inviteDescription', { count: String(selectedContacts.length) })}
+                                {t('users.inviteDescription')}
                             </p>
 
                             <div className="max-h-48 overflow-y-auto space-y-1.5 mb-4">

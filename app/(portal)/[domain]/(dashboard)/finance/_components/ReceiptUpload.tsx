@@ -97,11 +97,10 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
         try {
             let imageForOcr: string | null = null
 
-            // If PDF, convert first page to image using pdfjs-dist in browser
+            // For PDFs, skip client-side conversion — Gemini handles PDFs natively
             if (file.type === 'application/pdf') {
-                setProgressLabel('Convirtiendo PDF a imagen...')
-                setProgress(15)
-                imageForOcr = await convertPdfToImage(file)
+                // No preview for PDFs (Gemini processes the raw PDF server-side)
+                imageForOcr = null
             } else {
                 // Direct image — create a preview URL
                 imageForOcr = URL.createObjectURL(file)
@@ -122,11 +121,18 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
             })
 
             if (!uploadRes.ok) {
-                throw new Error('Upload failed')
+                const errorData = await uploadRes.json().catch(() => ({}))
+                throw new Error(errorData.error || `Upload failed (${uploadRes.status})`)
             }
 
             const uploadData = await uploadRes.json()
             setReceiptUrl(uploadData.receiptUrl)
+
+            // Use receipt URL as preview if we don't have one (PDF case)
+            if (!imageForOcr && uploadData.receiptUrl) {
+                setPreviewUrl(uploadData.receiptUrl)
+            }
+
             setProgress(70)
 
             // Check if Gemini Vision extracted data successfully
@@ -146,15 +152,15 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
                 if (geminiData.currency && geminiData.currency !== currency) {
                     setCurrency(geminiData.currency)
                 }
-            } else {
-                // Fallback: Run Tesseract.js OCR client-side
+            } else if (imageForOcr) {
+                // Fallback: Run Tesseract.js OCR client-side (only for images, not PDFs)
                 console.log('[OCR] Gemini did not extract amount, falling back to Tesseract...')
                 setProgressLabel('Ejecutando OCR local (extrayendo texto)...')
 
                 const Tesseract = (await import('tesseract.js')).default
 
                 const result = await Tesseract.recognize(
-                    imageForOcr!,
+                    imageForOcr,
                     'spa+eng', // Spanish + English
                     {
                         logger: (m: any) => {
@@ -178,6 +184,10 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
                 if (parsed.date) setDate(parsed.date)
                 if (parsed.vendor) setVendor(parsed.vendor)
                 if (parsed.description) setDescription(parsed.description)
+            } else {
+                // PDF with no Gemini data — user will need to fill in manually
+                console.log('[OCR] No data extracted from PDF, user must fill manually')
+                setProgressLabel('No se pudieron extraer datos automáticamente')
             }
 
             // Auto-detect today if no date was found
@@ -293,9 +303,14 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
                 {/* STEP 2: Processing */}
                 {step === 'processing' && (
                     <div className="space-y-6 py-4">
-                        {previewUrl && (
+                        {previewUrl ? (
                             <div className="relative rounded-lg overflow-hidden border max-h-48">
                                 <img src={previewUrl} alt="Vista previa del recibo" className="w-full h-48 object-contain bg-gray-50" />
+                            </div>
+                        ) : (
+                            <div className="relative rounded-lg overflow-hidden border h-32 bg-gray-50 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                                <FileImage className="h-10 w-10" />
+                                <span className="text-sm">Procesando documento PDF...</span>
                             </div>
                         )}
                         <div className="space-y-2">
@@ -478,31 +493,3 @@ export function ReceiptUpload({ companyId, userId, companyCurrency }: ReceiptUpl
     )
 }
 
-/**
- * Converts the first page of a PDF to a PNG image using pdfjs-dist in the browser.
- */
-async function convertPdfToImage(file: File): Promise<string> {
-    const pdfjsLib = await import('pdfjs-dist')
-
-    // Set the worker source to the local file in public/ folder
-    // checking for window ensures this only runs on client
-    if (typeof window !== 'undefined') {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = window.location.origin + '/pdf.worker.min.mjs'
-    }
-
-    const arrayBuffer = await file.arrayBuffer()
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-    const page = await pdf.getPage(1)
-
-    const scale = 2 // Higher scale = better OCR accuracy
-    const viewport = page.getViewport({ scale })
-
-    const canvas = document.createElement('canvas')
-    canvas.width = viewport.width
-    canvas.height = viewport.height
-
-    const ctx = canvas.getContext('2d')!
-    await page.render({ canvasContext: ctx, viewport, canvas }).promise
-
-    return canvas.toDataURL('image/png')
-}

@@ -15,7 +15,7 @@ export function AddUserModal({ companyId, companyName, isOpen, onClose }: AddUse
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState('')
-    const [role, setRole] = useState('user')
+    const [role, setRole] = useState('viewer')
 
     if (!isOpen) return null
 
@@ -56,7 +56,7 @@ export function AddUserModal({ companyId, companyName, isOpen, onClose }: AddUse
     const handleClose = () => {
         if (!loading) {
             setEmail('')
-            setRole('user')
+            setRole('viewer')
             onClose()
         }
     }
@@ -116,7 +116,7 @@ export function AddUserModal({ companyId, companyName, isOpen, onClose }: AddUse
                             disabled={loading}
                             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:bg-gray-50"
                         >
-                            <option value="user">Usuario</option>
+                            <option value="viewer">Usuario</option>
                             <option value="admin">Administrador</option>
                         </select>
                         <p className="text-xs text-gray-500 mt-2">

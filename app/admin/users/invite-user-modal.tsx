@@ -123,7 +123,7 @@ export function InviteUserModal({ isOpen, onClose }: InviteUserModalProps) {
     const handleClose = () => {
         if (!loading) {
             setEmail('')
-            setRole('user')
+            setRole('viewer')
             setCompanyId('')
             setSelectedProjects([])
             setProjects([])

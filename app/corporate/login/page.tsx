@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Building2, Loader2, Mail, Lock, ArrowRight } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/useTranslation'
+import { LanguageProvider } from '@/lib/i18n/LanguageContext'
 
 interface CompanyBranding {
     companyId?: string
@@ -20,7 +21,7 @@ interface CompanyBranding {
     login_welcome_text?: string
 }
 
-export default function CorporateLoginPage() {
+function CorporateLoginPageContent() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -333,5 +334,13 @@ export default function CorporateLoginPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function CorporateLoginPage() {
+    return (
+        <LanguageProvider>
+            <CorporateLoginPageContent />
+        </LanguageProvider>
     )
 }

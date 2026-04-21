@@ -4,9 +4,8 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/useTranslation'
-import { LanguageProvider } from '@/lib/i18n/LanguageContext'
 
-function RootLoginPageContent() {
+export default function RootLoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -151,13 +150,5 @@ function RootLoginPageContent() {
                 )}
             </div>
         </div>
-    )
-}
-
-export default function RootLoginPage() {
-    return (
-        <LanguageProvider>
-            <RootLoginPageContent />
-        </LanguageProvider>
     )
 }

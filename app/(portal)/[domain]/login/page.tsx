@@ -6,9 +6,8 @@ import { getCompanyByDomain } from '@/lib/data/companies'
 import { Loader2, Mail, Phone, MessageCircle, UserPlus } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useTranslation } from '@/lib/i18n/useTranslation'
-import { LanguageProvider } from '@/lib/i18n/LanguageContext'
 
-function LoginPageContent() {
+export default function LoginPage() {
     const params = useParams()
     const rawDomain = params?.domain as string
     const domain = decodeURIComponent(rawDomain || '')
@@ -576,13 +575,5 @@ function LoginPageContent() {
                 </div>
             </div>
         </>
-    )
-}
-
-export default function LoginPage() {
-    return (
-        <LanguageProvider>
-            <LoginPageContent />
-        </LanguageProvider>
     )
 }

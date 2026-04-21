@@ -80,7 +80,11 @@ export function UserActionsDropdown({ userId, userEmail, companyId, isAdmin = fa
         }
 
         try {
-            const res = await fetch(`/api/admin/users/${userId}`, {
+            const url = companyId 
+                ? `/api/admin/companies/${companyId}/users/${userId}`
+                : `/api/admin/users/${userId}`
+                
+            const res = await fetch(url, {
                 method: 'DELETE'
             })
 

@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Users, Mail, Phone, Calendar, Shield } from 'lucide-react'
 import { AddUserButton } from './add-user-button'
-
+import { UserActionsDropdown } from '@/app/admin/users/user-actions-dropdown'
 interface PageProps {
     params: Promise<{ id: string }>
 }
@@ -170,9 +170,14 @@ export default async function CompanyUsersPage({ params }: PageProps) {
                                     {u.last_seen ? new Date(u.last_seen).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 'Nunca'}
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <button className="text-primary hover:text-primary/80 font-bold text-sm">
-                                        Ver →
-                                    </button>
+                                    <div className="flex justify-end">
+                                        <UserActionsDropdown 
+                                            userId={u.is_wa_only ? u.contact_id : (u.auth_user_id || u.contact_id)}
+                                            userEmail={u.email || u.phone || ''}
+                                            companyId={id}
+                                            isAdmin={true} 
+                                        />
+                                    </div>
                                 </td>
                             </tr>
                         ))}
